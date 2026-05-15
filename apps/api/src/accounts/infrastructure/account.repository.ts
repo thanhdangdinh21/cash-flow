@@ -16,7 +16,7 @@ export class AccountRepository implements IAccountRepository {
   }
 
   findById(id: string): Promise<AccountEntity | null> {
-    return this.prisma.account.findUnique({ where: { id } }) as Promise<AccountEntity | null>;
+    return this.prisma.account.findFirst({ where: { id, deletedAt: null } }) as Promise<AccountEntity | null>;
   }
 
   async create(data: CreateAccountWithHoldingsData): Promise<AccountEntity> {

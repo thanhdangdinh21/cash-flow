@@ -6,7 +6,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 export class SeedDefaultAccountsUseCase {
   constructor(private readonly prisma: PrismaService) {}
 
-  async execute(userId: string): Promise<void> {
+  async execute(userId: string, currencyCode = 'USD'): Promise<void> {
     const defaults = [
       { name: 'Cash wallet', type: AccountType.ASSET },
       { name: 'General income', type: AccountType.INCOME },
@@ -20,7 +20,7 @@ export class SeedDefaultAccountsUseCase {
             ownerId: userId,
             name: d.name,
             type: d.type,
-            currencyCode: 'USD',
+            currencyCode,
             isDefault: true,
           },
         });

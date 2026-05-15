@@ -14,7 +14,6 @@ export interface CreateAccountData {
 
 export interface UpdateAccountData {
   name?: string;
-  initialBalance?: number;
 }
 
 export interface CreateAccountWithHoldingsData extends CreateAccountData {
