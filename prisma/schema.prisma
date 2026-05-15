@@ -1,5 +1,5 @@
 // =============================================================================
-// MONEY FLOW APP — PRISMA SCHEMA (v3 — final)
+// MONEY FLOW APP — PRISMA SCHEMA (v4)
 // =============================================================================
 // Changes from v1:
 //   [1] Account comment corrected: 3 default accounts seeded (not 5)
@@ -15,6 +15,15 @@
 //   [8] CategorySnapshot table added — sparse strategy (write only when
 //       transactions exist in that period, not for every category every day)
 //   [9] Category + User relations updated to include CategorySnapshot
+//
+// Changes from v3:
+//   [v4] Currency model dropped — currencyCode on Account is now a plain
+//        string, validated in FE against a hardcoded currency list
+//   [v4] is_commodity / unit_name removed from Account — replaced by Holding model
+//   [v4] total_quantity / total_cost removed from AccountSnapshot — now on
+//        Holding directly
+//   [v4] Holding model added — multi-commodity positions within an ASSET account
+//   [v4] holdingId added to JournalEntry
 // =============================================================================
 
 generator client {
@@ -111,11 +120,14 @@ model User {
 //   3. General expense(EXPENSE) — needed to record any spending
 // LIABILITY and EQUITY are skipped at signup — users add them when needed.
 //
-// Commodity accounts (is_commodity = true):
-//   User enables this at account creation for physical/digital assets
-//   (gold, crypto, property). Cannot be changed after creation.
-//   Journal entries on commodity accounts store quantity + unit_price.
-//   unit_name is REQUIRED when is_commodity = true (enforced in DTO layer).
+// currencyCode:
+//   Stored as a plain string (no FK to a Currency table). The FE validates
+//   it against a hardcoded currency list — no server-side currency table needed.
+//
+// Commodity tracking:
+//   Moved to the Holding model. An ASSET account can have multiple holdings
+//   (e.g. gold, BTC, shares) — each holding tracks its own quantity and cost
+//   basis. is_commodity and unit_name no longer exist on Account.
 //
 // current_balance:
 //   Running balance updated atomically with each transaction.
@@ -148,7 +160,7 @@ model Account {
   journalEntries     JournalEntry[]
   debitTransactions  Transaction[]     @relation("DebitAccount")
   creditTransactions Transaction[]     @relation("CreditAccount")
-  holdings           Holding[]
+  holdings           Holding[] // only ASSET accounts should have holdings — enforced in service layer
 
   @@map("accounts")
 }
@@ -182,10 +194,6 @@ model AccountUser {
 // =============================================================================
 // Periodic balance snapshots for report charts (daily, weekly, monthly).
 // Avoids recalculating balances from all journal entries on every report load.
-//
-// For commodity accounts: also stores total_quantity and total_cost.
-// Service-layer guard: assert total_quantity + total_cost are non-null
-// before writing a snapshot for any account where is_commodity = true.
 //
 // How the snapshot job works:
 //   For each period end (day/week/month):
@@ -409,7 +417,10 @@ model Transaction {
 // currentQuantity — running total units owned, updated atomically with each transaction
 // currentCost — running total cost basis in the account's currency
 // Average cost per unit = currentCost / currentQuantity (derived at query time)
-// =============================================================================
+//
+// Service-layer invariant: name must be unique among active (deletedAt IS NULL) holdings
+// per account. Enforced in CreateHoldingUseCase, not at DB level (soft-delete compatibility).
+// -----------------------------------------------------------------------------
 
 model Holding {
   id              String    @id @default(uuid())
@@ -460,7 +471,8 @@ model JournalEntry {
   type          JournalEntryType
   amount        Decimal          @db.Decimal(18, 4)
 
-  // Commodity-only fields — null for regular (non-commodity) accounts
+  // Commodity-only fields — null for regular (non-commodity) accounts.
+  // Invariant: holdingId and quantity are always both null or both non-null.
   // unit_price is NOT stored — derived at query time: unit_price = amount / quantity
   quantity      Decimal?         @db.Decimal(18, 8) // units bought/sold
   holdingId     String?          @map("holding_id")
