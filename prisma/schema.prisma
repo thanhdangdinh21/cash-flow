@@ -1,5 +1,5 @@
 // =============================================================================
-// MONEY FLOW APP — PRISMA SCHEMA (v3 — final)
+// MONEY FLOW APP — PRISMA SCHEMA (v4)
 // =============================================================================
 // Changes from v1:
 //   [1] Account comment corrected: 3 default accounts seeded (not 5)
@@ -15,6 +15,15 @@
 //   [8] CategorySnapshot table added — sparse strategy (write only when
 //       transactions exist in that period, not for every category every day)
 //   [9] Category + User relations updated to include CategorySnapshot
+//
+// Changes from v3:
+//   [v4] Currency model dropped — currencyCode on Account is now a plain
+//        string, validated in FE against a hardcoded currency list
+//   [v4] is_commodity / unit_name removed from Account — replaced by Holding model
+//   [v4] total_quantity / total_cost removed from AccountSnapshot — now on
+//        Holding directly
+//   [v4] Holding model added — multi-commodity positions within an ASSET account
+//   [v4] holdingId added to JournalEntry
 // =============================================================================
 
 generator client {
@@ -101,27 +110,6 @@ model User {
 }
 
 // =============================================================================
-// CURRENCIES
-// =============================================================================
-// Simple ISO currency reference list. No rate_to_base — multi-currency
-// conversion is deferred to v4. Currencies table is a lookup only.
-//
-// Users pick a currency when creating an account.
-// Currency cannot be changed after account creation.
-// -----------------------------------------------------------------------------
-
-model Currency {
-  code   String @id // "USD", "VND", "XAU" (gold)
-  name   String     // "US Dollar", "Vietnamese Dong"
-  symbol String     // "$", "₫"
-
-  // Relations
-  accounts Account[]
-
-  @@map("currencies")
-}
-
-// =============================================================================
 // ACCOUNTS
 // =============================================================================
 // Represents a financial account (e.g. "Cash wallet", "Vietcombank", "Gold").
@@ -132,11 +120,14 @@ model Currency {
 //   3. General expense(EXPENSE) — needed to record any spending
 // LIABILITY and EQUITY are skipped at signup — users add them when needed.
 //
-// Commodity accounts (is_commodity = true):
-//   User enables this at account creation for physical/digital assets
-//   (gold, crypto, property). Cannot be changed after creation.
-//   Journal entries on commodity accounts store quantity + unit_price.
-//   unit_name is REQUIRED when is_commodity = true (enforced in DTO layer).
+// currencyCode:
+//   Stored as a plain string (no FK to a Currency table). The FE validates
+//   it against a hardcoded currency list — no server-side currency table needed.
+//
+// Commodity tracking:
+//   Moved to the Holding model. An ASSET account can have multiple holdings
+//   (e.g. gold, BTC, shares) — each holding tracks its own quantity and cost
+//   basis. is_commodity and unit_name no longer exist on Account.
 //
 // current_balance:
 //   Running balance updated atomically with each transaction.
@@ -155,12 +146,6 @@ model Account {
   initialBalance Decimal     @default(0) @map("initial_balance") @db.Decimal(18, 4)
   currentBalance Decimal     @default(0) @map("current_balance") @db.Decimal(18, 4)
 
-  // Commodity asset tracking
-  // When is_commodity = true, journal entries also store quantity + unit_price.
-  // unit_name is required when is_commodity = true — enforced in CreateAccountDto.
-  isCommodity    Boolean     @default(false) @map("is_commodity")
-  unitName       String?     @map("unit_name") // e.g. "gram", "BTC", "oz"
-
   isActive       Boolean     @default(true) @map("is_active")
   isDefault      Boolean     @default(false) @map("is_default") // true = seeded at signup
   deletedAt      DateTime?   @map("deleted_at") // soft delete — never hard delete
@@ -170,12 +155,12 @@ model Account {
 
   // Relations
   owner              User              @relation("AccountOwner", fields: [ownerId], references: [id])
-  currency           Currency          @relation(fields: [currencyCode], references: [code])
   members            AccountUser[]
   snapshots          AccountSnapshot[]
   journalEntries     JournalEntry[]
   debitTransactions  Transaction[]     @relation("DebitAccount")
   creditTransactions Transaction[]     @relation("CreditAccount")
+  holdings           Holding[] // only ASSET accounts should have holdings — enforced in service layer
 
   @@map("accounts")
 }
@@ -210,10 +195,6 @@ model AccountUser {
 // Periodic balance snapshots for report charts (daily, weekly, monthly).
 // Avoids recalculating balances from all journal entries on every report load.
 //
-// For commodity accounts: also stores total_quantity and total_cost.
-// Service-layer guard: assert total_quantity + total_cost are non-null
-// before writing a snapshot for any account where is_commodity = true.
-//
 // How the snapshot job works:
 //   For each period end (day/week/month):
 //     For each account:
@@ -232,10 +213,6 @@ model AccountSnapshot {
   accountId     String         @map("account_id")
 
   balance       Decimal        @db.Decimal(18, 4)
-
-  // Commodity-only fields — null for non-commodity accounts
-  totalQuantity Decimal?       @map("total_quantity") @db.Decimal(18, 8)
-  totalCost     Decimal?       @map("total_cost") @db.Decimal(18, 4)
 
   periodType    SnapshotPeriod @map("period_type")
   periodDate    DateTime       @map("period_date") // the day/week/month this snapshot represents
@@ -431,6 +408,39 @@ model Transaction {
 }
 
 // =============================================================================
+// HOLDINGS
+// =============================================================================
+// A commodity position within an ASSET account.
+// One ASSET account can hold multiple holdings (gold, silver, BTC, stocks, etc).
+// Each holding tracks its own quantity and cost basis.
+//
+// currentQuantity — running total units owned, updated atomically with each transaction
+// currentCost — running total cost basis in the account's currency
+// Average cost per unit = currentCost / currentQuantity (derived at query time)
+//
+// Service-layer invariant: name must be unique among active (deletedAt IS NULL) holdings
+// per account. Enforced in CreateHoldingUseCase, not at DB level (soft-delete compatibility).
+// -----------------------------------------------------------------------------
+
+model Holding {
+  id              String    @id @default(uuid())
+  accountId       String    @map("account_id")
+  name            String                          // "Gold", "Bitcoin", "Apple"
+  unitName        String    @map("unit_name")      // "gram", "BTC", "share"
+  currentQuantity Decimal   @default(0) @map("current_quantity") @db.Decimal(18, 8)
+  currentCost     Decimal   @default(0) @map("current_cost") @db.Decimal(18, 4)
+  deletedAt       DateTime? @map("deleted_at")
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  account        Account        @relation(fields: [accountId], references: [id])
+  journalEntries JournalEntry[]
+
+  @@map("holdings")
+}
+
+// =============================================================================
 // JOURNAL ENTRIES
 // =============================================================================
 // The immutable core of double-entry accounting.
@@ -461,9 +471,11 @@ model JournalEntry {
   type          JournalEntryType
   amount        Decimal          @db.Decimal(18, 4)
 
-  // Commodity-only fields — null for regular (non-commodity) accounts
+  // Commodity-only fields — null for regular (non-commodity) accounts.
+  // Invariant: holdingId and quantity are always both null or both non-null.
   // unit_price is NOT stored — derived at query time: unit_price = amount / quantity
   quantity      Decimal?         @db.Decimal(18, 8) // units bought/sold
+  holdingId     String?          @map("holding_id")
 
   // Write-once — no updatedAt (immutable table)
   createdAt     DateTime         @default(now()) @map("created_at")
@@ -471,6 +483,7 @@ model JournalEntry {
   // Relations
   transaction Transaction @relation(fields: [transactionId], references: [id])
   account     Account     @relation(fields: [accountId], references: [id])
+  holding     Holding?    @relation(fields: [holdingId], references: [id])
 
   @@map("journal_entries")
 }
