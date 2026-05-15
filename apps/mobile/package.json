@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@repo/shared": "workspace:*",
     "@tanstack/react-query": "^5.100.10",
     "axios": "^1.16.0",
     "expo": "~54.0.33",
