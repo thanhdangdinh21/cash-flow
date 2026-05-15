@@ -37,7 +37,6 @@ interface AccountData {
 interface HoldingForm {
   name: string;
   unitName: string;
-  quantity: string;
 }
 
 interface AccountForm {
@@ -159,7 +158,7 @@ export default function AccountsScreen() {
   function addHoldingRow() {
     setForm((f) => ({
       ...f,
-      holdings: [...f.holdings, { name: '', unitName: '', quantity: '0' }],
+      holdings: [...f.holdings, { name: '', unitName: '' }],
     }));
   }
 
@@ -382,17 +381,6 @@ export default function AccountsScreen() {
                         value={h.unitName}
                         onChangeText={(v) => updateHolding(idx, 'unitName', v)}
                         placeholder="e.g. shares"
-                        placeholderTextColor="#94a3b8"
-                        className="text-slate-900 text-base"
-                      />
-                    </View>
-                    <View className="px-4 py-3 border-b border-slate-100">
-                      <Text className="text-xs font-medium text-slate-500 mb-1">QUANTITY</Text>
-                      <TextInput
-                        value={h.quantity}
-                        onChangeText={(v) => updateHolding(idx, 'quantity', v)}
-                        keyboardType="numeric"
-                        placeholder="0"
                         placeholderTextColor="#94a3b8"
                         className="text-slate-900 text-base"
                       />
