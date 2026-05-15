@@ -1,0 +1,26 @@
+import { useEffect, useState } from "react";
+import { View, ActivityIndicator } from "react-native";
+import { Stack, useRouter } from "expo-router";
+import { TOKEN } from "@/lib/api";
+
+export default function AppLayout() {
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    TOKEN.get().then((token) => {
+      if (!token) router.replace("/(auth)/login");
+      else setChecking(false);
+    });
+  }, [router]);
+
+  if (checking) {
+    return (
+      <View className="flex-1 items-center justify-center bg-slate-50">
+        <ActivityIndicator size="large" color="#0f172a" />
+      </View>
+    );
+  }
+
+  return <Stack screenOptions={{ headerShown: false }} />;
+}

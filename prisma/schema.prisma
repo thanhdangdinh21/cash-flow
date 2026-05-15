@@ -1,0 +1,555 @@
+// =============================================================================
+// MONEY FLOW APP — PRISMA SCHEMA (v3 — final)
+// =============================================================================
+// Changes from v1:
+//   [1] Account comment corrected: 3 default accounts seeded (not 5)
+//   [2] is_active NOT added to Category — soft delete (deleted_at) handles
+//       both default and custom categories uniformly
+//   [3] currencyCode removed from Transaction — derived from debitAccount
+//   [4] Currency relation removed from Transaction accordingly
+//   [5] updatedAt removed from JournalEntry — immutable table, write-once
+//   [6] SnapshotPeriod: added WEEKLY for weekly report granularity
+//   [7] NetWorthSnapshot table added for net worth over time reports
+//
+// Changes from v2:
+//   [8] CategorySnapshot table added — sparse strategy (write only when
+//       transactions exist in that period, not for every category every day)
+//   [9] Category + User relations updated to include CategorySnapshot
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  INCOME
+  EXPENSE
+  EQUITY
+}
+
+// Roles on a shared account:
+// - OWNER  → full control, can delete account, manage members
+// - ADMIN  → can edit transactions, invite members
+// - EDITOR → can create/edit transactions, cannot manage members
+// - VIEWER → read-only access
+enum AccountRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+// Double-entry: every transaction produces exactly one DEBIT and one CREDIT.
+// Invariant: SUM(all DEBIT amounts) = SUM(all CREDIT amounts) at all times.
+enum JournalEntryType {
+  DEBIT
+  CREDIT
+}
+
+// Snapshot granularity for report charts.
+// WEEKLY added to support weekly report views without approximating from DAILY.
+enum SnapshotPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+// =============================================================================
+// USERS
+// =============================================================================
+// Single table for auth + profile + preferences.
+// Rationale: simpler queries, no joins for basic user info.
+// Easy to split later via migration if the table grows too wide.
+// -----------------------------------------------------------------------------
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  passwordHash    String   @map("password_hash")
+
+  // Profile
+  name            String
+  avatarUrl       String?  @map("avatar_url")
+
+  // Preferences
+  language        String   @default("en")
+  theme           String   @default("system") // "light" | "dark" | "system"
+  notificationsOn Boolean  @default(true) @map("notifications_on")
+
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  ownedAccounts     Account[]          @relation("AccountOwner")
+  accountMembers    AccountUser[]
+  categories        Category[]
+  transactions      Transaction[]
+  netWorthSnapshots NetWorthSnapshot[]
+  categorySnapshots CategorySnapshot[]
+
+  @@map("users")
+}
+
+// =============================================================================
+// CURRENCIES
+// =============================================================================
+// Simple ISO currency reference list. No rate_to_base — multi-currency
+// conversion is deferred to v4. Currencies table is a lookup only.
+//
+// Users pick a currency when creating an account.
+// Currency cannot be changed after account creation.
+// -----------------------------------------------------------------------------
+
+model Currency {
+  code   String @id // "USD", "VND", "XAU" (gold)
+  name   String     // "US Dollar", "Vietnamese Dong"
+  symbol String     // "$", "₫"
+
+  // Relations
+  accounts Account[]
+
+  @@map("currencies")
+}
+
+// =============================================================================
+// ACCOUNTS
+// =============================================================================
+// Represents a financial account (e.g. "Cash wallet", "Vietcombank", "Gold").
+//
+// Seeding at signup — 3 default accounts always created:
+//   1. Cash wallet    (ASSET)   — most universal starting account
+//   2. General income (INCOME)  — needed to record any money coming in
+//   3. General expense(EXPENSE) — needed to record any spending
+// LIABILITY and EQUITY are skipped at signup — users add them when needed.
+//
+// Commodity accounts (is_commodity = true):
+//   User enables this at account creation for physical/digital assets
+//   (gold, crypto, property). Cannot be changed after creation.
+//   Journal entries on commodity accounts store quantity + unit_price.
+//   unit_name is REQUIRED when is_commodity = true (enforced in DTO layer).
+//
+// current_balance:
+//   Running balance updated atomically with each transaction.
+//   Avoids recalculating from all journal entries on every load.
+//   Balance formula differs by account type — see notes at bottom of file.
+// -----------------------------------------------------------------------------
+
+model Account {
+  id             String      @id @default(uuid())
+  ownerId        String      @map("owner_id")
+  name           String
+  type           AccountType
+  currencyCode   String      @map("currency_code")
+
+  // Balance tracking
+  initialBalance Decimal     @default(0) @map("initial_balance") @db.Decimal(18, 4)
+  currentBalance Decimal     @default(0) @map("current_balance") @db.Decimal(18, 4)
+
+  // Commodity asset tracking
+  // When is_commodity = true, journal entries also store quantity + unit_price.
+  // unit_name is required when is_commodity = true — enforced in CreateAccountDto.
+  isCommodity    Boolean     @default(false) @map("is_commodity")
+  unitName       String?     @map("unit_name") // e.g. "gram", "BTC", "oz"
+
+  isActive       Boolean     @default(true) @map("is_active")
+  isDefault      Boolean     @default(false) @map("is_default") // true = seeded at signup
+  deletedAt      DateTime?   @map("deleted_at") // soft delete — never hard delete
+
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  owner              User              @relation("AccountOwner", fields: [ownerId], references: [id])
+  currency           Currency          @relation(fields: [currencyCode], references: [code])
+  members            AccountUser[]
+  snapshots          AccountSnapshot[]
+  journalEntries     JournalEntry[]
+  debitTransactions  Transaction[]     @relation("DebitAccount")
+  creditTransactions Transaction[]     @relation("CreditAccount")
+
+  @@map("accounts")
+}
+
+// =============================================================================
+// ACCOUNT USERS (join table — shared accounts)
+// =============================================================================
+// Enables sharing an account between multiple users with role-based access.
+// The account owner is always seeded here with role OWNER at account creation.
+// Composite unique constraint prevents duplicate user+account rows.
+// -----------------------------------------------------------------------------
+
+model AccountUser {
+  id        String      @id @default(uuid())
+  accountId String      @map("account_id")
+  userId    String      @map("user_id")
+  role      AccountRole @default(VIEWER)
+  joinedAt  DateTime    @default(now()) @map("joined_at")
+
+  // Relations
+  account Account @relation(fields: [accountId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  // One row per user per account — prevents duplicate role entries
+  @@unique([accountId, userId])
+  @@map("account_users")
+}
+
+// =============================================================================
+// ACCOUNT SNAPSHOTS
+// =============================================================================
+// Periodic balance snapshots for report charts (daily, weekly, monthly).
+// Avoids recalculating balances from all journal entries on every report load.
+//
+// For commodity accounts: also stores total_quantity and total_cost.
+// Service-layer guard: assert total_quantity + total_cost are non-null
+// before writing a snapshot for any account where is_commodity = true.
+//
+// How the snapshot job works:
+//   For each period end (day/week/month):
+//     For each account:
+//       → read current_balance (already up to date from transactions)
+//       → write one AccountSnapshot row
+//     For each user:
+//       → sum ASSET balances - LIABILITY balances
+//       → write one NetWorthSnapshot row
+//
+// The unique constraint on (account_id, period_type, period_date) also
+// acts as the composite index for report queries — no separate index needed.
+// -----------------------------------------------------------------------------
+
+model AccountSnapshot {
+  id            String         @id @default(uuid())
+  accountId     String         @map("account_id")
+
+  balance       Decimal        @db.Decimal(18, 4)
+
+  // Commodity-only fields — null for non-commodity accounts
+  totalQuantity Decimal?       @map("total_quantity") @db.Decimal(18, 8)
+  totalCost     Decimal?       @map("total_cost") @db.Decimal(18, 4)
+
+  periodType    SnapshotPeriod @map("period_type")
+  periodDate    DateTime       @map("period_date") // the day/week/month this snapshot represents
+
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  // Relations
+  account Account @relation(fields: [accountId], references: [id])
+
+  // One snapshot per account per period type per date
+  @@unique([accountId, periodType, periodDate])
+  @@map("account_snapshots")
+}
+
+// =============================================================================
+// NET WORTH SNAPSHOTS
+// =============================================================================
+// Pre-computed net worth per user per period for the net worth over time chart.
+// Net worth = SUM(all ASSET account balances) - SUM(all LIABILITY balances).
+//
+// Without this table, the net worth chart would need to aggregate ALL account
+// snapshots for ALL of a user's accounts on every page load — the most
+// expensive query in the app. This table reduces it to a single lookup.
+//
+// Populated by the same background job that writes AccountSnapshot rows.
+// For shared accounts: only the owner's accounts count toward their net worth.
+// -----------------------------------------------------------------------------
+
+model NetWorthSnapshot {
+  id         String         @id @default(uuid())
+  userId     String         @map("user_id")
+  netWorth   Decimal        @map("net_worth") @db.Decimal(18, 4)
+  periodType SnapshotPeriod @map("period_type")
+  periodDate DateTime       @map("period_date")
+  createdAt  DateTime       @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  // One net worth snapshot per user per period type per date
+  @@unique([userId, periodType, periodDate])
+  @@map("net_worth_snapshots")
+}
+
+// =============================================================================
+// DEFAULT CATEGORIES (seed data — read only, never modified by users)
+// =============================================================================
+// Master list of categories copied into every new user's account at signup.
+// Kept separate from user Category rows so:
+//   - Defaults can be updated globally without touching user data
+//   - User copies are fully independent — edit/delete freely
+//
+// Sorted alphabetically by name at query time — no sort_order field needed.
+// -----------------------------------------------------------------------------
+
+model DefaultCategory {
+  id          String      @id @default(uuid())
+  name        String
+  icon        String
+  accountType AccountType @map("account_type")
+
+  // Relations
+  subCategories DefaultSubCategory[]
+
+  @@map("default_categories")
+}
+
+model DefaultSubCategory {
+  id                String @id @default(uuid())
+  defaultCategoryId String @map("default_category_id")
+  name              String
+
+  // Relations
+  defaultCategory DefaultCategory @relation(fields: [defaultCategoryId], references: [id])
+
+  @@map("default_sub_categories")
+}
+
+// =============================================================================
+// CATEGORIES
+// =============================================================================
+// User-owned categories. Copied from DefaultCategory at signup, plus any
+// custom ones the user creates afterward.
+//
+// account_type rules:
+//   - Default categories: account_type set to specific type (e.g. EXPENSE)
+//   - Custom categories:  account_type null = usable with any account type
+//                         OR set to restrict to one type
+//
+// Soft delete applies to both default and custom categories uniformly.
+// Deleting a default category sets deleted_at — same as a custom category.
+// Historical transactions referencing a deleted category are unaffected.
+// Sorted alphabetically by name in all queries.
+// -----------------------------------------------------------------------------
+
+model Category {
+  id          String       @id @default(uuid())
+  userId      String       @map("user_id")
+  name        String
+  icon        String
+  accountType AccountType? @map("account_type") // null = any account type
+  isDefault   Boolean      @default(false) @map("is_default")
+
+  deletedAt   DateTime?    @map("deleted_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  user              User               @relation(fields: [userId], references: [id])
+  subCategories     SubCategory[]
+  categorySnapshots CategorySnapshot[]
+
+  @@map("categories")
+}
+
+model SubCategory {
+  id         String    @id @default(uuid())
+  categoryId String    @map("category_id")
+  name       String
+  isDefault  Boolean   @default(false) @map("is_default")
+
+  deletedAt  DateTime? @map("deleted_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  category     Category      @relation(fields: [categoryId], references: [id])
+  transactions Transaction[]
+
+  @@map("sub_categories")
+}
+
+// =============================================================================
+// TRANSACTIONS
+// =============================================================================
+// Records a financial event between exactly two accounts (double-entry).
+// Every transaction atomically produces 2 JournalEntry rows:
+//   one DEBIT on debit_account, one CREDIT on credit_account.
+//
+// Example — buying groceries with cash:
+//   debit_account  → Expense / Food      (expense balance increases)
+//   credit_account → Asset  / Cash       (asset balance decreases)
+//
+// Currency: NOT stored on transactions. Derived from debitAccount.currencyCode.
+//   In v1, both debit and credit accounts must share the same currency.
+//   This is enforced in CreateTransactionUseCase, not the schema.
+//
+// Service-layer guards in CreateTransactionUseCase (not schema constraints):
+//   1. debitAccount.ownerId  === userId  → ForbiddenException
+//   2. creditAccount.ownerId === userId  → ForbiddenException
+//   3. debitAccountId !== creditAccountId → BadRequestException
+//   4. debitAccount.currencyCode === creditAccount.currencyCode → BadRequestException
+//
+// FK hooks for future features (nullable — not built yet):
+//   contact_id        → v2: lender/borrower tracking
+//   recurring_rule_id → v3: recurring transaction rules
+// -----------------------------------------------------------------------------
+
+model Transaction {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+
+  // The two accounts involved — both required, must be different
+  debitAccountId  String   @map("debit_account_id")
+  creditAccountId String   @map("credit_account_id")
+
+  // Categorization — nullable: user can save now, categorize later
+  subCategoryId   String?  @map("sub_category_id")
+
+  // Description fields
+  description     String?  // short label e.g. "Lunch at Pho 24"
+  notes           String?  // longer free-text notes
+
+  // Amount in the account's currency (no conversion in v1)
+  amount          Decimal  @db.Decimal(18, 4)
+
+  date            DateTime // the actual date of the transaction (user-provided)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // FK hooks for future features — nullable, features not built yet
+  contactId       String?  @map("contact_id")        // v2: lender/borrower
+  recurringRuleId String?  @map("recurring_rule_id") // v3: recurring rules
+
+  // Relations
+  user           User           @relation(fields: [userId], references: [id])
+  debitAccount   Account        @relation("DebitAccount", fields: [debitAccountId], references: [id])
+  creditAccount  Account        @relation("CreditAccount", fields: [creditAccountId], references: [id])
+  subCategory    SubCategory?   @relation(fields: [subCategoryId], references: [id])
+  journalEntries JournalEntry[]
+
+  @@map("transactions")
+}
+
+// =============================================================================
+// JOURNAL ENTRIES
+// =============================================================================
+// The immutable core of double-entry accounting.
+// Every transaction produces exactly 2 rows: one DEBIT, one CREDIT.
+//
+// Invariant enforced by the application:
+//   SUM(amount WHERE type = DEBIT) = SUM(amount WHERE type = CREDIT)
+//
+// IMMUTABILITY RULE:
+//   Journal entries are NEVER updated or deleted after creation.
+//   To reverse a transaction, create a new counter-transaction.
+//   This preserves the full audit trail — standard accounting practice.
+//   updatedAt is intentionally absent — this table is write-once.
+//
+// Commodity fields (quantity):
+//   Only populated when account.is_commodity = true.
+//   Example — buying 5g of gold for $300:
+//     amount   = 300.0000    (total cost)
+//     quantity = 5.00000000  (grams purchased)
+//     unit_price NOT stored — computed at query time: amount / quantity = $60/g
+//   Enables: total quantity owned, average cost = total_cost / total_quantity.
+// -----------------------------------------------------------------------------
+
+model JournalEntry {
+  id            String           @id @default(uuid())
+  transactionId String           @map("transaction_id")
+  accountId     String           @map("account_id")
+  type          JournalEntryType
+  amount        Decimal          @db.Decimal(18, 4)
+
+  // Commodity-only fields — null for regular (non-commodity) accounts
+  // unit_price is NOT stored — derived at query time: unit_price = amount / quantity
+  quantity      Decimal?         @db.Decimal(18, 8) // units bought/sold
+
+  // Write-once — no updatedAt (immutable table)
+  createdAt     DateTime         @default(now()) @map("created_at")
+
+  // Relations
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+  account     Account     @relation(fields: [accountId], references: [id])
+
+  @@map("journal_entries")
+}
+
+// =============================================================================
+// CATEGORY SNAPSHOTS
+// =============================================================================
+// Pre-aggregated category totals per period for trend charts and breakdowns.
+// Enables fast rendering of:
+//   - Spending breakdown by category per period (pie/bar chart)
+//   - Income breakdown by category per period (pie/bar chart)
+//   - Category trend over time (line chart — most expensive without this)
+//
+// SPARSE STRATEGY — only write rows when transactions actually exist:
+//   The snapshot job aggregates journal_entries for the period, groups by
+//   category_id, and writes one row per category that had activity.
+//   Categories with no transactions in a period get NO row — not a zero row.
+//   The chart layer fills missing periods with 0 at render time.
+//
+// Why sparse and not dense (write every category every period)?
+//   A user with 20 categories × 2 entry types × 3 period types = 120 rows/day
+//   dense. But only 3-5 categories are used daily → ~90 rows/day are wasted
+//   zeros. Sparse keeps the table lean: ~10-15 rows/day vs 120, a 10x reduction.
+//   At 100 users over 3 years: ~1.2M rows sparse vs ~13M rows dense.
+//
+// entryType = DEBIT  → spending  (e.g. Food expense)
+// entryType = CREDIT → income    (e.g. Salary income)
+// Stored separately so reports can filter cleanly without runtime arithmetic.
+//
+// Chart layer gap-filling pattern (TypeScript):
+//   const filled = allPeriods.map(period => ({
+//     period,
+//     totalAmount: snapshots.find(s => s.periodDate === period)?.totalAmount ?? 0
+//   }));
+// -----------------------------------------------------------------------------
+
+model CategorySnapshot {
+  id          String           @id @default(uuid())
+  categoryId  String           @map("category_id")
+  userId      String           @map("user_id")
+
+  totalAmount Decimal          @map("total_amount") @db.Decimal(18, 4)
+  entryType   JournalEntryType @map("entry_type") // DEBIT = spending, CREDIT = income
+
+  periodType  SnapshotPeriod   @map("period_type")
+  periodDate  DateTime         @map("period_date")
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  // Relations
+  category Category @relation(fields: [categoryId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  // One row per category per user per entry type per period
+  @@unique([categoryId, userId, entryType, periodType, periodDate])
+  @@map("category_snapshots")
+}
+
+// =============================================================================
+// BALANCE CALCULATION REFERENCE
+// =============================================================================
+// Account types have a "normal balance side" in double-entry accounting.
+// This determines whether DEBIT or CREDIT increases the account balance.
+//
+//   ASSET    → normal balance = DEBIT  → balance + debit - credit
+//   EXPENSE  → normal balance = DEBIT  → balance + debit - credit
+//   LIABILITY→ normal balance = CREDIT → balance - debit + credit
+//   INCOME   → normal balance = CREDIT → balance - debit + credit
+//   EQUITY   → normal balance = CREDIT → balance - debit + credit
+//
+// current_balance is updated inside prisma.$transaction() alongside journal
+// entry creation — atomically, so they can never get out of sync.
+//
+// NET WORTH CALCULATION (for NetWorthSnapshot):
+//   net_worth = SUM(current_balance WHERE type IN [ASSET])
+//             - SUM(current_balance WHERE type IN [LIABILITY])
+//
+// REPORT TABLE SUMMARY:
+//   account_snapshots   → account balance over time, commodity holdings
+//   net_worth_snapshots → net worth over time (pre-computed, fast)
+//   category_snapshots  → spending/income by category, trends over time (sparse)
+//   transactions        → transaction list with filters (direct query)
+// =============================================================================
