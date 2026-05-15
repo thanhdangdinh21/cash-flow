@@ -13,7 +13,7 @@ export default function DashboardScreen() {
   return (
     <View className="flex-1 items-center justify-center bg-slate-50 px-6">
       <Text className="text-3xl font-bold text-slate-900 mb-2">Dashboard</Text>
-      <Text className="text-slate-500 mb-8">Coming soon — Phase 2</Text>
+      <Text className="text-slate-500 mb-8">Coming soon — Phase 3</Text>
       <TouchableOpacity
         onPress={handleLogout}
         className="border border-slate-200 rounded-lg px-6 py-3 bg-white"
