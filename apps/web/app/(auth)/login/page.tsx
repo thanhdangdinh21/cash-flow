@@ -6,12 +6,14 @@ import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { authStore } from "@/lib/auth";
+import { i18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface LoginResponse {
   accessToken: string;
+  language: string;
 }
 
 export default function LoginPage() {
@@ -22,8 +24,9 @@ export default function LoginPage() {
   const mutation = useMutation({
     mutationFn: (data: typeof form) =>
       api.post<LoginResponse>("/auth/login", data).then((r) => r.data),
-    onSuccess: ({ accessToken }) => {
+    onSuccess: ({ accessToken, language }) => {
       authStore.setToken(accessToken);
+      i18n.changeLanguage(language);
       router.push("/dashboard");
     },
     onError: (err: any) => {
