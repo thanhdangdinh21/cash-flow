@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
+import type { AxiosError } from "axios";
 import { api } from "@/lib/api";
 import { authStore } from "@/lib/auth";
 import { i18n } from "@/lib/i18n";
@@ -29,7 +30,7 @@ export default function LoginPage() {
       i18n.changeLanguage(language);
       router.push("/dashboard");
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       setError(err.response?.data?.message ?? "Something went wrong");
     },
   });

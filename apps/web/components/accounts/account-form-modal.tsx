@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { AxiosError } from "axios";
 import { api } from "@/lib/api";
 import { CURRENCIES } from "@repo/shared/currencies";
 import { Button } from "@/components/ui/button";
@@ -116,7 +117,7 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
       onClose();
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       setError(err.response?.data?.message ?? "Something went wrong");
     },
   });
@@ -128,7 +129,7 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
       onClose();
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       setError(err.response?.data?.message ?? "Something went wrong");
     },
   });
