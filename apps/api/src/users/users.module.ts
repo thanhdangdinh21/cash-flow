@@ -1,9 +1,15 @@
 import { Module } from '@nestjs/common';
 import { USER_REPOSITORY } from './domain/user.repository.interface';
 import { UserRepository } from './infrastructure/user.repository';
+import { UpdateUserUseCase } from './application/use-cases/update-user.use-case';
+import { UsersController } from './presentation/users.controller';
 
 @Module({
-  providers: [{ provide: USER_REPOSITORY, useClass: UserRepository }],
+  controllers: [UsersController],
+  providers: [
+    { provide: USER_REPOSITORY, useClass: UserRepository },
+    UpdateUserUseCase,
+  ],
   exports: [USER_REPOSITORY],
 })
 export class UsersModule {}

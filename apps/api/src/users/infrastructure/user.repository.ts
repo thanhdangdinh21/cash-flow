@@ -18,4 +18,8 @@ export class UserRepository implements IUserRepository {
   create(data: CreateUserData): Promise<UserEntity> {
     return this.prisma.user.create({ data });
   }
+
+  update(id: string, data: Partial<Pick<UserEntity, 'language'>>): Promise<UserEntity> {
+    return this.prisma.user.update({ where: { id }, data });
+  }
 }
