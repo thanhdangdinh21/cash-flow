@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./currencies": "./src/currencies.ts"
+    "./currencies": "./src/currencies.ts",
+    "./i18n": "./src/i18n.ts"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
