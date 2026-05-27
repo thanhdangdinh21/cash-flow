@@ -27,6 +27,9 @@ export class RegisterUseCase {
 
     await this.seedAccounts.execute(user.id);
 
-    return { accessToken: this.jwt.sign({ sub: user.id, email: user.email }) };
+    return {
+      accessToken: this.jwt.sign({ sub: user.id, email: user.email }),
+      language: user.language,
+    };
   }
 }

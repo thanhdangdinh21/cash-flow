@@ -19,6 +19,9 @@ export class LoginUseCase {
     const valid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 
-    return { accessToken: this.jwt.sign({ sub: user.id, email: user.email }) };
+    return {
+      accessToken: this.jwt.sign({ sub: user.id, email: user.email }),
+      language: user.language,
+    };
   }
 }
