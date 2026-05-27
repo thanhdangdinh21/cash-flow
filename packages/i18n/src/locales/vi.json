@@ -1,0 +1,43 @@
+{
+  "common": {
+    "loading": "Đang tải…",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "signOut": "Đăng xuất",
+    "error": "Đã xảy ra lỗi"
+  },
+  "auth": {
+    "login": {
+      "title": "Chào mừng trở lại",
+      "subtitle": "Đăng nhập vào tài khoản của bạn",
+      "email": "Email",
+      "password": "Mật khẩu",
+      "submit": "Đăng nhập",
+      "submitting": "Đang đăng nhập…",
+      "noAccount": "Chưa có tài khoản?",
+      "register": "Tạo tài khoản"
+    },
+    "register": {
+      "title": "Tạo tài khoản",
+      "subtitle": "Bắt đầu theo dõi dòng tiền của bạn",
+      "name": "Tên",
+      "email": "Email",
+      "password": "Mật khẩu",
+      "passwordHint": "Tối thiểu 8 ký tự",
+      "submit": "Tạo tài khoản",
+      "submitting": "Đang tạo tài khoản…",
+      "hasAccount": "Đã có tài khoản?",
+      "login": "Đăng nhập"
+    }
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "language": "Ngôn ngữ",
+    "languageLabel": "Ngôn ngữ ứng dụng"
+  },
+  "nav": {
+    "dashboard": "Tổng quan",
+    "accounts": "Tài khoản",
+    "settings": "Cài đặt"
+  }
+}
