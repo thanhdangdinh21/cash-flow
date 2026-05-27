@@ -11,9 +11,11 @@ import {
 import { Link, useRouter } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { api, TOKEN } from "@/lib/api";
+import { getI18n } from "@/lib/i18n";
 
 interface LoginResponse {
   accessToken: string;
+  language: string;
 }
 
 export default function LoginScreen() {
@@ -24,8 +26,9 @@ export default function LoginScreen() {
   const mutation = useMutation({
     mutationFn: (data: typeof form) =>
       api.post<LoginResponse>("/auth/login", data).then((r) => r.data),
-    onSuccess: async ({ accessToken }) => {
+    onSuccess: async ({ accessToken, language }) => {
       await TOKEN.set(accessToken);
+      await getI18n().changeLanguage(language);
       router.replace("/(app)");
     },
     onError: (err: any) => {
