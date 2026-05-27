@@ -6,6 +6,7 @@ import './types';
 
 export type { Locale } from '@repo/shared/i18n';
 export { supportedLocales, defaultLocale } from '@repo/shared/i18n';
+import type { Locale } from '@repo/shared/i18n';
 
 export interface I18nStorage {
   getItem(key: string): Promise<string | null>;

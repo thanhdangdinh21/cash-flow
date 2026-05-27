@@ -19,6 +19,11 @@
   "engines": {
     "node": ">=18"
   },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.2.2"
+    }
+  },
   "dependencies": {
     "@prisma/client": "^7.8.0"
   }
