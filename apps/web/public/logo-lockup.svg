@@ -1,0 +1,7 @@
+<svg width="220" height="40" viewBox="0 0 220 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Money Flow">
+  <g>
+    <path d="M5 24.5 Q 12.5 12.5 20 18.5 T 35 12.5" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" fill="none"></path>
+    <path d="M5 31.5 Q 12.5 19.5 20 25.5 T 35 19.5" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" fill="none" opacity="0.45"></path>
+  </g>
+  <text x="50" y="28" font-family="&#39;Hanken Grotesk&#39;, system-ui, sans-serif" font-size="24" font-weight="700" letter-spacing="-0.5" fill="currentColor">Money<tspan font-weight="400"> Flow</tspan></text>
+</svg>

@@ -1,20 +1,24 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 export default function TabsLayout() {
+  const { t } = useTranslation();
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#0f172a',
-        tabBarInactiveTintColor: '#94a3b8',
-        tabBarStyle: { backgroundColor: '#ffffff', borderTopColor: '#e2e8f0' },
+        tabBarActiveTintColor: '#181712',
+        tabBarInactiveTintColor: '#8C897D',
+        tabBarStyle: { backgroundColor: '#FFFFFF', borderTopColor: '#E8E5DD' },
+        tabBarLabelStyle: { fontFamily: 'HankenGrotesk_600SemiBold', fontSize: 11 },
         headerShown: false,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Dashboard',
+          title: t('nav.dashboard'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid-outline" size={size} color={color} />
           ),
@@ -23,7 +27,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="accounts"
         options={{
-          title: 'Accounts',
+          title: t('nav.accounts'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="wallet-outline" size={size} color={color} />
           ),
@@ -32,7 +36,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: t('nav.settings'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="settings-outline" size={size} color={color} />
           ),

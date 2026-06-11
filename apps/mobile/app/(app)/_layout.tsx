@@ -16,8 +16,8 @@ export default function AppLayout() {
 
   if (checking) {
     return (
-      <View className="flex-1 items-center justify-center bg-slate-50">
-        <ActivityIndicator size="large" color="#0f172a" />
+      <View className="flex-1 items-center justify-center bg-paper">
+        <ActivityIndicator size="large" color="#181712" />
       </View>
     );
   }

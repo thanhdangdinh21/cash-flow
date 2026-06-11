@@ -1,24 +1,216 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Money Flow — design tokens
+   Premium, minimal, monochrome-led. Money in = green,
+   money out = clay. Warm paper + ink, hairline borders.
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  /* ---- Base neutrals (warm) ---- */
+  --paper:          #FAF9F6;
+  --paper-2:        #F2F0EA;
+  --surface:        #FFFFFF;
+  --surface-2:      #FBFAF7;
+  --ink:            #181712;
+  --ink-2:          #59574E;
+  --ink-3:          #8C897D;
+  --ink-4:          #B6B2A6;
+  --line:           #E8E5DD;
+  --line-2:         #D8D4C8;
+  --line-strong:    #C4BFB1;
+
+  /* ---- Brand ---- */
+  --brand:          #181712;
+  --brand-contrast: #FAF9F6;
+
+  /* ---- Semantic: money + status ---- */
+  --positive:       #1A7A50;
+  --positive-2:     #14633F;
+  --positive-soft:  #E4F1E9;
+  --negative:       #BE4A30;
+  --negative-2:     #9C3A24;
+  --negative-soft:  #F8E8E2;
+  --warning:        #B07A1E;
+  --warning-soft:   #F6ECD6;
+  --info:           #2C5E8A;
+  --info-soft:      #E2ECF4;
+
+  --accent:         #1A7A50;
+  --accent-soft:    #E4F1E9;
+
+  /* ---- Interaction state layers ---- */
+  --overlay:        rgba(24, 23, 18, 0.45);
+  --hover-ink:      rgba(24, 23, 18, 0.05);
+  --press-ink:      rgba(24, 23, 18, 0.10);
+  --focus-ring:     rgba(26, 122, 80, 0.40);
+
+  --action-primary-bg:        var(--ink);
+  --action-primary-fg:        var(--paper);
+  --action-primary-hover:     #2A281F;
+  --action-primary-press:     #050402;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --foreground: #f8fafc;
+/* Dark theme — warm near-black, not blue-black. */
+[data-theme="dark"] {
+  --paper:          #0A0907;
+  --paper-2:        #050504;
+  --surface:        #151410;
+  --surface-2:      #1B1914;
+  --ink:            #F4F2EC;
+  --ink-2:          #ADA99D;
+  --ink-3:          #807C70;
+  --ink-4:          #56534A;
+  --line:           #242219;
+  --line-2:         #302D23;
+  --line-strong:    #423E32;
+
+  --brand:          #F3F1EA;
+  --brand-contrast: #181712;
+
+  --positive:       #4FC68C;
+  --positive-2:     #6FD7A3;
+  --positive-soft:  #14291F;
+  --negative:       #E68565;
+  --negative-2:     #EF9B7F;
+  --negative-soft:  #2E1B14;
+  --warning:        #E0B45C;
+  --warning-soft:   #2C2413;
+  --info:           #74A9D8;
+  --info-soft:      #16222E;
+
+  --accent:         #4FC68C;
+  --accent-soft:    #14291F;
+
+  --overlay:        rgba(0, 0, 0, 0.6);
+  --hover-ink:      rgba(243, 241, 234, 0.06);
+  --press-ink:      rgba(243, 241, 234, 0.12);
+  --focus-ring:     rgba(79, 198, 140, 0.45);
+
+  --action-primary-bg:        var(--ink);
+  --action-primary-fg:        #131210;
+  --action-primary-hover:     #E2DFD4;
+  --action-primary-press:     #FFFFFF;
+}
+
+@theme inline {
+  /* Families come from next/font (see layout.tsx) */
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-spline-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* ---- Colors ---- */
+  --color-paper:          var(--paper);
+  --color-paper-2:        var(--paper-2);
+  --color-surface:        var(--surface);
+  --color-surface-2:      var(--surface-2);
+  --color-ink:            var(--ink);
+  --color-ink-2:          var(--ink-2);
+  --color-ink-3:          var(--ink-3);
+  --color-ink-4:          var(--ink-4);
+  --color-line:           var(--line);
+  --color-line-2:         var(--line-2);
+  --color-line-strong:    var(--line-strong);
+  --color-brand:          var(--brand);
+  --color-brand-contrast: var(--brand-contrast);
+  --color-positive:       var(--positive);
+  --color-positive-2:     var(--positive-2);
+  --color-positive-soft:  var(--positive-soft);
+  --color-negative:       var(--negative);
+  --color-negative-2:     var(--negative-2);
+  --color-negative-soft:  var(--negative-soft);
+  --color-warning:        var(--warning);
+  --color-warning-soft:   var(--warning-soft);
+  --color-info:           var(--info);
+  --color-info-soft:      var(--info-soft);
+  --color-accent:         var(--accent);
+  --color-accent-soft:    var(--accent-soft);
+  --color-overlay:        var(--overlay);
+  --color-hover-ink:      var(--hover-ink);
+  --color-press-ink:      var(--press-ink);
+  --color-focus-ring:     var(--focus-ring);
+  --color-action-primary:       var(--action-primary-bg);
+  --color-action-primary-fg:    var(--action-primary-fg);
+  --color-action-primary-hover: var(--action-primary-hover);
+  --color-action-primary-press: var(--action-primary-press);
+
+  /* ---- Corner radii (soft, generous) ---- */
+  --radius-xs:  6px;
+  --radius-sm:  10px;
+  --radius-md:  14px;   /* default control radius */
+  --radius-lg:  20px;   /* cards */
+  --radius-xl:  28px;   /* sheets, large cards */
+  --radius-2xl: 36px;
+
+  /* ---- Elevation (soft, warm-tinted) ---- */
+  --shadow-xs: 0 1px 2px rgba(24, 23, 18, 0.04);
+  --shadow-sm: 0 1px 3px rgba(24, 23, 18, 0.05), 0 1px 2px rgba(24, 23, 18, 0.04);
+  --shadow-md: 0 4px 12px rgba(24, 23, 18, 0.06), 0 1px 3px rgba(24, 23, 18, 0.04);
+  --shadow-lg: 0 12px 28px rgba(24, 23, 18, 0.08), 0 2px 6px rgba(24, 23, 18, 0.05);
+  --shadow-xl: 0 24px 56px rgba(24, 23, 18, 0.12), 0 4px 12px rgba(24, 23, 18, 0.06);
+
+  /* ---- Type scale ---- */
+  --text-2xs: 0.6875rem;  /* 11 — micro labels */
+  --text-xs:  0.75rem;    /* 12 */
+  --text-sm:  0.875rem;   /* 14 */
+  --text-md:  1.125rem;   /* 18 */
+  --text-lg:  1.3125rem;  /* 21 */
+  --text-xl:  1.625rem;   /* 26 */
+  --text-2xl: 2rem;       /* 32 */
+  --text-3xl: 2.5rem;     /* 40 */
+  --text-4xl: 3.25rem;    /* 52 */
+  --text-5xl: 4.25rem;    /* 68 — hero balance / display */
+
+  /* ---- Motion ---- */
+  --ease-out:    cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--ink-2);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4 {
+    color: var(--ink);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--ink);
   }
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+/* Eyebrow / overline label — mono, uppercase, wide-tracked */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
+/* Money values — tabular lining figures so columns align */
+@utility amount {
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.015em;
 }

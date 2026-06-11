@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { CURRENCIES } from '@repo/shared/currencies';
 
@@ -86,9 +87,12 @@ function formatBalance(balance: string, currencyCode: string): string {
 
 function HoldingRow({ holding }: { holding: HoldingData }) {
   return (
-    <View className="ml-4 py-2 px-3 border-l border-slate-200 mt-1">
-      <Text className="text-sm text-slate-700">{holding.name}</Text>
-      <Text className="text-xs text-slate-400">
+    <View className="ml-4 py-2 px-3 border-l border-line mt-1">
+      <Text className="font-sans-medium text-sm text-ink-2">{holding.name}</Text>
+      <Text
+        className="font-sans text-xs text-ink-3"
+        style={{ fontVariant: ["tabular-nums"] }}
+      >
         {holding.currentQuantity} {holding.unitName}
       </Text>
     </View>
@@ -99,6 +103,7 @@ function HoldingRow({ holding }: { holding: HoldingData }) {
 
 export default function AccountsScreen() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
   const [form, setForm] = useState<AccountForm>(INITIAL_FORM);
 
@@ -117,7 +122,7 @@ export default function AccountsScreen() {
       setForm(INITIAL_FORM);
     },
     onError: (err: any) => {
-      Alert.alert('Error', err.response?.data?.message ?? 'Failed to create account');
+      Alert.alert(t('common.error'), err.response?.data?.message ?? t('accounts.failedCreate'));
     },
   });
 
@@ -128,18 +133,18 @@ export default function AccountsScreen() {
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
     },
     onError: (err: any) => {
-      Alert.alert('Error', err.response?.data?.message ?? 'Failed to delete account');
+      Alert.alert(t('common.error'), err.response?.data?.message ?? t('accounts.failedDelete'));
     },
   });
 
   function handleLongPress(account: AccountData) {
     Alert.alert(
-      'Delete Account',
-      `Are you sure you want to delete "${account.name}"?`,
+      t('accounts.deleteTitle'),
+      t('accounts.deleteMessage', { name: account.name }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('accounts.form.remove'),
           style: 'destructive',
           onPress: () => deleteMutation.mutate(account.id),
         },
@@ -149,7 +154,7 @@ export default function AccountsScreen() {
 
   function handleSubmit() {
     if (!form.name.trim()) {
-      Alert.alert('Validation', 'Account name is required');
+      Alert.alert(t('common.error'), t('accounts.nameRequired'));
       return;
     }
     createMutation.mutate(form);
@@ -180,26 +185,29 @@ export default function AccountsScreen() {
   const sections = groupByType(accounts);
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <View className="flex-1 bg-paper">
       {/* Header */}
-      <View className="flex-row items-center justify-between px-4 pt-14 pb-4 bg-white border-b border-slate-200">
-        <Text className="text-xl font-bold text-slate-900">Accounts</Text>
+      <View className="flex-row items-center justify-between px-5 pt-14 pb-4 bg-paper border-b border-line">
+        <Text className="font-sans-semibold text-2xl text-ink tracking-tight">
+          {t('accounts.title')}
+        </Text>
         <TouchableOpacity
           onPress={() => setModalVisible(true)}
-          className="w-9 h-9 bg-slate-900 rounded-full items-center justify-center"
+          activeOpacity={0.8}
+          className="w-11 h-11 bg-ink rounded-md items-center justify-center"
         >
-          <Text className="text-white text-xl font-light leading-none">+</Text>
+          <Text className="text-paper text-2xl font-light leading-none">+</Text>
         </TouchableOpacity>
       </View>
 
       {/* List */}
       {isLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#0f172a" />
+          <ActivityIndicator size="large" color="#181712" />
         </View>
       ) : sections.length === 0 ? (
         <View className="flex-1 items-center justify-center">
-          <Text className="text-slate-400 text-base">No accounts yet. Tap + to add one.</Text>
+          <Text className="font-sans text-ink-4 text-base">{t('accounts.noAccountsHint')}</Text>
         </View>
       ) : (
         <SectionList
@@ -207,8 +215,8 @@ export default function AccountsScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingBottom: 32 }}
           renderSectionHeader={({ section }) => (
-            <View className="px-4 py-2 bg-slate-100">
-              <Text className="text-xs font-semibold text-slate-500 tracking-wider">
+            <View className="px-5 py-2 bg-paper-2">
+              <Text className="font-mono-semibold text-2xs uppercase tracking-[1.5px] text-ink-3">
                 {section.title}
               </Text>
             </View>
@@ -217,11 +225,16 @@ export default function AccountsScreen() {
             <TouchableOpacity
               onLongPress={() => handleLongPress(item)}
               activeOpacity={0.7}
-              className="bg-white px-4 py-3 border-b border-slate-100"
+              className="bg-surface px-5 py-3.5 border-b border-line"
             >
               <View className="flex-row items-center justify-between">
-                <Text className="font-semibold text-slate-900 text-base">{item.name}</Text>
-                <Text className="text-sm text-slate-500">
+                <Text className="font-sans-semibold text-ink text-base">{item.name}</Text>
+                <Text
+                  className={`font-sans-semibold text-sm ${
+                    parseFloat(item.currentBalance) < 0 ? 'text-negative' : 'text-ink'
+                  }`}
+                  style={{ fontVariant: ['tabular-nums'] }}
+                >
                   {formatBalance(item.currentBalance, item.currencyCode)}
                 </Text>
               </View>
@@ -244,57 +257,57 @@ export default function AccountsScreen() {
         presentationStyle="pageSheet"
         onRequestClose={() => setModalVisible(false)}
       >
-        <View className="flex-1 bg-slate-50">
+        <View className="flex-1 bg-paper">
           {/* Modal Header */}
-          <View className="flex-row items-center justify-between px-4 pt-12 pb-4 bg-white border-b border-slate-200">
+          <View className="flex-row items-center justify-between px-5 pt-12 pb-4 bg-surface border-b border-line">
             <TouchableOpacity onPress={() => { setModalVisible(false); setForm(INITIAL_FORM); }}>
-              <Text className="text-slate-500 text-base">Cancel</Text>
+              <Text className="font-sans text-ink-3 text-base">{t('common.cancel')}</Text>
             </TouchableOpacity>
-            <Text className="text-base font-semibold text-slate-900">New Account</Text>
+            <Text className="font-sans-semibold text-base text-ink">{t('accounts.form.newTitle')}</Text>
             <TouchableOpacity onPress={handleSubmit} disabled={createMutation.isPending}>
               {createMutation.isPending ? (
-                <ActivityIndicator size="small" color="#0f172a" />
+                <ActivityIndicator size="small" color="#181712" />
               ) : (
-                <Text className="text-slate-900 font-semibold text-base">Save</Text>
+                <Text className="font-sans-semibold text-ink text-base">{t('common.save')}</Text>
               )}
             </TouchableOpacity>
           </View>
 
           <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
-            <View className="mx-4 mt-6 bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <View className="mx-5 mt-6 bg-surface rounded-lg border border-line overflow-hidden">
               {/* Name */}
-              <View className="px-4 py-3 border-b border-slate-100">
-                <Text className="text-xs font-medium text-slate-500 mb-1">NAME</Text>
+              <View className="px-4 py-3 border-b border-line">
+                <Text className="font-mono-semibold text-2xs uppercase tracking-[1.5px] text-ink-3 mb-1">{t('accounts.form.name')}</Text>
                 <TextInput
                   value={form.name}
                   onChangeText={(v) => setForm((f) => ({ ...f, name: v }))}
-                  placeholder="e.g. Checking Account"
-                  placeholderTextColor="#94a3b8"
-                  className="text-slate-900 text-base"
+                  placeholder={t('accounts.form.namePlaceholder')}
+                  placeholderTextColor="#B6B2A6"
+                  className="font-sans text-ink text-base"
                 />
               </View>
 
               {/* Type */}
-              <View className="px-4 py-3 border-b border-slate-100">
-                <Text className="text-xs font-medium text-slate-500 mb-2">TYPE</Text>
+              <View className="px-4 py-3 border-b border-line">
+                <Text className="font-mono-semibold text-2xs uppercase tracking-[1.5px] text-ink-3 mb-2">{t('accounts.form.type')}</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View className="flex-row gap-2">
-                    {ACCOUNT_TYPES.map((t) => (
+                    {ACCOUNT_TYPES.map((type) => (
                       <TouchableOpacity
-                        key={t}
-                        onPress={() => setForm((f) => ({ ...f, type: t, holdings: [] }))}
+                        key={type}
+                        onPress={() => setForm((f) => ({ ...f, type, holdings: [] }))}
                         className={`px-3 py-1.5 rounded-full border ${
-                          form.type === t
-                            ? 'bg-slate-900 border-slate-900'
-                            : 'bg-white border-slate-200'
+                          form.type === type
+                            ? 'bg-ink border-ink'
+                            : 'bg-surface border-line-2'
                         }`}
                       >
                         <Text
-                          className={`text-sm font-medium ${
-                            form.type === t ? 'text-white' : 'text-slate-600'
+                          className={`font-sans-medium text-sm ${
+                            form.type === type ? 'text-paper' : 'text-ink-2'
                           }`}
                         >
-                          {t}
+                          {type}
                         </Text>
                       </TouchableOpacity>
                     ))}
@@ -303,8 +316,8 @@ export default function AccountsScreen() {
               </View>
 
               {/* Currency */}
-              <View className="px-4 py-3 border-b border-slate-100">
-                <Text className="text-xs font-medium text-slate-500 mb-2">CURRENCY</Text>
+              <View className="px-4 py-3 border-b border-line">
+                <Text className="font-mono-semibold text-2xs uppercase tracking-[1.5px] text-ink-3 mb-2">{t('accounts.form.currency')}</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View className="flex-row gap-2">
                     {CURRENCIES.map((c) => (
@@ -313,13 +326,13 @@ export default function AccountsScreen() {
                         onPress={() => setForm((f) => ({ ...f, currencyCode: c.code }))}
                         className={`px-3 py-1.5 rounded-full border ${
                           form.currencyCode === c.code
-                            ? 'bg-slate-900 border-slate-900'
-                            : 'bg-white border-slate-200'
+                            ? 'bg-ink border-ink'
+                            : 'bg-surface border-line-2'
                         }`}
                       >
                         <Text
-                          className={`text-sm font-medium ${
-                            form.currencyCode === c.code ? 'text-white' : 'text-slate-600'
+                          className={`font-sans-medium text-sm ${
+                            form.currencyCode === c.code ? 'text-paper' : 'text-ink-2'
                           }`}
                         >
                           {c.code}
@@ -332,64 +345,64 @@ export default function AccountsScreen() {
 
               {/* Initial Balance */}
               <View className="px-4 py-3">
-                <Text className="text-xs font-medium text-slate-500 mb-1">INITIAL BALANCE</Text>
+                <Text className="font-mono-semibold text-2xs uppercase tracking-[1.5px] text-ink-3 mb-1">{t('accounts.form.initialBalance')}</Text>
                 <TextInput
                   value={form.initialBalance}
                   onChangeText={(v) => setForm((f) => ({ ...f, initialBalance: v }))}
                   keyboardType="numeric"
                   placeholder="0.00"
-                  placeholderTextColor="#94a3b8"
-                  className="text-slate-900 text-base"
+                  placeholderTextColor="#B6B2A6"
+                  className="font-sans text-ink text-base"
                 />
               </View>
             </View>
 
             {/* Holdings section — only for ASSET */}
             {form.type === 'ASSET' && (
-              <View className="mx-4 mt-4">
+              <View className="mx-5 mt-4">
                 <View className="flex-row items-center justify-between mb-2">
-                  <Text className="text-sm font-semibold text-slate-700">Holdings</Text>
+                  <Text className="font-sans-semibold text-sm text-ink-2">{t('accounts.form.holdings')}</Text>
                   <TouchableOpacity onPress={addHoldingRow}>
-                    <Text className="text-sm text-slate-900 font-medium">+ Add</Text>
+                    <Text className="font-sans-semibold text-sm text-ink">+ {t('accounts.form.addHolding')}</Text>
                   </TouchableOpacity>
                 </View>
 
                 {form.holdings.length === 0 && (
-                  <Text className="text-sm text-slate-400 mb-2">
-                    No holdings. Tap "+ Add" to add one.
+                  <Text className="font-sans text-sm text-ink-4 mb-2">
+                    {t('accounts.form.noHoldings')}
                   </Text>
                 )}
 
                 {form.holdings.map((h, idx) => (
                   <View
                     key={idx}
-                    className="bg-white rounded-xl border border-slate-200 overflow-hidden mb-3"
+                    className="bg-surface rounded-lg border border-line overflow-hidden mb-3"
                   >
-                    <View className="px-4 py-3 border-b border-slate-100">
-                      <Text className="text-xs font-medium text-slate-500 mb-1">NAME</Text>
+                    <View className="px-4 py-3 border-b border-line">
+                      <Text className="font-mono-semibold text-2xs uppercase tracking-[1.5px] text-ink-3 mb-1">{t('accounts.form.name')}</Text>
                       <TextInput
                         value={h.name}
                         onChangeText={(v) => updateHolding(idx, 'name', v)}
                         placeholder="e.g. Apple Stock"
-                        placeholderTextColor="#94a3b8"
-                        className="text-slate-900 text-base"
+                        placeholderTextColor="#B6B2A6"
+                        className="font-sans text-ink text-base"
                       />
                     </View>
-                    <View className="px-4 py-3 border-b border-slate-100">
-                      <Text className="text-xs font-medium text-slate-500 mb-1">UNIT</Text>
+                    <View className="px-4 py-3 border-b border-line">
+                      <Text className="font-mono-semibold text-2xs uppercase tracking-[1.5px] text-ink-3 mb-1">{t('accounts.form.unit')}</Text>
                       <TextInput
                         value={h.unitName}
                         onChangeText={(v) => updateHolding(idx, 'unitName', v)}
                         placeholder="e.g. shares"
-                        placeholderTextColor="#94a3b8"
-                        className="text-slate-900 text-base"
+                        placeholderTextColor="#B6B2A6"
+                        className="font-sans text-ink text-base"
                       />
                     </View>
                     <TouchableOpacity
                       onPress={() => removeHolding(idx)}
                       className="px-4 py-3 items-center"
                     >
-                      <Text className="text-red-500 text-sm font-medium">Remove</Text>
+                      <Text className="font-sans-medium text-negative text-sm">{t('accounts.form.remove')}</Text>
                     </TouchableOpacity>
                   </View>
                 ))}

@@ -39,5 +39,41 @@
     "dashboard": "Tổng quan",
     "accounts": "Tài khoản",
     "settings": "Cài đặt"
+  },
+  "dashboard": {
+    "title": "Tổng quan",
+    "comingSoon": "Sắp ra mắt — Giai đoạn 3"
+  },
+  "accounts": {
+    "title": "Tài khoản",
+    "subtitle": "Quản lý tài khoản tài chính của bạn",
+    "newAccount": "Tài khoản mới",
+    "loading": "Đang tải tài khoản…",
+    "loadError": "Không thể tải tài khoản.",
+    "empty": "Chưa có tài khoản.",
+    "deleteConfirm": "Xóa tài khoản này? Không thể hoàn tác.",
+    "deleteTitle": "Xóa tài khoản",
+    "deleteMessage": "Bạn có chắc muốn xóa \"{{name}}\"?",
+    "nameRequired": "Tên tài khoản là bắt buộc",
+    "failedCreate": "Không thể tạo tài khoản",
+    "failedDelete": "Không thể xóa tài khoản",
+    "noAccountsHint": "Chưa có tài khoản. Nhấn + để thêm.",
+    "form": {
+      "newTitle": "Tài khoản mới",
+      "editTitle": "Chỉnh sửa tài khoản",
+      "name": "Tên",
+      "namePlaceholder": "vd: Tài khoản thanh toán",
+      "type": "Loại",
+      "currency": "Tiền tệ",
+      "initialBalance": "Số dư ban đầu",
+      "holdings": "Tài sản nắm giữ",
+      "addHolding": "Thêm tài sản",
+      "unit": "Đơn vị",
+      "noHoldings": "Chưa có tài sản nắm giữ.",
+      "remove": "Xóa",
+      "saving": "Đang lưu…",
+      "saveChanges": "Lưu thay đổi",
+      "createAccount": "Tạo tài khoản"
+    }
   }
 }

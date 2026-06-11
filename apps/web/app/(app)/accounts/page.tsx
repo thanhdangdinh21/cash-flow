@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronRight, Pencil, Trash2, Plus } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -44,22 +45,23 @@ interface SectionProps {
 }
 
 function AccountSection({ type, accounts, onEdit, onDelete }: SectionProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(true);
 
   return (
-    <div className="border border-slate-200 rounded-lg overflow-hidden">
+    <div className="bg-surface border border-line rounded-lg overflow-hidden">
       {/* Section header */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-2 px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+        className="w-full flex items-center gap-2 px-5 py-3.5 bg-paper-2 hover:bg-press-ink transition-colors duration-[120ms] text-left"
       >
         {open ? (
-          <ChevronDown className="h-4 w-4 text-slate-400 shrink-0" />
+          <ChevronDown className="h-4 w-4 text-ink-3 shrink-0" />
         ) : (
-          <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
+          <ChevronRight className="h-4 w-4 text-ink-3 shrink-0" />
         )}
-        <span className="text-sm font-semibold text-slate-700">{type}</span>
+        <span className="eyebrow">{type}</span>
         <Badge variant="secondary" className="ml-1">
           {accounts.length}
         </Badge>
@@ -67,42 +69,46 @@ function AccountSection({ type, accounts, onEdit, onDelete }: SectionProps) {
 
       {/* Account rows */}
       {open && (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-line">
           {accounts.length === 0 && (
-            <li className="px-4 py-3 text-sm text-slate-400">No accounts yet.</li>
+            <li className="px-5 py-3.5 text-sm text-ink-4">{t("accounts.empty")}</li>
           )}
           {accounts.map((account) => (
             <li key={account.id}>
               {/* Main row */}
-              <div className="flex items-center gap-3 px-4 py-3">
+              <div className="flex items-center gap-3 px-5 py-3.5">
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium text-slate-900 truncate">
+                  <span className="text-sm font-semibold text-ink truncate">
                     {account.name}
                   </span>
                 </div>
-                <Badge variant="outline" className="shrink-0 text-xs">
+                <Badge variant="outline" className="shrink-0 font-mono text-2xs">
                   {account.currencyCode}
                 </Badge>
-                <span className="text-sm tabular-nums text-slate-700 shrink-0">
+                <span
+                  className={`amount text-sm font-semibold shrink-0 ${
+                    parseFloat(account.currentBalance) < 0 ? "text-negative" : "text-ink"
+                  }`}
+                >
                   {formatBalance(account.currentBalance)}
                 </span>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="shrink-0 h-8 w-8 text-slate-400 hover:text-slate-700"
+                  className="shrink-0 h-9 w-9 text-ink-3 hover:text-ink"
                   onClick={() => onEdit(account as AccountEntity)}
                 >
-                  <Pencil className="h-3.5 w-3.5" />
-                  <span className="sr-only">Edit</span>
+                  <Pencil className="h-4 w-4" />
+                  <span className="sr-only">{t("common.save")}</span>
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="shrink-0 h-8 w-8 text-slate-400 hover:text-red-600"
+                  className="shrink-0 h-9 w-9 text-ink-3 hover:text-negative"
                   onClick={() => onDelete(account.id)}
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  <span className="sr-only">Delete</span>
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">{t("accounts.form.remove")}</span>
                 </Button>
               </div>
 
@@ -110,15 +116,17 @@ function AccountSection({ type, accounts, onEdit, onDelete }: SectionProps) {
               {account.type === "ASSET" &&
                 account.holdings &&
                 account.holdings.length > 0 && (
-                  <ul className="border-t border-slate-100 bg-slate-50/50 divide-y divide-slate-100">
+                  <ul className="border-t border-line bg-surface-2 divide-y divide-line">
                     {account.holdings.map((h) => (
                       <li
                         key={h.id}
-                        className="pl-10 pr-4 py-2 text-xs text-slate-500"
+                        className="pl-11 pr-5 py-2.5 text-xs text-ink-3"
                       >
-                        <span className="font-medium text-slate-600">{h.name}</span>
+                        <span className="font-medium text-ink-2">{h.name}</span>
                         {" · "}
-                        {parseFloat(h.currentQuantity).toFixed(4)} {h.unitName}
+                        <span className="amount">
+                          {parseFloat(h.currentQuantity).toFixed(4)} {h.unitName}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -133,6 +141,7 @@ function AccountSection({ type, accounts, onEdit, onDelete }: SectionProps) {
 
 export default function AccountsPage() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<AccountEntity | undefined>(undefined);
 
@@ -149,7 +158,7 @@ export default function AccountsPage() {
   });
 
   function handleDelete(id: string) {
-    if (!window.confirm("Delete this account? This cannot be undone.")) return;
+    if (!window.confirm(t("accounts.deleteConfirm"))) return;
     deleteMutation.mutate(id);
   }
 
@@ -179,22 +188,22 @@ export default function AccountsPage() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Accounts</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Manage your financial accounts</p>
+          <h1 className="text-xl">{t("accounts.title")}</h1>
+          <p className="text-sm text-ink-3 mt-1">{t("accounts.subtitle")}</p>
         </div>
-        <Button onClick={handleNewAccount} className="gap-1.5">
+        <Button onClick={handleNewAccount} size="sm" className="gap-1.5">
           <Plus className="h-4 w-4" />
-          New account
+          {t("accounts.newAccount")}
         </Button>
       </div>
 
       {/* Loading / error states */}
       {isLoading && (
-        <p className="text-sm text-slate-500">Loading accounts…</p>
+        <p className="text-sm text-ink-3">{t("accounts.loading")}</p>
       )}
       {error && (
-        <p className="text-sm text-red-500 bg-red-50 px-3 py-2 rounded-md">
-          Failed to load accounts.
+        <p className="text-sm text-negative bg-negative-soft px-4 py-2.5 rounded-md">
+          {t("accounts.loadError")}
         </p>
       )}
 

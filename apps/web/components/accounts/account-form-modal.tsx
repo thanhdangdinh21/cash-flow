@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import type { AxiosError } from "axios";
 import { api } from "@/lib/api";
 import { CURRENCIES } from "@repo/shared/currencies";
@@ -71,6 +72,7 @@ function makeHoldingRow(): HoldingRow {
 
 export function AccountFormModal({ open, onClose, account }: AccountFormModalProps) {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const isEdit = Boolean(account);
 
   const [form, setForm] = useState<FormState>({
@@ -118,7 +120,7 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
       onClose();
     },
     onError: (err: AxiosError<{ message?: string }>) => {
-      setError(err.response?.data?.message ?? "Something went wrong");
+      setError(err.response?.data?.message ?? t("common.error"));
     },
   });
 
@@ -130,7 +132,7 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
       onClose();
     },
     onError: (err: AxiosError<{ message?: string }>) => {
-      setError(err.response?.data?.message ?? "Something went wrong");
+      setError(err.response?.data?.message ?? t("common.error"));
     },
   });
 
@@ -174,16 +176,18 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit account" : "New account"}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? t("accounts.form.editTitle") : t("accounts.form.newTitle")}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           {/* Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="acc-name">Name</Label>
+            <Label htmlFor="acc-name">{t("accounts.form.name")}</Label>
             <Input
               id="acc-name"
-              placeholder="e.g. Checking Account"
+              placeholder={t("accounts.form.namePlaceholder")}
               value={form.name}
               onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
               required
@@ -192,7 +196,7 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
 
           {/* Type */}
           <div className="space-y-1.5">
-            <Label>Type</Label>
+            <Label>{t("accounts.form.type")}</Label>
             <Select
               value={form.type}
               onValueChange={(v) =>
@@ -218,7 +222,7 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
 
           {/* Currency */}
           <div className="space-y-1.5">
-            <Label>Currency</Label>
+            <Label>{t("accounts.form.currency")}</Label>
             <Select
               value={form.currencyCode}
               onValueChange={(v) => setForm((prev) => ({ ...prev, currencyCode: v }))}
@@ -240,7 +244,7 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
           {/* Initial Balance */}
           {!isEdit && (
             <div className="space-y-1.5">
-              <Label htmlFor="acc-balance">Initial Balance</Label>
+              <Label htmlFor="acc-balance">{t("accounts.form.initialBalance")}</Label>
               <Input
                 id="acc-balance"
                 type="number"
@@ -258,18 +262,18 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
           {!isEdit && form.type === "ASSET" && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Holdings</Label>
+                <Label>{t("accounts.form.holdings")}</Label>
                 <Button type="button" variant="outline" size="sm" onClick={addHolding}>
-                  Add holding
+                  {t("accounts.form.addHolding")}
                 </Button>
               </div>
               {form.holdings.length === 0 && (
-                <p className="text-sm text-slate-400">No holdings yet.</p>
+                <p className="text-sm text-ink-4">{t("accounts.form.noHoldings")}</p>
               )}
               {form.holdings.map((h) => (
                 <div key={h.key} className="flex gap-2 items-center">
                   <Input
-                    placeholder="Name (e.g. Gold)"
+                    placeholder={t("accounts.form.name")}
                     value={h.name}
                     onChange={(e) => updateHolding(h.key, "name", e.target.value)}
                     className="flex-1"
@@ -285,9 +289,9 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
                     variant="ghost"
                     size="sm"
                     onClick={() => removeHolding(h.key)}
-                    className="text-red-500 hover:text-red-600 hover:bg-red-50 shrink-0"
+                    className="text-negative hover:text-negative-2 hover:bg-negative-soft shrink-0"
                   >
-                    Remove
+                    {t("accounts.form.remove")}
                   </Button>
                 </div>
               ))}
@@ -295,15 +299,19 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
           )}
 
           {error && (
-            <p className="text-sm text-red-500 bg-red-50 px-3 py-2 rounded-md">{error}</p>
+            <p className="text-sm text-negative bg-negative-soft px-4 py-2.5 rounded-md">{error}</p>
           )}
 
           <DialogFooter className="pt-2">
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving…" : isEdit ? "Save changes" : "Create account"}
+              {isPending
+                ? t("accounts.form.saving")
+                : isEdit
+                  ? t("accounts.form.saveChanges")
+                  : t("accounts.form.createAccount")}
             </Button>
           </DialogFooter>
         </form>

@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Hanken_Grotesk, Spline_Sans_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { HtmlLang } from "@/components/HtmlLang";
 
-const inter = Inter({ subsets: ["latin"] });
+const hanken = Hanken_Grotesk({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-hanken",
+});
+
+const splineMono = Spline_Sans_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-spline-mono",
+});
 
 export const metadata: Metadata = {
   title: "Money Flow",
@@ -18,7 +27,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${hanken.variable} ${splineMono.variable} font-sans`}>
         <Providers>
           <HtmlLang />
           {children}

@@ -25,15 +25,14 @@ export function LanguageSwitcher() {
           <TouchableOpacity
             key={locale}
             onPress={() => handleSelect(locale)}
-            className={`px-4 py-2 rounded-lg border ${
-              isActive
-                ? 'bg-slate-900 border-slate-900'
-                : 'bg-white border-slate-200'
+            activeOpacity={0.7}
+            className={`px-4 py-2.5 rounded-md border ${
+              isActive ? 'bg-ink border-ink' : 'bg-surface border-line-2'
             }`}
           >
             <Text
-              className={`text-sm font-medium ${
-                isActive ? 'text-white' : 'text-slate-700'
+              className={`font-sans-medium text-sm ${
+                isActive ? 'text-paper' : 'text-ink-2'
               }`}
             >
               {LOCALE_NAMES[locale]}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import type { AxiosError } from "axios";
 import { api } from "@/lib/api";
 import { authStore } from "@/lib/auth";
@@ -11,6 +12,7 @@ import { i18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LogoLockup } from "@/components/layout/logo";
 
 interface RegisterResponse {
   accessToken: string;
@@ -19,6 +21,7 @@ interface RegisterResponse {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
 
@@ -31,7 +34,7 @@ export default function RegisterPage() {
       router.push("/dashboard");
     },
     onError: (err: AxiosError<{ message?: string }>) => {
-      setError(err.response?.data?.message ?? "Something went wrong");
+      setError(err.response?.data?.message ?? t("common.error"));
     },
   });
 
@@ -42,18 +45,19 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="w-full max-w-sm space-y-6 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-        <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-bold text-slate-900">Create account</h1>
-          <p className="text-sm text-slate-500">
-            Start tracking your money flow
+    <div className="min-h-screen flex flex-col items-center justify-center gap-8 bg-paper px-4">
+      <LogoLockup />
+      <div className="w-full max-w-sm space-y-6 bg-surface p-8 rounded-xl border border-line shadow-sm">
+        <div className="space-y-1.5 text-center">
+          <h1 className="text-xl">{t("auth.register.title")}</h1>
+          <p className="text-sm text-ink-3">
+            {t("auth.register.subtitle")}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t("auth.register.name")}</Label>
             <Input
               id="name"
               placeholder="Your name"
@@ -64,7 +68,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("auth.register.email")}</Label>
             <Input
               id="email"
               type="email"
@@ -76,11 +80,11 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t("auth.register.password")}</Label>
             <Input
               id="password"
               type="password"
-              placeholder="Min. 8 characters"
+              placeholder={t("auth.register.passwordHint")}
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               required
@@ -89,7 +93,7 @@ export default function RegisterPage() {
           </div>
 
           {error && (
-            <p className="text-sm text-red-500 bg-red-50 px-3 py-2 rounded-md">
+            <p className="text-sm text-negative bg-negative-soft px-4 py-2.5 rounded-md">
               {error}
             </p>
           )}
@@ -99,14 +103,14 @@ export default function RegisterPage() {
             className="w-full"
             disabled={mutation.isPending}
           >
-            {mutation.isPending ? "Creating account…" : "Create account"}
+            {mutation.isPending ? t("auth.register.submitting") : t("auth.register.submit")}
           </Button>
         </form>
 
-        <p className="text-center text-sm text-slate-500">
-          Already have an account?{" "}
-          <Link href="/login" className="text-slate-900 font-medium hover:underline">
-            Sign in
+        <p className="text-center text-sm text-ink-3">
+          {t("auth.register.hasAccount")}{" "}
+          <Link href="/login" className="text-ink font-semibold hover:underline">
+            {t("auth.register.login")}
           </Link>
         </p>
       </div>

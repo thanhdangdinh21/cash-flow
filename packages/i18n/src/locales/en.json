@@ -39,5 +39,41 @@
     "dashboard": "Dashboard",
     "accounts": "Accounts",
     "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "comingSoon": "Coming soon — Phase 3"
+  },
+  "accounts": {
+    "title": "Accounts",
+    "subtitle": "Manage your financial accounts",
+    "newAccount": "New account",
+    "loading": "Loading accounts…",
+    "loadError": "Failed to load accounts.",
+    "empty": "No accounts yet.",
+    "deleteConfirm": "Delete this account? This cannot be undone.",
+    "deleteTitle": "Delete Account",
+    "deleteMessage": "Are you sure you want to delete \"{{name}}\"?",
+    "nameRequired": "Account name is required",
+    "failedCreate": "Failed to create account",
+    "failedDelete": "Failed to delete account",
+    "noAccountsHint": "No accounts yet. Tap + to add one.",
+    "form": {
+      "newTitle": "New account",
+      "editTitle": "Edit account",
+      "name": "Name",
+      "namePlaceholder": "e.g. Checking Account",
+      "type": "Type",
+      "currency": "Currency",
+      "initialBalance": "Initial Balance",
+      "holdings": "Holdings",
+      "addHolding": "Add holding",
+      "unit": "Unit",
+      "noHoldings": "No holdings yet.",
+      "remove": "Remove",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "createAccount": "Create account"
+    }
   }
 }

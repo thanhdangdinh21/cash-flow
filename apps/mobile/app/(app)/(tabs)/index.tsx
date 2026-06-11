@@ -1,9 +1,11 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { TOKEN } from "@/lib/api";
 
 export default function DashboardScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   async function handleLogout() {
     await TOKEN.clear();
@@ -11,14 +13,20 @@ export default function DashboardScreen() {
   }
 
   return (
-    <View className="flex-1 items-center justify-center bg-slate-50 px-6">
-      <Text className="text-3xl font-bold text-slate-900 mb-2">Dashboard</Text>
-      <Text className="text-slate-500 mb-8">Coming soon — Phase 3</Text>
+    <View className="flex-1 items-center justify-center bg-paper px-6">
+      <Text className="font-mono-semibold text-2xs uppercase tracking-[2px] text-ink-3 mb-3">
+        Money Flow
+      </Text>
+      <Text className="font-sans-semibold text-3xl text-ink mb-2 tracking-tight">
+        {t("dashboard.title")}
+      </Text>
+      <Text className="font-sans text-ink-3 mb-8">{t("dashboard.comingSoon")}</Text>
       <TouchableOpacity
         onPress={handleLogout}
-        className="border border-slate-200 rounded-lg px-6 py-3 bg-white"
+        activeOpacity={0.7}
+        className="h-11 border border-line-2 rounded-md px-6 bg-surface items-center justify-center"
       >
-        <Text className="text-slate-700 font-medium">Sign out</Text>
+        <Text className="font-sans-semibold text-ink">{t("common.signOut")}</Text>
       </TouchableOpacity>
     </View>
   );
