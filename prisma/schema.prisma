@@ -109,21 +109,21 @@ enum LoanDirection {
 // -----------------------------------------------------------------------------
 
 model User {
-  id              String   @id @default(uuid())
-  email           String   @unique
-  passwordHash    String   @map("password_hash")
+  id           String @id @default(uuid())
+  email        String @unique
+  passwordHash String @map("password_hash")
 
   // Profile
-  name            String
-  avatarUrl       String?  @map("avatar_url")
+  name      String
+  avatarUrl String? @map("avatar_url")
 
   // Preferences
-  language        String   @default("en")
-  theme           String   @default("system") // "light" | "dark" | "system"
-  notificationsOn Boolean  @default(true) @map("notifications_on")
+  language        String  @default("en")
+  theme           String  @default("system") // "light" | "dark" | "system"
+  notificationsOn Boolean @default(true) @map("notifications_on")
 
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   ownedAccounts     Account[]          @relation("AccountOwner")
@@ -165,27 +165,27 @@ model User {
 // -----------------------------------------------------------------------------
 
 model Account {
-  id             String      @id @default(uuid())
-  ownerId        String      @map("owner_id")
-  name           String
-  type           AccountType
-  currencyCode   String      @map("currency_code")
+  id           String      @id @default(uuid())
+  ownerId      String      @map("owner_id")
+  name         String
+  type         AccountType
+  currencyCode String      @map("currency_code")
 
   // Balance tracking
-  initialBalance Decimal     @default(0) @map("initial_balance") @db.Decimal(18, 4)
-  currentBalance Decimal     @default(0) @map("current_balance") @db.Decimal(18, 4)
+  initialBalance Decimal @default(0) @map("initial_balance") @db.Decimal(18, 4)
+  currentBalance Decimal @default(0) @map("current_balance") @db.Decimal(18, 4)
 
-  isActive       Boolean     @default(true) @map("is_active")
-  isDefault      Boolean     @default(false) @map("is_default") // true = seeded at signup
+  isActive  Boolean   @default(true) @map("is_active")
+  isDefault Boolean   @default(false) @map("is_default") // true = seeded at signup
   // System accounts are bookkeeping plumbing hidden from the user's account
   // list and pickers: the seeded General income / General expense pair, plus
   // the lazily-created loan Receivables (ASSET) / Payables (LIABILITY).
   // Looked up by (owner_id, is_system, type).
-  isSystem       Boolean     @default(false) @map("is_system")
-  deletedAt      DateTime?   @map("deleted_at") // soft delete — never hard delete
+  isSystem  Boolean   @default(false) @map("is_system")
+  deletedAt DateTime? @map("deleted_at") // soft delete — never hard delete
 
-  createdAt      DateTime    @default(now()) @map("created_at")
-  updatedAt      DateTime    @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   owner              User              @relation("AccountOwner", fields: [ownerId], references: [id])
@@ -243,15 +243,15 @@ model AccountUser {
 // -----------------------------------------------------------------------------
 
 model AccountSnapshot {
-  id            String         @id @default(uuid())
-  accountId     String         @map("account_id")
+  id        String @id @default(uuid())
+  accountId String @map("account_id")
 
-  balance       Decimal        @db.Decimal(18, 4)
+  balance Decimal @db.Decimal(18, 4)
 
-  periodType    SnapshotPeriod @map("period_type")
-  periodDate    DateTime       @map("period_date") // the day/week/month this snapshot represents
+  periodType SnapshotPeriod @map("period_type")
+  periodDate DateTime       @map("period_date") // the day/week/month this snapshot represents
 
-  createdAt     DateTime       @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
   account Account @relation(fields: [accountId], references: [id])
@@ -350,9 +350,9 @@ model Category {
   accountType AccountType? @map("account_type") // null = any account type
   isDefault   Boolean      @default(false) @map("is_default")
 
-  deletedAt   DateTime?    @map("deleted_at")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
 
   // Relations
   user              User               @relation(fields: [userId], references: [id])
@@ -363,14 +363,14 @@ model Category {
 }
 
 model SubCategory {
-  id         String    @id @default(uuid())
-  categoryId String    @map("category_id")
+  id         String  @id @default(uuid())
+  categoryId String  @map("category_id")
   name       String
-  isDefault  Boolean   @default(false) @map("is_default")
+  isDefault  Boolean @default(false) @map("is_default")
 
-  deletedAt  DateTime? @map("deleted_at")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
 
   // Relations
   category     Category      @relation(fields: [categoryId], references: [id])
@@ -406,29 +406,30 @@ model SubCategory {
 // -----------------------------------------------------------------------------
 
 model Transaction {
-  id              String   @id @default(uuid())
-  userId          String   @map("user_id")
+  id     String @id @default(uuid())
+  userId String @map("user_id")
 
   // Plain-language kind — drives the double-entry mapping and report routing
   transactionType TransactionType @default(EXPENSE) @map("transaction_type")
 
   // The two accounts involved — both required, must be different
-  debitAccountId  String   @map("debit_account_id")
-  creditAccountId String   @map("credit_account_id")
+  debitAccountId  String @map("debit_account_id")
+  creditAccountId String @map("credit_account_id")
 
   // Categorization — nullable: user can save now, categorize later
-  subCategoryId   String?  @map("sub_category_id")
+  subCategoryId String? @map("sub_category_id")
 
   // Description fields
-  description     String?  // short label e.g. "Lunch at Pho 24"
-  notes           String?  // longer free-text notes
+  description String? // short label e.g. "Lunch at Pho 24"
+  notes       String? // longer free-text notes
 
   // Amount in the account's currency (no conversion in v1)
-  amount          Decimal  @db.Decimal(18, 4)
+  amount Decimal @db.Decimal(18, 4)
 
-  date            DateTime // the actual date of the transaction (user-provided)
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  date      DateTime // the actual date of the transaction (user-provided)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at") // soft delete — never hard delete
 
   // Report routing — server defaults this to true for TRANSFER and LOAN
   // (moving money around is neither income nor spending), false otherwise.
@@ -436,12 +437,12 @@ model Transaction {
   excludeFromReports Boolean @default(false) @map("exclude_from_reports")
 
   // Loan linkage — set on the loan's origin transaction AND every settlement
-  loanId          String?  @map("loan_id")
+  loanId String? @map("loan_id")
 
   // Lender/borrower on LOAN transactions
-  contactId       String?  @map("contact_id")
+  contactId       String? @map("contact_id")
   // FK hook for future features — nullable, feature not built yet
-  recurringRuleId String?  @map("recurring_rule_id") // v3: recurring rules
+  recurringRuleId String? @map("recurring_rule_id") // v3: recurring rules
 
   // Relations
   user           User           @relation(fields: [userId], references: [id])
@@ -469,10 +470,10 @@ model Transaction {
 // -----------------------------------------------------------------------------
 
 model Contact {
-  id        String    @id @default(uuid())
-  userId    String    @map("user_id")
-  name      String
-  balance   Decimal   @default(0) @db.Decimal(18, 4)
+  id      String  @id @default(uuid())
+  userId  String  @map("user_id")
+  name    String
+  balance Decimal @default(0) @db.Decimal(18, 4)
 
   deletedAt DateTime? @map("deleted_at")
   createdAt DateTime  @default(now()) @map("created_at")
@@ -508,10 +509,11 @@ model Loan {
   interestRate    Decimal?      @map("interest_rate") @db.Decimal(8, 4)
   interestPeriod  String?       @map("interest_period") // "yearly" | "monthly"
   status          LoanStatus    @default(ACTIVE)
-  date            DateTime      // origin date of the loan
+  date            DateTime // origin date of the loan
 
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   // Relations
   user         User          @relation(fields: [userId], references: [id])
@@ -539,14 +541,14 @@ model Loan {
 model Holding {
   id              String    @id @default(uuid())
   accountId       String    @map("account_id")
-  name            String                          // "Gold", "Bitcoin", "Apple"
-  unitName        String    @map("unit_name")      // "gram", "BTC", "share"
+  name            String // "Gold", "Bitcoin", "Apple"
+  unitName        String    @map("unit_name") // "gram", "BTC", "share"
   currentQuantity Decimal   @default(0) @map("current_quantity") @db.Decimal(18, 8)
   currentCost     Decimal   @default(0) @map("current_cost") @db.Decimal(18, 4)
   deletedAt       DateTime? @map("deleted_at")
 
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   account        Account        @relation(fields: [accountId], references: [id])
   journalEntries JournalEntry[]
@@ -588,11 +590,15 @@ model JournalEntry {
   // Commodity-only fields — null for regular (non-commodity) accounts.
   // Invariant: holdingId and quantity are always both null or both non-null.
   // unit_price is NOT stored — derived at query time: unit_price = amount / quantity
-  quantity      Decimal?         @db.Decimal(18, 8) // units bought/sold
-  holdingId     String?          @map("holding_id")
+  quantity  Decimal? @db.Decimal(18, 8) // units bought/sold
+  holdingId String?  @map("holding_id")
 
   // Write-once — no updatedAt (immutable table)
-  createdAt     DateTime         @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Soft delete is the ONE permitted post-write mutation on this otherwise
+  // write-once table — set together with the parent transaction's deletedAt.
+  deletedAt DateTime? @map("deleted_at")
 
   // Relations
   transaction Transaction @relation(fields: [transactionId], references: [id])
@@ -635,16 +641,16 @@ model JournalEntry {
 // -----------------------------------------------------------------------------
 
 model CategorySnapshot {
-  id          String           @id @default(uuid())
-  categoryId  String           @map("category_id")
-  userId      String           @map("user_id")
+  id         String @id @default(uuid())
+  categoryId String @map("category_id")
+  userId     String @map("user_id")
 
   totalAmount Decimal          @map("total_amount") @db.Decimal(18, 4)
   entryType   JournalEntryType @map("entry_type") // DEBIT = spending, CREDIT = income
 
-  periodType  SnapshotPeriod   @map("period_type")
-  periodDate  DateTime         @map("period_date")
-  createdAt   DateTime         @default(now()) @map("created_at")
+  periodType SnapshotPeriod @map("period_type")
+  periodDate DateTime       @map("period_date")
+  createdAt  DateTime       @default(now()) @map("created_at")
 
   // Relations
   category Category @relation(fields: [categoryId], references: [id])
