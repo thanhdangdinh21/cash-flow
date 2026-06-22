@@ -39,6 +39,7 @@ export class ListTransactionsUseCase {
     const limit = Math.min(q.limit ?? 50, 100);
     const where: Prisma.TransactionWhereInput = {
       userId,
+      deletedAt: null,
       ...(q.accountId && {
         OR: [{ debitAccountId: q.accountId }, { creditAccountId: q.accountId }],
       }),
@@ -73,8 +74,8 @@ export class GetTransactionUseCase {
   constructor(private readonly prisma: PrismaService) {}
 
   async execute(userId: string, id: string) {
-    const txn = await this.prisma.transaction.findUnique({
-      where: { id },
+    const txn = await this.prisma.transaction.findFirst({
+      where: { id, deletedAt: null },
       include: {
         ...LIST_INCLUDE,
         loan: true,

@@ -7,7 +7,11 @@ import {
 import { PrismaService } from '../../../prisma/prisma.service';
 import { balanceDelta } from '../balance.helpers';
 
-// Hard delete with atomic reversal of every side effect.
+// Soft delete with atomic reversal of every side effect.
+// Sets `deletedAt` on the transaction, its journal entries, and (for a loan
+// origin) the loan itself, while still atomically reversing every
+// balance/holding/contact side effect. The rows persist for recovery/audit and
+// are hidden from reads via `deletedAt: null` filters.
 // Documented deviation from the journal-immutability rule: pre-snapshots, a
 // deleted mistake should vanish from Activity entirely; counter-transactions
 // can replace this once snapshot jobs exist.
@@ -19,14 +23,19 @@ export class DeleteTransactionUseCase {
     const txn = await this.prisma.transaction.findUnique({
       where: { id },
       include: {
-        journalEntries: { include: { account: true, holding: true } },
+        journalEntries: {
+          where: { deletedAt: null },
+          include: { account: true, holding: true },
+        },
         loan: true,
       },
     });
     if (!txn) throw new NotFoundException('Transaction not found');
     if (txn.userId !== userId) throw new ForbiddenException();
+    if (txn.deletedAt) throw new BadRequestException('Transaction is already deleted');
 
     const amount = Number(txn.amount);
+    const now = new Date();
 
     await this.prisma.$transaction(async (tx) => {
       for (const entry of txn.journalEntries) {
@@ -66,11 +75,13 @@ export class DeleteTransactionUseCase {
       if (txn.loan) {
         const [earliest, txCount] = await Promise.all([
           tx.transaction.findFirst({
-            where: { loanId: txn.loan.id },
+            where: { loanId: txn.loan.id, deletedAt: null },
             orderBy: { createdAt: 'asc' },
             select: { id: true },
           }),
-          tx.transaction.count({ where: { loanId: txn.loan.id } }),
+          tx.transaction.count({
+            where: { loanId: txn.loan.id, deletedAt: null },
+          }),
         ]);
         const isOrigin = earliest?.id === txn.id;
         if (isOrigin && txCount > 1) {
@@ -89,9 +100,18 @@ export class DeleteTransactionUseCase {
         });
 
         if (isOrigin) {
-          await tx.journalEntry.deleteMany({ where: { transactionId: id } });
-          await tx.transaction.delete({ where: { id } });
-          await tx.loan.delete({ where: { id: txn.loan.id } });
+          await tx.journalEntry.updateMany({
+            where: { transactionId: id },
+            data: { deletedAt: now },
+          });
+          await tx.transaction.update({
+            where: { id },
+            data: { deletedAt: now },
+          });
+          await tx.loan.update({
+            where: { id: txn.loan.id },
+            data: { deletedAt: now },
+          });
           return;
         }
         await tx.loan.update({
@@ -100,8 +120,11 @@ export class DeleteTransactionUseCase {
         });
       }
 
-      await tx.journalEntry.deleteMany({ where: { transactionId: id } });
-      await tx.transaction.delete({ where: { id } });
+      await tx.journalEntry.updateMany({
+        where: { transactionId: id },
+        data: { deletedAt: now },
+      });
+      await tx.transaction.update({ where: { id }, data: { deletedAt: now } });
     });
   }
 }
