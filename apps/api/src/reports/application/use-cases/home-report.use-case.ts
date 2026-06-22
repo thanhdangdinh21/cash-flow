@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
-import {
-  monthRange,
-  spentByCategory,
-} from '../../../budgets/application/use-cases/budget.use-cases';
+import { monthRange } from '../month-range';
 
 // Single aggregate powering the Home screen: hero, wallets, cash-flow weeks,
-// budgets with progress, and the recent list — one round trip.
+// and the recent list — one round trip.
 @Injectable()
 export class HomeReportUseCase {
   constructor(private readonly prisma: PrismaService) {}
@@ -14,7 +11,7 @@ export class HomeReportUseCase {
   async execute(userId: string) {
     const { start, end } = monthRange();
 
-    const [wallets, monthTxns, budgets, recent, spentMap] = await Promise.all([
+    const [wallets, monthTxns, recent] = await Promise.all([
       this.prisma.account.findMany({
         where: {
           ownerId: userId,
@@ -40,11 +37,6 @@ export class HomeReportUseCase {
         },
         select: { amount: true, transactionType: true, date: true },
       }),
-      this.prisma.budget.findMany({
-        where: { userId },
-        include: { category: { select: { id: true, name: true, icon: true } } },
-        orderBy: { category: { name: 'asc' } },
-      }),
       this.prisma.transaction.findMany({
         where: { userId },
         orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
@@ -64,7 +56,6 @@ export class HomeReportUseCase {
           contact: { select: { id: true, name: true } },
         },
       }),
-      spentByCategory(this.prisma, userId, start, end),
     ]);
 
     const totalAssets = wallets.reduce(
@@ -100,29 +91,6 @@ export class HomeReportUseCase {
       .sort((a, b) => a[0] - b[0])
       .map(([, w]) => w);
 
-    const budgetsWithSpent = budgets.map((b) => ({
-      ...b,
-      spent: spentMap.get(b.categoryId) ?? 0,
-    }));
-
-    // Empty-budget prompt: the top-spend category that has no budget yet
-    const budgeted = new Set(budgets.map((b) => b.categoryId));
-    let suggestion: { categoryId: string; spent: number } | null = null;
-    for (const [categoryId, spent] of spentMap) {
-      if (budgeted.has(categoryId)) continue;
-      if (!suggestion || spent > suggestion.spent)
-        suggestion = { categoryId, spent };
-    }
-    const budgetSuggestion = suggestion
-      ? {
-          ...suggestion,
-          category: await this.prisma.category.findUnique({
-            where: { id: suggestion.categoryId },
-            select: { id: true, name: true, icon: true },
-          }),
-        }
-      : null;
-
     return {
       totalAssets,
       monthIncome,
@@ -130,8 +98,6 @@ export class HomeReportUseCase {
       net: monthIncome - monthSpent,
       weeks,
       wallets,
-      budgets: budgetsWithSpent,
-      budgetSuggestion,
       recent,
     };
   }

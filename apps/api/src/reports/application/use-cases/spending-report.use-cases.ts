@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { monthRange } from '../../../budgets/application/use-cases/budget.use-cases';
+import { monthRange } from '../month-range';
 
 const MONTH_LABELS = [
   'Jan',
@@ -103,22 +103,16 @@ export class CategoryTrendUseCase {
     );
     const type = category.accountType === 'INCOME' ? 'INCOME' : 'EXPENSE';
 
-    const [rows, budget] = await Promise.all([
-      this.prisma.transaction.findMany({
-        where: {
-          userId,
-          transactionType: type,
-          excludeFromReports: false,
-          date: { gte: startBoundary },
-          subCategory: { categoryId },
-        },
-        select: { amount: true, date: true },
-      }),
-      this.prisma.budget.findUnique({
-        where: { userId_categoryId: { userId, categoryId } },
-        select: { id: true, monthlyLimit: true },
-      }),
-    ]);
+    const rows = await this.prisma.transaction.findMany({
+      where: {
+        userId,
+        transactionType: type,
+        excludeFromReports: false,
+        date: { gte: startBoundary },
+        subCategory: { categoryId },
+      },
+      select: { amount: true, date: true },
+    });
 
     const byMonth = new Map<number, number>();
     for (const r of rows) {
@@ -147,7 +141,6 @@ export class CategoryTrendUseCase {
       thisMonth,
       average,
       series,
-      budget,
     };
   }
 }

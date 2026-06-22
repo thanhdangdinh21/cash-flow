@@ -13,7 +13,6 @@ import { Tile } from '@/components/ui/Tile';
 import { FlowChart } from '@/components/charts/FlowChart';
 import { GhostChart } from '@/components/charts/GhostChart';
 import { TxnRow } from '@/components/TxnRow';
-import { BudgetRow, EmptyBudgetRow } from '@/components/BudgetRow';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -37,8 +36,7 @@ export default function HomeScreen() {
 
   const hasFlow = report.weeks.some((w) => w.income > 0 || w.spent > 0);
   // First run — nothing added yet (seeded accounts arrive empty)
-  const isFirstRun =
-    report.totalAssets === 0 && report.recent.length === 0 && report.budgets.length === 0;
+  const isFirstRun = report.totalAssets === 0 && report.recent.length === 0;
 
   return (
     <Page>
@@ -99,13 +97,6 @@ function HomeEmpty() {
           sub={t('home.recordTransactionSub')}
           trailing={chevron}
           onPress={() => router.push('/add')}
-        />
-        <Row
-          tile={<Tile icon="disc-outline" dashed />}
-          title={t('home.createBudget')}
-          sub={t('home.createBudgetSub')}
-          trailing={chevron}
-          onPress={() => router.push('/budgets')}
         />
       </ListBlock>
 
@@ -210,34 +201,6 @@ function HomeBody({ report, hasFlow }: { report: HomeReportData; hasFlow: boolea
           <Text className="font-sans text-sm text-ink-4 py-3">{t('home.noFlow')}</Text>
         )}
       </View>
-
-      {/* Budgets */}
-      <ListBlock
-        eyebrow={t('nav.budgets')}
-        trailing={
-          <TouchableOpacity onPress={() => router.push('/budgets')} hitSlop={8}>
-            <Text className="font-sans-semibold text-[13px] text-ink-3">{t('home.all')}</Text>
-          </TouchableOpacity>
-        }
-        className="mb-6"
-      >
-        {report.budgets.length === 0 && !report.budgetSuggestion ? (
-          <Text className="font-sans text-sm text-ink-4 py-4">{t('budgets.empty')}</Text>
-        ) : (
-          <>
-            {report.budgets.map((b, i) => (
-              <BudgetRow key={b.id} budget={b} first={i === 0} onPress={() => router.push('/budgets')} />
-            ))}
-            {report.budgetSuggestion?.category ? (
-              <EmptyBudgetRow
-                name={report.budgetSuggestion.category.name}
-                spent={report.budgetSuggestion.spent}
-                onPress={() => router.push('/budgets')}
-              />
-            ) : null}
-          </>
-        )}
-      </ListBlock>
 
       {/* Recent */}
       <ListBlock
