@@ -97,14 +97,6 @@ export interface TransactionListData {
   nextCursor: string | null;
 }
 
-export interface BudgetData {
-  id: string;
-  categoryId: string;
-  monthlyLimit: string;
-  spent: number;
-  category: { id: string; name: string; icon: string };
-}
-
 export interface HomeReportData {
   totalAssets: number;
   monthIncome: number;
@@ -112,12 +104,6 @@ export interface HomeReportData {
   net: number;
   weeks: { label: string; income: number; spent: number }[];
   wallets: { id: string; name: string; currencyCode: string; currentBalance: string }[];
-  budgets: BudgetData[];
-  budgetSuggestion: {
-    categoryId: string;
-    spent: number;
-    category: { id: string; name: string; icon: string } | null;
-  } | null;
   recent: TransactionData[];
 }
 
@@ -137,5 +123,4 @@ export interface CategoryTrendData {
   thisMonth: number;
   average: number;
   series: { label: string; value: number }[];
-  budget: { id: string; monthlyLimit: string } | null;
 }

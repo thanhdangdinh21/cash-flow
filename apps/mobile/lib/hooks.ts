@@ -3,7 +3,6 @@ import { api } from '@/lib/api';
 import type {
   AccountData,
   AccountDetailData,
-  BudgetData,
   CategoryData,
   CategoryTrendData,
   ContactData,
@@ -77,13 +76,6 @@ export function useTransaction(id: string | undefined) {
   });
 }
 
-export function useBudgets() {
-  return useQuery<BudgetData[]>({
-    queryKey: ['budgets'],
-    queryFn: () => api.get('/budgets').then((r) => r.data),
-  });
-}
-
 export function useContacts() {
   return useQuery<ContactData[]>({
     queryKey: ['contacts'],
@@ -130,11 +122,11 @@ export function useCategoryTrend(categoryId: string | undefined) {
   });
 }
 
-// Money mutations cascade: balances feed reports, budgets, account details
+// Money mutations cascade: balances feed reports, account details
 export function useMoneyInvalidation() {
   const queryClient = useQueryClient();
   return () => {
-    for (const key of ['transactions', 'accounts', 'reports', 'budgets', 'contacts']) {
+    for (const key of ['transactions', 'accounts', 'reports', 'contacts']) {
       queryClient.invalidateQueries({ queryKey: [key] });
     }
   };

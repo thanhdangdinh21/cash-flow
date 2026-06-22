@@ -19,11 +19,10 @@ interface TabBarProps {
 const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   index: 'home-outline',
   activity: 'receipt-outline',
-  budgets: 'pie-chart-outline',
   insights: 'trending-up',
 };
 
-// Design tab bar: Home · Activity · [+] · Budgets · Insights.
+// Design tab bar: Home · Activity · [+] · Insights.
 // The center plus is not a tab — it pushes the add-transaction modal.
 export function TabBar({ state, descriptors, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();

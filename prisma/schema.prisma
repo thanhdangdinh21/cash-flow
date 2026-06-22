@@ -132,7 +132,6 @@ model User {
   transactions      Transaction[]
   contacts          Contact[]
   loans             Loan[]
-  budgets           Budget[]
   netWorthSnapshots NetWorthSnapshot[]
   categorySnapshots CategorySnapshot[]
 
@@ -359,7 +358,6 @@ model Category {
   user              User               @relation(fields: [userId], references: [id])
   subCategories     SubCategory[]
   categorySnapshots CategorySnapshot[]
-  budgets           Budget[]
 
   @@map("categories")
 }
@@ -521,31 +519,6 @@ model Loan {
   transactions Transaction[] // origin + settlements
 
   @@map("loans")
-}
-
-// =============================================================================
-// BUDGETS
-// =============================================================================
-// Minimal v1: one monthly spending limit per category per user. "Spent" is
-// computed at query time from EXPENSE transactions in the month — no stored
-// progress. Hard delete (no history requirement).
-// -----------------------------------------------------------------------------
-
-model Budget {
-  id           String   @id @default(uuid())
-  userId       String   @map("user_id")
-  categoryId   String   @map("category_id")
-  monthlyLimit Decimal  @map("monthly_limit") @db.Decimal(18, 4)
-
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  user     User     @relation(fields: [userId], references: [id])
-  category Category @relation(fields: [categoryId], references: [id])
-
-  @@unique([userId, categoryId])
-  @@map("budgets")
 }
 
 // =============================================================================

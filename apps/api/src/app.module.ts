@@ -6,7 +6,6 @@ import { AccountsModule } from './accounts/accounts.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ContactsModule } from './contacts/contacts.module';
 import { TransactionsModule } from './transactions/transactions.module';
-import { BudgetsModule } from './budgets/budgets.module';
 import { ReportsModule } from './reports/reports.module';
 
 @Module({
@@ -18,7 +17,6 @@ import { ReportsModule } from './reports/reports.module';
     CategoriesModule,
     ContactsModule,
     TransactionsModule,
-    BudgetsModule,
     ReportsModule,
   ],
 })
