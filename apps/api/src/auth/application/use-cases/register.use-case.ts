@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { USER_REPOSITORY } from '../../../users/domain/user.repository.interface';
 import type { IUserRepository } from '../../../users/domain/user.repository.interface';
 import { SeedDefaultAccountsUseCase } from '../../../accounts/application/use-cases/seed-default-accounts.use-case';
+import { SeedDefaultCategoriesUseCase } from '../../../categories/application/use-cases/seed-default-categories.use-case';
 import type { RegisterDto } from '../dtos/register.dto';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class RegisterUseCase {
     @Inject(USER_REPOSITORY) private readonly users: IUserRepository,
     private readonly jwt: JwtService,
     private readonly seedAccounts: SeedDefaultAccountsUseCase,
+    private readonly seedCategories: SeedDefaultCategoriesUseCase,
   ) {}
 
   async execute(dto: RegisterDto) {
@@ -26,6 +28,7 @@ export class RegisterUseCase {
     });
 
     await this.seedAccounts.execute(user.id);
+    await this.seedCategories.execute(user.id);
 
     return {
       accessToken: this.jwt.sign({ sub: user.id, email: user.email }),

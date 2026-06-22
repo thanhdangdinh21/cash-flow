@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import type { CreateUserData, IUserRepository } from '../domain/user.repository.interface';
+import type {
+  CreateUserData,
+  IUserRepository,
+} from '../domain/user.repository.interface';
 import type { UserEntity } from '../domain/user.entity';
 
 @Injectable()
@@ -19,7 +22,10 @@ export class UserRepository implements IUserRepository {
     return this.prisma.user.create({ data });
   }
 
-  update(id: string, data: Partial<Pick<UserEntity, 'language'>>): Promise<UserEntity> {
+  update(
+    id: string,
+    data: Partial<Pick<UserEntity, 'language'>>,
+  ): Promise<UserEntity> {
     return this.prisma.user.update({ where: { id }, data });
   }
 }

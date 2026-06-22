@@ -27,7 +27,9 @@
       "submit": "Create account",
       "submitting": "Creating account…",
       "hasAccount": "Already have an account?",
-      "login": "Sign in"
+      "login": "Sign in",
+      "namePlaceholder": "Your name",
+      "seedNote": "We'll start you with three accounts — Cash wallet, General income, General expense — plus everyday categories. Change any of it later."
     }
   },
   "settings": {
@@ -38,7 +40,12 @@
   "nav": {
     "dashboard": "Dashboard",
     "accounts": "Accounts",
-    "settings": "Settings"
+    "settings": "Settings",
+    "home": "Home",
+    "activity": "Activity",
+    "budgets": "Budgets",
+    "insights": "Insights",
+    "profile": "Profile"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -74,6 +81,225 @@
       "saving": "Saving…",
       "saveChanges": "Save changes",
       "createAccount": "Create account"
+    },
+    "commodity": "commodity",
+    "defaultAccount": "Default account",
+    "deletedNote": "Deleted accounts keep their history — restore any time.",
+    "group": {
+      "ASSET": "Assets",
+      "LIABILITY": "Liabilities",
+      "INCOME": "Income",
+      "EXPENSE": "Expense",
+      "EQUITY": "Equity"
+    },
+    "type": {
+      "ASSET": "Asset",
+      "LIABILITY": "Liability",
+      "INCOME": "Income",
+      "EXPENSE": "Expense",
+      "EQUITY": "Equity"
+    },
+    "create": {
+      "eyebrow": "New",
+      "title": "Create account",
+      "currencyLock": "Currency is locked once the account is created.",
+      "commodityTitle": "Track a commodity",
+      "commodityHint": "Count quantity as well as cost — gold, stock, points.",
+      "unitName": "Unit name",
+      "unitPlaceholder": "gram"
+    },
+    "detail": {
+      "totalQty": "Total quantity held",
+      "totalCost": "Total cost",
+      "avgUnitPrice": "Avg unit price",
+      "purchases": "Purchases",
+      "noPurchases": "No purchases yet.",
+      "qtyRequired": "Quantity is required on every transaction for this account.",
+      "in": "In",
+      "out": "Out",
+      "history": "History",
+      "noHistory": "No transactions yet."
     }
+  },
+  "profile": {
+    "eyebrow": "You",
+    "title": "Profile",
+    "preferences": "Preferences",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "notifications": "Notifications",
+    "money": "Money",
+    "logout": "Log out",
+    "logoutConfirm": "You can log back in any time."
+  },
+  "categories": {
+    "title": "Categories",
+    "eyebrow": "Organize spending",
+    "note": "A to Z · defaults seeded at signup",
+    "allTypes": "All types",
+    "noSubcategories": "No subcategories",
+    "newTitle": "New category",
+    "editTitle": "Edit category",
+    "name": "Name",
+    "namePlaceholder": "Category name",
+    "appliesTo": "Applies to",
+    "subcategories": "Subcategories",
+    "addSubcategory": "Add subcategory",
+    "delete": "Delete",
+    "deleteTitle": "Delete category?",
+    "deleteMessage": "Historical transactions keep their category."
+  },
+  "activity": {
+    "title": "Activity",
+    "all": "All",
+    "empty": "No transactions yet — tap + to add one."
+  },
+  "txn": {
+    "deleteTitle": "Delete transaction?",
+    "deleteMessage": "Balances will be restored as if it never happened.",
+    "delete": "Delete",
+    "fromAccount": "From account",
+    "to": "To",
+    "notes": "Notes",
+    "attachment": "Attachment",
+    "addAttachment": "Add"
+  },
+  "add": {
+    "title": "New transaction",
+    "amount": "Amount",
+    "transferHint": "Moves between your own accounts — not income or spending.",
+    "category": "Category",
+    "categoryLater": "Choose later — it can wait",
+    "fromAccount": "From account",
+    "toAccount": "To account",
+    "pickAccount": "Choose account",
+    "direction": "Direction",
+    "borrower": "Borrower",
+    "lender": "Lender",
+    "pickContact": "Choose contact",
+    "loan": "Loan",
+    "pickLoan": "Choose loan",
+    "remaining": "{{amount}} left",
+    "interest": "Interest",
+    "yearly": "yearly",
+    "monthly": "monthly",
+    "date": "Date",
+    "description": "Description",
+    "optional": "Optional",
+    "addReceipt": "Add receipt",
+    "newContact": "New contact name",
+    "owesYou": "Owes you {{amount}}",
+    "youOwe": "You owe {{amount}}",
+    "noActiveLoans": "No active loans with this contact.",
+    "remainingHintLent": "{{name}} owes you {{total}} — {{left}} left after this.",
+    "remainingHintBorrowed": "You owe {{name}} {{total}} — {{left}} left after this.",
+    "types": {
+      "expense": "Expense",
+      "income": "Income",
+      "transfer": "Transfer",
+      "loan": "Debt / loan"
+    },
+    "debt": {
+      "LENT": {
+        "label": "Lent",
+        "sub": "They owe you"
+      },
+      "BORROWED": {
+        "label": "Borrowed",
+        "sub": "You owe them"
+      },
+      "COLLECTED": {
+        "label": "Collected",
+        "sub": "They paid you back"
+      },
+      "REPAID": {
+        "label": "Repaid",
+        "sub": "You paid them back"
+      }
+    },
+    "save": {
+      "default": "Save",
+      "transfer": "Move money",
+      "debt": "Record debt",
+      "collection": "Record collection",
+      "repayment": "Record repayment"
+    },
+    "errors": {
+      "amount": "Enter an amount.",
+      "account": "Choose an account.",
+      "toAccount": "Choose the receiving account.",
+      "sameAccount": "Pick two different accounts.",
+      "contact": "Choose or name the counterparty.",
+      "loan": "Choose which loan this settles.",
+      "overRemaining": "That's more than what's left on this loan."
+    }
+  },
+  "home": {
+    "hello": "Hello, {{name}}",
+    "totalAssets": "Total assets",
+    "net": "Net",
+    "upThisMonth": "up this month",
+    "downThisMonth": "down this month",
+    "whereItSits": "Where it sits",
+    "cashFlow": "Cash flow",
+    "in": "In",
+    "out": "Out",
+    "noFlow": "Nothing this month yet — add a transaction to see the flow.",
+    "all": "All",
+    "recent": "Recent",
+    "seeAll": "See all",
+    "emptyHero": "Add an account and your money shows up here.",
+    "firstSteps": "First steps",
+    "addAccount": "Add an account",
+    "addAccountSub": "Checking, savings, cash or gold",
+    "recordTransaction": "Record a transaction",
+    "recordTransactionSub": "Takes about five seconds",
+    "createBudget": "Create a budget",
+    "createBudgetSub": "A monthly limit per category",
+    "emptyFlow": "In and out, week by week — starts with your first transaction.",
+    "weekShort": "W{{n}}"
+  },
+  "budgets": {
+    "title": "Budgets",
+    "empty": "No budgets yet — set one to keep a category honest.",
+    "newTitle": "New budget",
+    "editTitle": "Edit budget",
+    "monthlyLimit": "Monthly limit",
+    "deleteTitle": "Remove budget?",
+    "deleteMessage": "{{name}} will no longer have a limit.",
+    "onTrack": "On track",
+    "almostThere": "Almost there",
+    "overBy": "Over by {{amount}}",
+    "setBudgetFor": "Set a {{name}} budget",
+    "spentNoLimit": "{{amount}} spent this month · no limit yet",
+    "setUp": "Set up",
+    "spentOf": "{{spent}} of {{limit}}"
+  },
+  "insights": {
+    "eyebrow": "Reports",
+    "title": "Insights",
+    "month": "Month",
+    "year": "Year",
+    "netWorth": "Net worth",
+    "thisMonth": "this month",
+    "spendingByCategory": "Spending by category",
+    "spendingSub": "Where the month went",
+    "balances": "Balances",
+    "allAccounts": "All accounts",
+    "totalOut": "Total out",
+    "totalIn": "Total in",
+    "dailyAverage": "Daily average",
+    "noSpending": "Nothing to chart yet.",
+    "topShare": "{{name}} is {{pct}}% of the month. Tap a bar for the trend.",
+    "trendEyebrow": "Trend · 6 months",
+    "thisMonthLabel": "This month",
+    "sixMonthAvg": "6-mo average",
+    "compareWith": "Compare with",
+    "perMonth": "mo",
+    "overBudget": "{{name}} is {{amount}} over budget.",
+    "emptyHero": "Reports build from your accounts and activity.",
+    "netWorth6m": "Net worth · 6 months",
+    "addAccount": "Add an account",
+    "balancesAppear": "Balances appear here"
   }
 }

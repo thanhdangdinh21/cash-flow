@@ -27,7 +27,9 @@
       "submit": "Tạo tài khoản",
       "submitting": "Đang tạo tài khoản…",
       "hasAccount": "Đã có tài khoản?",
-      "login": "Đăng nhập"
+      "login": "Đăng nhập",
+      "namePlaceholder": "Tên của bạn",
+      "seedNote": "Bạn sẽ bắt đầu với ba tài khoản — Ví tiền mặt, Thu nhập chung, Chi tiêu chung — cùng các danh mục thường dùng. Có thể thay đổi sau."
     }
   },
   "settings": {
@@ -38,7 +40,12 @@
   "nav": {
     "dashboard": "Tổng quan",
     "accounts": "Tài khoản",
-    "settings": "Cài đặt"
+    "settings": "Cài đặt",
+    "home": "Trang chủ",
+    "activity": "Hoạt động",
+    "budgets": "Ngân sách",
+    "insights": "Thống kê",
+    "profile": "Hồ sơ"
   },
   "dashboard": {
     "title": "Tổng quan",
@@ -74,6 +81,225 @@
       "saving": "Đang lưu…",
       "saveChanges": "Lưu thay đổi",
       "createAccount": "Tạo tài khoản"
+    },
+    "commodity": "hàng hoá",
+    "defaultAccount": "Tài khoản mặc định",
+    "deletedNote": "Tài khoản đã xoá vẫn giữ lịch sử — khôi phục bất cứ lúc nào.",
+    "group": {
+      "ASSET": "Tài sản",
+      "LIABILITY": "Nợ phải trả",
+      "INCOME": "Thu nhập",
+      "EXPENSE": "Chi tiêu",
+      "EQUITY": "Vốn"
+    },
+    "type": {
+      "ASSET": "Tài sản",
+      "LIABILITY": "Nợ phải trả",
+      "INCOME": "Thu nhập",
+      "EXPENSE": "Chi tiêu",
+      "EQUITY": "Vốn"
+    },
+    "create": {
+      "eyebrow": "Mới",
+      "title": "Tạo tài khoản",
+      "currencyLock": "Tiền tệ sẽ bị khoá sau khi tạo tài khoản.",
+      "commodityTitle": "Theo dõi hàng hoá",
+      "commodityHint": "Đếm cả số lượng lẫn chi phí — vàng, cổ phiếu, điểm.",
+      "unitName": "Tên đơn vị",
+      "unitPlaceholder": "gram"
+    },
+    "detail": {
+      "totalQty": "Tổng số lượng nắm giữ",
+      "totalCost": "Tổng chi phí",
+      "avgUnitPrice": "Giá TB / đơn vị",
+      "purchases": "Lần mua",
+      "noPurchases": "Chưa có lần mua nào.",
+      "qtyRequired": "Mọi giao dịch của tài khoản này đều cần số lượng.",
+      "in": "Vào",
+      "out": "Ra",
+      "history": "Lịch sử",
+      "noHistory": "Chưa có giao dịch."
     }
+  },
+  "profile": {
+    "eyebrow": "Bạn",
+    "title": "Hồ sơ",
+    "preferences": "Tuỳ chọn",
+    "theme": "Giao diện",
+    "themeLight": "Sáng",
+    "notifications": "Thông báo",
+    "money": "Tiền",
+    "logout": "Đăng xuất",
+    "logoutConfirm": "Bạn có thể đăng nhập lại bất cứ lúc nào."
+  },
+  "categories": {
+    "title": "Danh mục",
+    "eyebrow": "Sắp xếp chi tiêu",
+    "note": "A đến Z · mặc định được tạo khi đăng ký",
+    "allTypes": "Mọi loại",
+    "noSubcategories": "Chưa có danh mục con",
+    "newTitle": "Danh mục mới",
+    "editTitle": "Sửa danh mục",
+    "name": "Tên",
+    "namePlaceholder": "Tên danh mục",
+    "appliesTo": "Áp dụng cho",
+    "subcategories": "Danh mục con",
+    "addSubcategory": "Thêm danh mục con",
+    "delete": "Xoá",
+    "deleteTitle": "Xoá danh mục?",
+    "deleteMessage": "Các giao dịch cũ vẫn giữ danh mục của chúng."
+  },
+  "activity": {
+    "title": "Hoạt động",
+    "all": "Tất cả",
+    "empty": "Chưa có giao dịch — nhấn + để thêm."
+  },
+  "txn": {
+    "deleteTitle": "Xoá giao dịch?",
+    "deleteMessage": "Số dư sẽ được khôi phục như chưa từng có giao dịch.",
+    "delete": "Xoá",
+    "fromAccount": "Từ tài khoản",
+    "to": "Đến",
+    "notes": "Ghi chú",
+    "attachment": "Đính kèm",
+    "addAttachment": "Thêm"
+  },
+  "add": {
+    "title": "Giao dịch mới",
+    "amount": "Số tiền",
+    "transferHint": "Chuyển giữa các tài khoản của bạn — không phải thu nhập hay chi tiêu.",
+    "category": "Danh mục",
+    "categoryLater": "Chọn sau cũng được",
+    "fromAccount": "Từ tài khoản",
+    "toAccount": "Đến tài khoản",
+    "pickAccount": "Chọn tài khoản",
+    "direction": "Chiều",
+    "borrower": "Người vay",
+    "lender": "Người cho vay",
+    "pickContact": "Chọn liên hệ",
+    "loan": "Khoản vay",
+    "pickLoan": "Chọn khoản vay",
+    "remaining": "Còn {{amount}}",
+    "interest": "Lãi suất",
+    "yearly": "mỗi năm",
+    "monthly": "mỗi tháng",
+    "date": "Ngày",
+    "description": "Mô tả",
+    "optional": "Không bắt buộc",
+    "addReceipt": "Thêm hoá đơn",
+    "newContact": "Tên liên hệ mới",
+    "owesYou": "Nợ bạn {{amount}}",
+    "youOwe": "Bạn nợ {{amount}}",
+    "noActiveLoans": "Không có khoản vay đang mở với liên hệ này.",
+    "remainingHintLent": "{{name}} nợ bạn {{total}} — còn {{left}} sau giao dịch này.",
+    "remainingHintBorrowed": "Bạn nợ {{name}} {{total}} — còn {{left}} sau giao dịch này.",
+    "types": {
+      "expense": "Chi tiêu",
+      "income": "Thu nhập",
+      "transfer": "Chuyển khoản",
+      "loan": "Vay / nợ"
+    },
+    "debt": {
+      "LENT": {
+        "label": "Cho vay",
+        "sub": "Họ nợ bạn"
+      },
+      "BORROWED": {
+        "label": "Đi vay",
+        "sub": "Bạn nợ họ"
+      },
+      "COLLECTED": {
+        "label": "Thu nợ",
+        "sub": "Họ trả lại bạn"
+      },
+      "REPAID": {
+        "label": "Trả nợ",
+        "sub": "Bạn trả lại họ"
+      }
+    },
+    "save": {
+      "default": "Lưu",
+      "transfer": "Chuyển tiền",
+      "debt": "Ghi khoản vay",
+      "collection": "Ghi thu nợ",
+      "repayment": "Ghi trả nợ"
+    },
+    "errors": {
+      "amount": "Nhập số tiền.",
+      "account": "Chọn tài khoản.",
+      "toAccount": "Chọn tài khoản nhận.",
+      "sameAccount": "Chọn hai tài khoản khác nhau.",
+      "contact": "Chọn hoặc nhập tên đối tác.",
+      "loan": "Chọn khoản vay cần tất toán.",
+      "overRemaining": "Nhiều hơn số còn lại của khoản vay."
+    }
+  },
+  "home": {
+    "hello": "Chào, {{name}}",
+    "totalAssets": "Tổng tài sản",
+    "net": "Ròng",
+    "upThisMonth": "tăng trong tháng",
+    "downThisMonth": "giảm trong tháng",
+    "whereItSits": "Tiền đang ở đâu",
+    "cashFlow": "Dòng tiền",
+    "in": "Vào",
+    "out": "Ra",
+    "noFlow": "Tháng này chưa có gì — thêm giao dịch để xem dòng tiền.",
+    "all": "Tất cả",
+    "recent": "Gần đây",
+    "seeAll": "Xem tất cả",
+    "emptyHero": "Thêm tài khoản và tiền của bạn sẽ hiện ở đây.",
+    "firstSteps": "Bước đầu tiên",
+    "addAccount": "Thêm tài khoản",
+    "addAccountSub": "Vãng lai, tiết kiệm, tiền mặt hoặc vàng",
+    "recordTransaction": "Ghi một giao dịch",
+    "recordTransactionSub": "Chỉ mất khoảng năm giây",
+    "createBudget": "Tạo ngân sách",
+    "createBudgetSub": "Hạn mức tháng cho từng danh mục",
+    "emptyFlow": "Tiền vào và ra theo từng tuần — bắt đầu từ giao dịch đầu tiên của bạn.",
+    "weekShort": "Tuần {{n}}"
+  },
+  "budgets": {
+    "title": "Ngân sách",
+    "empty": "Chưa có ngân sách — đặt một mức để giữ danh mục trong tầm kiểm soát.",
+    "newTitle": "Ngân sách mới",
+    "editTitle": "Sửa ngân sách",
+    "monthlyLimit": "Hạn mức tháng",
+    "deleteTitle": "Bỏ ngân sách?",
+    "deleteMessage": "{{name}} sẽ không còn hạn mức.",
+    "onTrack": "Đúng hướng",
+    "almostThere": "Sắp chạm mức",
+    "overBy": "Vượt {{amount}}",
+    "setBudgetFor": "Đặt ngân sách {{name}}",
+    "spentNoLimit": "Đã chi {{amount}} tháng này · chưa có hạn mức",
+    "setUp": "Thiết lập",
+    "spentOf": "{{spent}} / {{limit}}"
+  },
+  "insights": {
+    "eyebrow": "Báo cáo",
+    "title": "Thống kê",
+    "month": "Tháng",
+    "year": "Năm",
+    "netWorth": "Tài sản ròng",
+    "thisMonth": "tháng này",
+    "spendingByCategory": "Chi tiêu theo danh mục",
+    "spendingSub": "Tháng này tiền đi đâu",
+    "balances": "Số dư",
+    "allAccounts": "Tất cả tài khoản",
+    "totalOut": "Tổng chi",
+    "totalIn": "Tổng thu",
+    "dailyAverage": "Trung bình ngày",
+    "noSpending": "Chưa có dữ liệu để vẽ biểu đồ.",
+    "topShare": "{{name}} chiếm {{pct}}% của tháng. Nhấn vào thanh để xem xu hướng.",
+    "trendEyebrow": "Xu hướng · 6 tháng",
+    "thisMonthLabel": "Tháng này",
+    "sixMonthAvg": "TB 6 tháng",
+    "compareWith": "So sánh với",
+    "perMonth": "tháng",
+    "overBudget": "{{name}} vượt ngân sách {{amount}}.",
+    "emptyHero": "Báo cáo được xây từ tài khoản và hoạt động của bạn.",
+    "netWorth6m": "Tài sản ròng · 6 tháng",
+    "addAccount": "Thêm tài khoản",
+    "balancesAppear": "Số dư sẽ hiện ở đây"
   }
 }

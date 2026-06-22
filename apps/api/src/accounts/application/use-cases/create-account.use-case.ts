@@ -6,7 +6,9 @@ import type { CreateAccountDto } from '../dtos/create-account.dto';
 
 @Injectable()
 export class CreateAccountUseCase {
-  constructor(@Inject(ACCOUNT_REPOSITORY) private readonly accounts: IAccountRepository) {}
+  constructor(
+    @Inject(ACCOUNT_REPOSITORY) private readonly accounts: IAccountRepository,
+  ) {}
 
   execute(userId: string, dto: CreateAccountDto): Promise<AccountEntity> {
     return this.accounts.create({

@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from '../users/users.module';
 import { AccountsModule } from '../accounts/accounts.module';
+import { CategoriesModule } from '../categories/categories.module';
 import { RegisterUseCase } from './application/use-cases/register.use-case';
 import { LoginUseCase } from './application/use-cases/login.use-case';
 import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
@@ -14,6 +15,7 @@ import { AuthController } from './presentation/auth.controller';
   imports: [
     UsersModule,
     AccountsModule,
+    CategoriesModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

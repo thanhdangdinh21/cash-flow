@@ -4,7 +4,9 @@ import type { IAccountRepository } from '../../domain/account.repository.interfa
 
 @Injectable()
 export class ListAccountsUseCase {
-  constructor(@Inject(ACCOUNT_REPOSITORY) private readonly accounts: IAccountRepository) {}
+  constructor(
+    @Inject(ACCOUNT_REPOSITORY) private readonly accounts: IAccountRepository,
+  ) {}
 
   execute(userId: string) {
     return this.accounts.findAllActiveByOwner(userId);

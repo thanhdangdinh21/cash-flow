@@ -8,6 +8,7 @@ import { DeleteAccountUseCase } from './application/use-cases/delete-account.use
 import { SeedDefaultAccountsUseCase } from './application/use-cases/seed-default-accounts.use-case';
 import { CreateHoldingUseCase } from './application/use-cases/create-holding.use-case';
 import { DeleteHoldingUseCase } from './application/use-cases/delete-holding.use-case';
+import { GetAccountDetailUseCase } from './application/use-cases/get-account-detail.use-case';
 import { AccountsController } from './presentation/accounts.controller';
 
 @Module({
@@ -20,6 +21,7 @@ import { AccountsController } from './presentation/accounts.controller';
     SeedDefaultAccountsUseCase,
     CreateHoldingUseCase,
     DeleteHoldingUseCase,
+    GetAccountDetailUseCase,
   ],
   controllers: [AccountsController],
   exports: [SeedDefaultAccountsUseCase],
