@@ -1,19 +1,15 @@
-import { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  ActivityIndicator,
-  ScrollView,
-} from "react-native";
-import { Link, useRouter } from "expo-router";
-import { useMutation } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { api, TOKEN } from "@/lib/api";
-import { getI18n } from "@/lib/i18n";
+import { useState } from 'react';
+import { KeyboardAvoidingView, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Link, useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { api, TOKEN } from '@/lib/api';
+import { getI18n } from '@/lib/i18n';
+import { Page } from '@/components/ui/Page';
+import { Head } from '@/components/ui/Head';
+import { InputField } from '@/components/ui/Field';
+import { BlockBtn } from '@/components/ui/BlockBtn';
 
 interface RegisterResponse {
   accessToken: string;
@@ -23,106 +19,103 @@ interface RegisterResponse {
 export default function RegisterScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [error, setError] = useState("");
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
 
   const mutation = useMutation({
     mutationFn: (data: typeof form) =>
-      api.post<RegisterResponse>("/auth/register", data).then((r) => r.data),
+      api.post<RegisterResponse>('/auth/register', data).then((r) => r.data),
     onSuccess: async ({ accessToken, language }) => {
       await TOKEN.set(accessToken);
       await getI18n().changeLanguage(language);
-      router.replace("/(app)");
+      router.replace('/(app)');
     },
     onError: (err: any) => {
-      setError(err.response?.data?.message ?? t("common.error"));
+      setError(err.response?.data?.message ?? t('common.error'));
     },
   });
 
-  function handleSubmit() {
-    setError("");
-    mutation.mutate(form);
-  }
-
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1 bg-paper"
     >
-      <ScrollView
-        contentContainerClassName="flex-1 justify-center px-6"
-        keyboardShouldPersistTaps="handled"
-      >
-        <Text className="font-mono-semibold text-2xs uppercase tracking-[2px] text-ink-3 text-center mb-6">
-          Money Flow
-        </Text>
-        <View className="bg-surface rounded-xl p-8 border border-line">
-          <Text className="font-sans-semibold text-xl text-ink text-center mb-1 tracking-tight">
-            {t("auth.register.title")}
-          </Text>
-          <Text className="font-sans text-sm text-ink-3 text-center mb-6">
-            {t("auth.register.subtitle")}
-          </Text>
+      <Page bottom={36}>
+        <Head eyebrow={t('auth.register.subtitle')} title={t('auth.register.title')} />
 
-          <Text className="font-sans-medium text-sm text-ink mb-1.5">{t("auth.register.name")}</Text>
-          <TextInput
-            className="h-12 border border-line-2 rounded-md px-4 font-sans text-base text-ink bg-surface mb-4"
-            placeholder="Your name"
-            placeholderTextColor="#B6B2A6"
+        <View className="border-t border-line-2">
+          <InputField
+            first
+            label={t('auth.register.name')}
             value={form.name}
             onChangeText={(v) => setForm({ ...form, name: v })}
+            placeholder={t('auth.register.namePlaceholder')}
+            autoCapitalize="words"
+            trailing={<View />}
           />
-
-          <Text className="font-sans-medium text-sm text-ink mb-1.5">{t("auth.register.email")}</Text>
-          <TextInput
-            className="h-12 border border-line-2 rounded-md px-4 font-sans text-base text-ink bg-surface mb-4"
-            placeholder="you@example.com"
-            placeholderTextColor="#B6B2A6"
-            autoCapitalize="none"
-            keyboardType="email-address"
+          <InputField
+            label={t('auth.register.email')}
             value={form.email}
             onChangeText={(v) => setForm({ ...form, email: v })}
+            placeholder="you@example.com"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            trailing={<View />}
           />
-
-          <Text className="font-sans-medium text-sm text-ink mb-1.5">{t("auth.register.password")}</Text>
-          <TextInput
-            className="h-12 border border-line-2 rounded-md px-4 font-sans text-base text-ink bg-surface mb-4"
-            placeholder={t("auth.register.passwordHint")}
-            placeholderTextColor="#B6B2A6"
-            secureTextEntry
+          <InputField
+            label={t('auth.register.password')}
             value={form.password}
             onChangeText={(v) => setForm({ ...form, password: v })}
+            placeholder={t('auth.register.passwordHint')}
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+            trailing={
+              <TouchableOpacity onPress={() => setShowPassword((s) => !s)} hitSlop={8}>
+                <Ionicons
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={17}
+                  color="#8C897D"
+                />
+              </TouchableOpacity>
+            }
           />
+        </View>
 
-          {error ? (
-            <View className="bg-negative-soft rounded-md px-4 py-2.5 mb-4">
-              <Text className="font-sans text-sm text-negative">{error}</Text>
-            </View>
-          ) : null}
-
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={mutation.isPending}
-            activeOpacity={0.85}
-            className="h-12 bg-ink rounded-md items-center justify-center mb-6"
-          >
-            {mutation.isPending ? (
-              <ActivityIndicator color="#FAF9F6" />
-            ) : (
-              <Text className="font-sans-semibold text-paper text-base">
-                {t("auth.register.submit")}
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          <Text className="font-sans text-sm text-ink-3 text-center">
-            {t("auth.register.hasAccount")}{" "}
-            <Link href="/(auth)/login" className="font-sans-semibold text-ink">
-              {t("auth.register.login")}
-            </Link>
+        {/* Seeded-accounts note (design: register screen panel) */}
+        <View className="bg-paper-2 rounded-lg px-4 py-3.5 mt-5 flex-row gap-3">
+          <Ionicons name="wallet-outline" size={18} color="#181712" style={{ marginTop: 1 }} />
+          <Text className="flex-1 font-sans text-[13.5px] leading-5 text-ink-2">
+            {t('auth.register.seedNote')}
           </Text>
         </View>
-      </ScrollView>
+
+        {error ? (
+          <View className="bg-negative-soft rounded-md px-4 py-2.5 mt-4">
+            <Text className="font-sans text-sm text-negative">{error}</Text>
+          </View>
+        ) : null}
+
+        <View className="mt-auto pt-6">
+          <BlockBtn
+            onPress={() => {
+              setError('');
+              mutation.mutate(form);
+            }}
+            loading={mutation.isPending}
+          >
+            {t('auth.register.submit')}
+          </BlockBtn>
+          <View className="items-center pt-4">
+            <Text className="font-sans text-sm text-ink-3">
+              {t('auth.register.hasAccount')}{' '}
+              <Link href="/(auth)/login" className="font-sans-semibold text-ink">
+                {t('auth.register.login')}
+              </Link>
+            </Text>
+          </View>
+        </View>
+      </Page>
     </KeyboardAvoidingView>
   );
 }

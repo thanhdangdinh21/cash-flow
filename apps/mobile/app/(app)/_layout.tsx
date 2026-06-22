@@ -22,5 +22,10 @@ export default function AppLayout() {
     );
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#FAF9F6" } }}>
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="add" options={{ presentation: "modal" }} />
+    </Stack>
+  );
 }

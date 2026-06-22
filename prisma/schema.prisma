@@ -73,6 +73,33 @@ enum SnapshotPeriod {
   MONTHLY
 }
 
+// Plain-language transaction kind. Drives which double-entry mapping the
+// CreateTransactionUseCase applies and how reports route the row — see the
+// TRANSACTION TYPE → REPORT ROUTING reference at the bottom of this file.
+enum TransactionType {
+  EXPENSE
+  INCOME
+  TRANSFER
+  LOAN
+}
+
+// Loan lifecycle. ACTIVE while remaining_amount > 0; auto-flips to SETTLED
+// when a settlement transaction brings remaining_amount to 0.
+enum LoanStatus {
+  ACTIVE
+  SETTLED
+}
+
+// Who owes whom for a Loan:
+//   LENT     → they owe you  (origin debits the system Receivables ASSET)
+//   BORROWED → you owe them  (origin credits the system Payables LIABILITY)
+// Settlement direction is derived: LENT → collection (money in),
+// BORROWED → repayment (money out). Not stored per settlement.
+enum LoanDirection {
+  LENT
+  BORROWED
+}
+
 // =============================================================================
 // USERS
 // =============================================================================
@@ -103,6 +130,9 @@ model User {
   accountMembers    AccountUser[]
   categories        Category[]
   transactions      Transaction[]
+  contacts          Contact[]
+  loans             Loan[]
+  budgets           Budget[]
   netWorthSnapshots NetWorthSnapshot[]
   categorySnapshots CategorySnapshot[]
 
@@ -148,6 +178,11 @@ model Account {
 
   isActive       Boolean     @default(true) @map("is_active")
   isDefault      Boolean     @default(false) @map("is_default") // true = seeded at signup
+  // System accounts are bookkeeping plumbing hidden from the user's account
+  // list and pickers: the seeded General income / General expense pair, plus
+  // the lazily-created loan Receivables (ASSET) / Payables (LIABILITY).
+  // Looked up by (owner_id, is_system, type).
+  isSystem       Boolean     @default(false) @map("is_system")
   deletedAt      DateTime?   @map("deleted_at") // soft delete — never hard delete
 
   createdAt      DateTime    @default(now()) @map("created_at")
@@ -324,6 +359,7 @@ model Category {
   user              User               @relation(fields: [userId], references: [id])
   subCategories     SubCategory[]
   categorySnapshots CategorySnapshot[]
+  budgets           Budget[]
 
   @@map("categories")
 }
@@ -375,6 +411,9 @@ model Transaction {
   id              String   @id @default(uuid())
   userId          String   @map("user_id")
 
+  // Plain-language kind — drives the double-entry mapping and report routing
+  transactionType TransactionType @default(EXPENSE) @map("transaction_type")
+
   // The two accounts involved — both required, must be different
   debitAccountId  String   @map("debit_account_id")
   creditAccountId String   @map("credit_account_id")
@@ -393,8 +432,17 @@ model Transaction {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  // FK hooks for future features — nullable, features not built yet
-  contactId       String?  @map("contact_id")        // v2: lender/borrower
+  // Report routing — server defaults this to true for TRANSFER and LOAN
+  // (moving money around is neither income nor spending), false otherwise.
+  // User-editable per transaction.
+  excludeFromReports Boolean @default(false) @map("exclude_from_reports")
+
+  // Loan linkage — set on the loan's origin transaction AND every settlement
+  loanId          String?  @map("loan_id")
+
+  // Lender/borrower on LOAN transactions
+  contactId       String?  @map("contact_id")
+  // FK hook for future features — nullable, feature not built yet
   recurringRuleId String?  @map("recurring_rule_id") // v3: recurring rules
 
   // Relations
@@ -402,9 +450,102 @@ model Transaction {
   debitAccount   Account        @relation("DebitAccount", fields: [debitAccountId], references: [id])
   creditAccount  Account        @relation("CreditAccount", fields: [creditAccountId], references: [id])
   subCategory    SubCategory?   @relation(fields: [subCategoryId], references: [id])
+  loan           Loan?          @relation(fields: [loanId], references: [id])
+  contact        Contact?       @relation(fields: [contactId], references: [id])
   journalEntries JournalEntry[]
 
   @@map("transactions")
+}
+
+// =============================================================================
+// CONTACTS (lenders & borrowers)
+// =============================================================================
+// Minimal v1: a named counterparty for LOAN transactions plus a denormalized
+// signed running balance, kept in sync with loans inside the same
+// prisma.$transaction():
+//   balance > 0 → they owe you   (net of your LENT loans)
+//   balance < 0 → you owe them   (net of your BORROWED loans)
+//
+// Service-layer invariant: name unique among active (deleted_at IS NULL)
+// contacts per user — enforced in the use-case, not the DB (soft-delete safe).
+// -----------------------------------------------------------------------------
+
+model Contact {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  name      String
+  balance   Decimal   @default(0) @db.Decimal(18, 4)
+
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user         User          @relation(fields: [userId], references: [id])
+  loans        Loan[]
+  transactions Transaction[]
+
+  @@map("contacts")
+}
+
+// =============================================================================
+// LOANS
+// =============================================================================
+// One row per individual debt, created atomically with its origin transaction
+// (transaction_type = LOAN). Settlements are later LOAN transactions carrying
+// the same loan_id; each decrements remaining_amount and status auto-flips to
+// SETTLED when it reaches 0. Guard: settlement amount ≤ remaining_amount.
+//
+// Interest is display-only in v1 (no accrual math): e.g. rate 2 + period
+// "yearly" renders as "2% · yearly".
+// -----------------------------------------------------------------------------
+
+model Loan {
+  id              String        @id @default(uuid())
+  userId          String        @map("user_id")
+  contactId       String        @map("contact_id")
+  direction       LoanDirection
+  principal       Decimal       @db.Decimal(18, 4)
+  remainingAmount Decimal       @map("remaining_amount") @db.Decimal(18, 4)
+  interestRate    Decimal?      @map("interest_rate") @db.Decimal(8, 4)
+  interestPeriod  String?       @map("interest_period") // "yearly" | "monthly"
+  status          LoanStatus    @default(ACTIVE)
+  date            DateTime      // origin date of the loan
+
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  user         User          @relation(fields: [userId], references: [id])
+  contact      Contact       @relation(fields: [contactId], references: [id])
+  transactions Transaction[] // origin + settlements
+
+  @@map("loans")
+}
+
+// =============================================================================
+// BUDGETS
+// =============================================================================
+// Minimal v1: one monthly spending limit per category per user. "Spent" is
+// computed at query time from EXPENSE transactions in the month — no stored
+// progress. Hard delete (no history requirement).
+// -----------------------------------------------------------------------------
+
+model Budget {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  categoryId   String   @map("category_id")
+  monthlyLimit Decimal  @map("monthly_limit") @db.Decimal(18, 4)
+
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([userId, categoryId])
+  @@map("budgets")
 }
 
 // =============================================================================
@@ -559,6 +700,17 @@ model CategorySnapshot {
 // NET WORTH CALCULATION (for NetWorthSnapshot):
 //   net_worth = SUM(current_balance WHERE type IN [ASSET])
 //             - SUM(current_balance WHERE type IN [LIABILITY])
+//
+// TRANSACTION TYPE → REPORT ROUTING:
+//   EXPENSE  → spending reports (by category, trends); exclude_from_reports=false
+//   INCOME   → income reports; exclude_from_reports=false
+//   TRANSFER → excluded from in/out reports (exclude_from_reports=true);
+//              affects account balances only
+//   LOAN     → excluded from income/spending (exclude_from_reports=true);
+//              affects net worth via the system Receivables (ASSET) /
+//              Payables (LIABILITY) account balances
+//   All in/out report aggregations filter exclude_from_reports = false.
+//   Account lists and pickers exclude is_system accounts.
 //
 // REPORT TABLE SUMMARY:
 //   account_snapshots   → account balance over time, commodity holdings

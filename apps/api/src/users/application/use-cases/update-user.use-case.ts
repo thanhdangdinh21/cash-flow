@@ -5,7 +5,9 @@ import type { UpdateUserDto } from '../dtos/update-user.dto';
 
 @Injectable()
 export class UpdateUserUseCase {
-  constructor(@Inject(USER_REPOSITORY) private readonly users: IUserRepository) {}
+  constructor(
+    @Inject(USER_REPOSITORY) private readonly users: IUserRepository,
+  ) {}
 
   async execute(userId: string, dto: UpdateUserDto) {
     const user = await this.users.findById(userId);

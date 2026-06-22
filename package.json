@@ -9,9 +9,11 @@
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
     "dotenv": "^17.4.2",
     "prettier": "^3.7.4",
     "prisma": "^7.8.0",
+    "tsx": "^4.22.4",
     "turbo": "^2.9.9",
     "typescript": "5.9.2"
   },
@@ -21,7 +23,8 @@
   },
   "pnpm": {
     "overrides": {
-      "@types/react": "19.2.2"
+      "@types/react": "19.2.2",
+      "@react-navigation/bottom-tabs": "7.16.1"
     }
   },
   "dependencies": {
