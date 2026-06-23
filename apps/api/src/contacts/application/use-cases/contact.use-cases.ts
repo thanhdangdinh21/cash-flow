@@ -48,7 +48,7 @@ export class ListContactLoansUseCase {
     });
     if (!contact) throw new NotFoundException('Contact not found');
     return this.prisma.loan.findMany({
-      where: { contactId, userId, ...(status && { status }) },
+      where: { contactId, userId, deletedAt: null, ...(status && { status }) },
       orderBy: { date: 'desc' },
     });
   }

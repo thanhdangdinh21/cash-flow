@@ -199,7 +199,7 @@ export class CreateTransactionUseCase {
     // Settlement of an existing loan
     if (dto.loanId) {
       const loan = await tx.loan.findFirst({
-        where: { id: dto.loanId, userId },
+        where: { id: dto.loanId, userId, deletedAt: null },
       });
       if (!loan) throw new NotFoundException('Loan not found');
       if (loan.status === 'SETTLED')
