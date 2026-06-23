@@ -25,7 +25,7 @@ export class DeleteHoldingUseCase {
     if (holding.deletedAt)
       throw new BadRequestException('Holding is already deleted');
     const hasEntries = await this.prisma.journalEntry.count({
-      where: { holdingId },
+      where: { holdingId, deletedAt: null },
     });
     if (hasEntries > 0)
       throw new BadRequestException(
