@@ -103,6 +103,23 @@ pnpm exec prisma studio          # GUI
 - `seed.ts` is **idempotent** and only populates the global `DefaultCategory` / `DefaultSubCategory` list. Per-user data (accounts, categories) is seeded **at signup** in the API's use-cases.
 - Prisma 7 uses a driver adapter — see [`prisma.service.ts`](apps/api/src/prisma/prisma.service.ts).
 
+## Running with Docker
+
+The backend ships with a production [`Dockerfile`](apps/api/Dockerfile) and a [`docker-compose.yml`](docker-compose.yml) that runs the API **and** a Postgres database together — no local Postgres install needed.
+
+```bash
+docker compose up --build        # start API (:3001) + Postgres (:5432)
+docker compose down              # stop (database data is kept)
+docker compose down -v           # stop AND wipe the database volume
+docker compose logs -f api       # follow the API logs
+```
+
+What happens on `up`: Postgres starts → a one-off **`migrate`** service applies Prisma migrations (`prisma migrate deploy`) and exits → the **`api`** starts on `http://localhost:3001/api`. The database lives in a named volume (`pgdata`), so your data survives restarts.
+
+- **Config:** copy [`.env.example`](.env.example) to `.env` and set `JWT_SECRET`. Inside Compose the API reaches the DB at host `postgres` (the service name), not `localhost` — Compose sets that `DATABASE_URL` for you.
+- **Fast inner loop:** you can still run the API natively (`pnpm --filter api start:dev`) against the Compose Postgres — point your local `.env` `DATABASE_URL` at `localhost:5432`.
+- **Image layout:** a multi-stage build. The `api` runtime image is a lean **~545 MB** (production deps only, via `pnpm deploy`). The Prisma CLI and full toolchain live only in the `builder` stage, which the throwaway `migrate` service reuses — so they never bloat the deployable API image.
+
 ## Domain Model
 
 A **real double-entry ledger**, not a list of transactions:

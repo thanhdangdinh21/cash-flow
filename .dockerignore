@@ -1,0 +1,27 @@
+# Installed / built inside the image — never copy from host
+**/node_modules
+**/dist
+**/.next
+**/.expo
+**/.turbo
+**/build
+**/coverage
+generated
+
+# Secrets & local env (passed in at runtime, not baked into the image)
+**/.env
+**/.env.*
+!**/.env.example
+
+# VCS, IDE, tooling, docs — not needed to build the API
+.git
+.gitignore
+.idea
+.vscode
+.claude
+.superpowers
+.worktrees
+docs
+
+# OS cruft
+**/.DS_Store

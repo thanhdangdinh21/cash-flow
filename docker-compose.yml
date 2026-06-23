@@ -1,0 +1,56 @@
+# Local full-stack: the NestJS API + a Postgres database.
+#   docker compose up --build        → start everything
+#   docker compose down              → stop (keeps data)
+#   docker compose down -v           → stop and wipe the database volume
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: money_flow
+    ports:
+      - "5432:5432" # exposed so native `start:dev` / Prisma Studio can connect too
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d money_flow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-off: applies Prisma migrations, then exits. Uses the `builder` stage
+  # because it has the Prisma CLI — the lean `api` image deliberately doesn't.
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: builder
+    command: pnpm exec prisma migrate deploy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/money_flow
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build:
+      context: . # repo root — the build needs the lockfile, prisma/, and packages/
+      dockerfile: apps/api/Dockerfile
+      target: runtime
+    restart: unless-stopped
+    environment:
+      # Inside the compose network the DB host is the service name `postgres`,
+      # NOT localhost (to the api container, localhost means itself).
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/money_flow
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully # run migrations before the API starts
+
+volumes:
+  pgdata:
