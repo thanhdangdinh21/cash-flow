@@ -25,7 +25,11 @@ export class GetAccountDetailUseCase {
     );
 
     const entries = await this.prisma.journalEntry.findMany({
-      where: { accountId: id, transaction: { date: { gte: monthStart } } },
+      where: {
+        accountId: id,
+        deletedAt: null,
+        transaction: { date: { gte: monthStart } },
+      },
       select: { type: true, amount: true },
     });
     // For an asset account: DEBIT = money in, CREDIT = money out
@@ -38,7 +42,7 @@ export class GetAccountDetailUseCase {
 
     const lots = account.holdings.length
       ? await this.prisma.journalEntry.findMany({
-          where: { accountId: id, holdingId: { not: null } },
+          where: { accountId: id, holdingId: { not: null }, deletedAt: null },
           orderBy: { createdAt: 'desc' },
           take: 20,
           select: {
