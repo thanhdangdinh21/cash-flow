@@ -34,11 +34,12 @@ export class HomeReportUseCase {
           excludeFromReports: false,
           transactionType: { in: ['EXPENSE', 'INCOME'] },
           date: { gte: start, lt: end },
+          deletedAt: null,
         },
         select: { amount: true, transactionType: true, date: true },
       }),
       this.prisma.transaction.findMany({
-        where: { userId },
+        where: { userId, deletedAt: null },
         orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
         take: 5,
         include: {

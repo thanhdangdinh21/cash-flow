@@ -36,6 +36,7 @@ export class SpendingByCategoryUseCase {
         transactionType: type,
         excludeFromReports: false,
         date: { gte: start, lt: end },
+        deletedAt: null,
       },
       select: {
         amount: true,
@@ -110,6 +111,7 @@ export class CategoryTrendUseCase {
         excludeFromReports: false,
         date: { gte: startBoundary },
         subCategory: { categoryId },
+        deletedAt: null,
       },
       select: { amount: true, date: true },
     });

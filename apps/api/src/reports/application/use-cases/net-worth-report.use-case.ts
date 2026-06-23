@@ -47,6 +47,7 @@ export class NetWorthReportUseCase {
         where: {
           account: { ownerId: userId, type: { in: ['ASSET', 'LIABILITY'] } },
           transaction: { date: { gte: boundaries[0] } },
+          deletedAt: null,
         },
         select: {
           type: true,
