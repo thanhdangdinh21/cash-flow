@@ -109,7 +109,7 @@ A **real double-entry ledger**, not a list of transactions:
 
 - **Every transaction = two `JournalEntry` rows** (one `DEBIT`, one `CREDIT`) between two accounts; `SUM(debits) = SUM(credits)` always holds.
 - **Balances update incrementally** inside a `prisma.$transaction()` with the journal writes, so they never drift. Whether a debit raises or lowers a balance depends on the account type's normal side (see the reference at the bottom of `schema.prisma`).
-- **Deletes are hard deletes — a deliberate UX choice.** The schema comments call journal entries immutable, but the app intentionally does the opposite: [`DeleteTransactionUseCase`](apps/api/src/transactions/application/use-cases/delete-transaction.use-case.ts) hard-deletes the transaction + its entries and atomically reverses every side effect (balances, holdings, contact/loan balances), so a deleted mistake vanishes from Activity. (Editing isn't implemented yet; model it as reverse-old + apply-new.)
+- **Deletes are soft deletes — a deliberate UX choice.** The schema comments call journal entries immutable, but the app intentionally does the opposite: [`DeleteTransactionUseCase`](apps/api/src/transactions/application/use-cases/delete-transaction.use-case.ts) stamps `deletedAt` on the transaction + its journal entries (and, for a loan's origin, the loan itself) and atomically reverses every side effect (balances, holdings, contact/loan balances), so a deleted mistake vanishes from Activity while the row persists for recovery/audit. Every user-facing read and live aggregation filters `deletedAt: null` so soft-deleted rows stay hidden. (Editing isn't implemented yet; model it as reverse-old + apply-new.)
 - **`transactionType`** (`EXPENSE` / `INCOME` / `TRANSFER` / `LOAN`) drives the debit/credit mapping and report routing.
 - **System accounts** (`is_system`) are plumbing (General income/expense, loan Receivables/Payables) hidden from user lists and pickers.
 - **Holdings** track multi-commodity positions (gold, BTC, shares) inside an `ASSET` account, each with its own quantity and cost basis.
@@ -125,7 +125,7 @@ Reports are computed **live** today from journal entries (e.g. the net-worth cha
 - **`category_snapshots` = per-month flow** ("money used/earned that month"): a transaction only touches its own month's row, even back-dated — spending doesn't carry forward, so the monthly reset is implicit in the key.
 - **`account_snapshots` + `net_worth_snapshots` = cumulative** month-end balance: a current-month transaction touches only the latest row; a back-dated one touches its month **+ every later month** (one indexed `UPDATE ... WHERE period_date >= P0` — cheap at monthly grain). We store the **balance**, not a delta, so reads stay O(1); "balance now" comes from live `currentBalance`.
 - **`rebuildRange(userId, fromDate)`** recomputes all three tables from journal entries — the oracle for backfill, repair, and tests. Build it first; add an optional periodic reconciliation as a drift safety net.
-- **Coupling:** a hard delete must reverse the affected snapshot rows in the same transaction (its month for flows; month + later months for cumulative), or past reports drift.
+- **Coupling:** a delete (now a soft delete — set `deletedAt`) must reverse the affected snapshot rows in the same transaction (its month for flows; month + later months for cumulative), or past reports drift; `rebuildRange` must filter `deletedAt: null` on journal entries so soft-deleted rows don't re-enter the rebuild.
 
 ## API Surface
 
