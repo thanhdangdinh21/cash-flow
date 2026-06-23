@@ -22,7 +22,8 @@ export async function resetDb(prisma: PrismaService) {
     SELECT tablename FROM pg_tables
     WHERE schemaname = 'public' AND tablename <> '_prisma_migrations'`;
   const list = rows.map((r) => `"public"."${r.tablename}"`).join(', ');
-  if (list) await prisma.$executeRawUnsafe(`TRUNCATE ${list} RESTART IDENTITY CASCADE`);
+  if (list)
+    await prisma.$executeRawUnsafe(`TRUNCATE ${list} RESTART IDENTITY CASCADE`);
 }
 
 // Minimal fixture: a user with a cash ASSET account, used by most tests.
@@ -31,7 +32,12 @@ export async function seedUser(prisma: PrismaService, currency = 'USD') {
     data: { email: `u${Date.now()}@test.dev`, passwordHash: 'x', name: 'Test' },
   });
   const cash = await prisma.account.create({
-    data: { ownerId: user.id, name: 'Cash', type: 'ASSET', currencyCode: currency },
+    data: {
+      ownerId: user.id,
+      name: 'Cash',
+      type: 'ASSET',
+      currencyCode: currency,
+    },
   });
   return { userId: user.id, cashId: cash.id };
 }

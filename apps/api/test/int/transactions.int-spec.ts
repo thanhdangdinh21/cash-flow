@@ -36,30 +36,45 @@ describe('transaction soft delete', () => {
       date: '2026-03-15',
     } as any);
 
-    const cashAfterCreate = await prisma.account.findUniqueOrThrow({ where: { id: cashId } });
+    const cashAfterCreate = await prisma.account.findUniqueOrThrow({
+      where: { id: cashId },
+    });
     expect(Number(cashAfterCreate.currentBalance)).toBe(-50);
 
     await del.execute(userId, txn!.id);
 
-    const row = await prisma.transaction.findUniqueOrThrow({ where: { id: txn!.id } });
+    const row = await prisma.transaction.findUniqueOrThrow({
+      where: { id: txn!.id },
+    });
     expect(row.deletedAt).not.toBeNull();
-    const entries = await prisma.journalEntry.findMany({ where: { transactionId: txn!.id } });
+    const entries = await prisma.journalEntry.findMany({
+      where: { transactionId: txn!.id },
+    });
     expect(entries.every((e) => e.deletedAt !== null)).toBe(true);
 
-    const cashAfterDelete = await prisma.account.findUniqueOrThrow({ where: { id: cashId } });
+    const cashAfterDelete = await prisma.account.findUniqueOrThrow({
+      where: { id: cashId },
+    });
     expect(Number(cashAfterDelete.currentBalance)).toBe(0);
 
     const page = await list.execute(userId, {});
     expect(page.items).toHaveLength(0);
-    await expect(get.execute(userId, txn!.id)).rejects.toBeInstanceOf(NotFoundException);
+    await expect(get.execute(userId, txn!.id)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 
   it('rejects double delete', async () => {
     const { userId, cashId } = await seedUser(prisma);
     const txn = await create.execute(userId, {
-      transactionType: 'EXPENSE', accountId: cashId, amount: 10, date: '2026-03-15',
+      transactionType: 'EXPENSE',
+      accountId: cashId,
+      amount: 10,
+      date: '2026-03-15',
     } as any);
     await del.execute(userId, txn!.id);
-    await expect(del.execute(userId, txn!.id)).rejects.toBeInstanceOf(BadRequestException);
+    await expect(del.execute(userId, txn!.id)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 });

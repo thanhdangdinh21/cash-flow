@@ -32,7 +32,8 @@ export class DeleteTransactionUseCase {
     });
     if (!txn) throw new NotFoundException('Transaction not found');
     if (txn.userId !== userId) throw new ForbiddenException();
-    if (txn.deletedAt) throw new BadRequestException('Transaction is already deleted');
+    if (txn.deletedAt)
+      throw new BadRequestException('Transaction is already deleted');
 
     const amount = Number(txn.amount);
     const now = new Date();
