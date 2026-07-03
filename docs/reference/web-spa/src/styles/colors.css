@@ -1,0 +1,122 @@
+/* ============================================================
+   Money Flow — Color tokens
+   Premium, minimal, monochrome-led. Money in = green,
+   money out = clay. One accent hue (green) used sparingly.
+   ============================================================ */
+
+:root {
+  /* ---- Base neutrals (warm) ---- */
+  --paper:          #FAF9F6; /* app background */
+  --paper-2:        #F2F0EA; /* sunken / grouped background */
+  --surface:        #FFFFFF; /* cards, sheets */
+  --surface-2:      #FBFAF7; /* subtle raised on paper */
+  --ink:            #181712; /* primary text / brand black */
+  --ink-2:          #59574E; /* secondary text */
+  --ink-3:          #8C897D; /* tertiary / muted text */
+  --ink-4:          #B6B2A6; /* disabled / placeholder */
+  --line:           #E8E5DD; /* hairline borders */
+  --line-2:         #D8D4C8; /* stronger borders / dividers */
+  --line-strong:    #C4BFB1;
+
+  /* ---- Brand ---- */
+  --brand:          #181712; /* ink-black is the brand mark color */
+  --brand-contrast: #FAF9F6;
+
+  /* ---- Semantic: money + status ---- */
+  --positive:       #1A7A50; /* income, growth, on-track */
+  --positive-2:     #14633F;
+  --positive-soft:  #E4F1E9;
+  --negative:       #BE4A30; /* expense, over-budget */
+  --negative-2:     #9C3A24;
+  --negative-soft:  #F8E8E2;
+  --warning:        #B07A1E; /* nearing limit */
+  --warning-soft:   #F6ECD6;
+  --info:           #2C5E8A;
+  --info-soft:      #E2ECF4;
+
+  /* ---- Accent (used sparingly: focus, charts, highlights) ---- */
+  --accent:         #1A7A50;
+  --accent-soft:    #E4F1E9;
+
+  /* ---- Interaction state layers ---- */
+  --overlay:        rgba(24, 23, 18, 0.45); /* scrims / modals */
+  --hover-ink:      rgba(24, 23, 18, 0.05);
+  --press-ink:      rgba(24, 23, 18, 0.10);
+  --focus-ring:     rgba(26, 122, 80, 0.40);
+
+  /* ============================================================
+     Semantic aliases — reference these in components, not bases.
+     ============================================================ */
+  --bg-app:            var(--paper);
+  --bg-sunken:         var(--paper-2);
+  --surface-card:      var(--surface);
+  --surface-raised:    var(--surface-2);
+
+  --text-strong:       var(--ink);
+  --text-body:         var(--ink-2);
+  --text-muted:        var(--ink-3);
+  --text-disabled:     var(--ink-4);
+  --text-on-brand:     var(--brand-contrast);
+  --text-positive:     var(--positive);
+  --text-negative:     var(--negative);
+
+  --border-subtle:     var(--line);
+  --border-default:    var(--line-2);
+  --border-strong:     var(--line-strong);
+
+  --action-primary-bg:        var(--ink);
+  --action-primary-fg:        var(--paper);
+  --action-primary-hover:     #2A281F;
+  --action-primary-press:     #050402;
+  --action-secondary-bg:      var(--surface);
+  --action-secondary-fg:      var(--ink);
+  --action-secondary-border:  var(--line-2);
+}
+
+/* ============================================================
+   Dark theme — warm near-black. Apply via [data-theme="dark"]
+   on <html> or any ancestor.
+   ============================================================ */
+[data-theme="dark"] {
+  --paper:          #0A0907;
+  --paper-2:        #050504;
+  --surface:        #151410;
+  --surface-2:      #1B1914;
+  --ink:            #F4F2EC;
+  --ink-2:          #ADA99D;
+  --ink-3:          #807C70;
+  --ink-4:          #56534A;
+  --line:           #242219;
+  --line-2:         #302D23;
+  --line-strong:    #423E32;
+
+  --brand:          #F3F1EA;
+  --brand-contrast: #181712;
+
+  --positive:       #4FC68C;
+  --positive-2:     #6FD7A3;
+  --positive-soft:  #14291F;
+  --negative:       #E68565;
+  --negative-2:     #EF9B7F;
+  --negative-soft:  #2E1B14;
+  --warning:        #E0B45C;
+  --warning-soft:   #2C2413;
+  --info:           #74A9D8;
+  --info-soft:      #16222E;
+
+  --accent:         #4FC68C;
+  --accent-soft:    #14291F;
+
+  --overlay:        rgba(0, 0, 0, 0.6);
+  --hover-ink:      rgba(243, 241, 234, 0.06);
+  --press-ink:      rgba(243, 241, 234, 0.12);
+  --focus-ring:     rgba(79, 198, 140, 0.45);
+
+  --action-primary-bg:        var(--ink);
+  --action-primary-fg:        #131210;
+  --action-primary-hover:     #E2DFD4;
+  --action-primary-press:     #FFFFFF;
+  --action-secondary-bg:      var(--surface);
+  --action-secondary-fg:      var(--ink);
+  --action-secondary-border:  var(--line-2);
+}

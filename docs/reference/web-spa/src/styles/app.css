@@ -1,0 +1,171 @@
+/* ============================================================
+   Money Flow Web — desktop shell styles
+   Adapted from the Claude Design prototype (Direction A · Workbench,
+   plus Direction B pieces used by Login and the Add modal).
+   ============================================================ */
+
+html, body, #root { height: 100%; }
+
+.w-app {
+  width: 100%; height: 100%; display: flex; position: relative; overflow: hidden;
+  background: var(--paper); color: var(--ink);
+  font-family: var(--font-sans); text-align: left;
+  --side-bg: var(--paper);
+  --side-fg: var(--ink-2);
+  --side-fg-strong: var(--ink);
+  --side-muted: var(--ink-3);
+  --side-on: var(--hover-ink);
+  --side-line: var(--line);
+}
+
+.w-amount { font-variant-numeric: tabular-nums; font-feature-settings: var(--numeric); white-space: nowrap; }
+.w-pos { color: var(--positive); }
+.w-neg { color: var(--negative); }
+.w-eyebrow {
+  font-family: var(--font-mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);
+}
+.w-kbd {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500; line-height: 1;
+  padding: 3px 5px 2px; border: 1px solid var(--line-2); border-bottom-width: 2px;
+  border-radius: 5px; color: var(--ink-3); background: var(--surface); white-space: nowrap;
+}
+html[data-mfw-kbd="off"] .w-kbd { display: none; }
+
+.w-scrim { position: fixed; inset: 0; background: var(--overlay); z-index: 60; display: flex; justify-content: center; }
+.w-chip { display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.w-legend { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-3); }
+.w-legend i { width: 8px; height: 8px; border-radius: 3px; display: inline-block; }
+
+/* ── Nav (shared) ───────────────────────────────────────── */
+.w-nav { display: flex; flex-direction: column; gap: 2px; }
+.w-nav-it { display: flex; align-items: center; gap: 10px; border-radius: 10px; color: var(--side-fg); cursor: pointer; text-decoration: none; }
+.w-nav-it svg { opacity: 0.75; flex: none; }
+.w-nav-it:hover { background: var(--side-on); }
+.w-nav-it.on { background: var(--side-on); color: var(--side-fg-strong); }
+.w-nav-it.on svg { opacity: 1; }
+.w-nav-it .w-kbd { margin-left: auto; }
+
+/* ── Sidebar A ──────────────────────────────────────────── */
+.wa-side { width: 224px; flex: none; display: flex; flex-direction: column; padding: 14px 12px; border-right: 1px solid var(--side-line); background: var(--side-bg); }
+.wa-side .w-nav-it { height: 34px; padding: 0 10px; font-size: 13.5px; font-weight: 500; }
+.wa-side .w-nav-it.on { font-weight: 600; }
+.wa-ws { display: flex; align-items: center; gap: 9px; padding: 4px 8px 0; margin-bottom: 18px; color: var(--side-fg-strong); }
+.wa-user { display: flex; align-items: center; gap: 10px; padding: 12px 8px 2px; border-top: 1px solid var(--side-line); margin-top: 10px; }
+
+/* Ink sidebar (setting) */
+html[data-mfw-side="ink"] .wa-side {
+  --side-bg: var(--ink);
+  --side-fg: rgba(250, 249, 246, 0.70);
+  --side-fg-strong: #FAF9F6;
+  --side-muted: rgba(250, 249, 246, 0.45);
+  --side-on: rgba(250, 249, 246, 0.12);
+  --side-line: rgba(250, 249, 246, 0.16);
+  border-right-color: var(--ink);
+}
+html[data-mfw-side="ink"] .wa-side .w-kbd { background: transparent; border-color: rgba(250, 249, 246, 0.28); color: rgba(250, 249, 246, 0.55); }
+html[data-theme="dark"][data-mfw-side="ink"] .wa-side {
+  --side-bg: var(--paper-2);
+  --side-fg: var(--ink-2);
+  --side-fg-strong: var(--ink);
+  --side-muted: var(--ink-3);
+  --side-on: var(--hover-ink);
+  --side-line: var(--line);
+  border-right-color: var(--line);
+}
+
+/* ── A · main column ────────────────────────────────────── */
+.wa-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.wa-top { height: 52px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--line); }
+.wa-search { width: 300px; height: 32px; display: flex; align-items: center; gap: 8px; padding: 0 7px 0 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--ink-4); font-size: 12.5px; cursor: pointer; }
+.wa-search:hover { border-color: var(--line-2); }
+.wa-pager { display: flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-2); }
+.wa-pager button { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 0; background: none; border-radius: 6px; color: var(--ink-2); cursor: pointer; padding: 0; }
+.wa-pager button:hover { background: var(--hover-ink); }
+.wa-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; padding: 16px 20px 20px; overflow-y: auto; }
+.wa-foot { height: 34px; flex: none; display: flex; align-items: center; gap: 14px; padding: 0 16px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--ink-3); }
+
+/* A · panels */
+.wa-panel { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.wa-panel-h { display: flex; align-items: center; gap: 8px; padding: 12px 14px 9px; }
+
+/* A · tables */
+.wa-thead { display: grid; align-items: center; height: 30px; padding: 0 14px; gap: 12px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); border-bottom: 1px solid var(--line); }
+.wa-tr { display: grid; align-items: center; height: var(--mfw-row, 42px); padding: 0 14px; gap: 12px; border-bottom: 1px solid var(--line); font-size: 13px; }
+html[data-mfw-density="compact"] .wa-tr { --mfw-row: 34px; font-size: 12.5px; }
+.wa-tr.click { cursor: pointer; }
+.wa-tr.click:hover { background: var(--hover-ink); }
+.wa-tr.sel { background: var(--paper-2); box-shadow: inset 2px 0 0 var(--ink); }
+.wa-day { display: flex; align-items: center; height: 28px; padding: 0 14px; background: var(--paper-2); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); border-bottom: 1px solid var(--line); }
+.wa-ghostrow { display: flex; align-items: center; gap: 9px; height: 38px; padding: 0 14px; color: var(--ink-4); font-size: 12.5px; border-bottom: 1px dashed var(--line-2); }
+button.wa-ghostrow { width: 100%; background: none; border-left: 0; border-right: 0; border-top: 0; cursor: pointer; font-family: inherit; text-align: left; }
+button.wa-ghostrow:hover { color: var(--ink-3); background: var(--hover-ink); }
+
+/* A · inspector */
+.wa-insp { width: 320px; flex: none; border-left: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; padding: 18px; overflow-y: auto; }
+.wa-field { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 38px; border-bottom: 1px solid var(--line); font-size: 12.5px; }
+.wa-field > :first-child { color: var(--ink-3); flex: none; }
+
+/* A · command bar */
+.wa-cmdk { width: 640px; margin-top: 116px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-xl); overflow: hidden; height: fit-content; }
+.wa-cmdk-it { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 14px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
+.wa-cmdk-it:hover { background: var(--hover-ink); }
+.wa-cmdk-it.on { background: var(--paper-2); color: var(--ink); }
+.wa-cmdk-input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font-family: var(--font-sans); font-size: 14.5px; font-weight: 500; color: var(--ink); }
+.wa-cmdk-input::placeholder { color: var(--ink-4); font-weight: 400; }
+
+/* ── B · pieces used by Login + Add modal ───────────────── */
+.wb-display { font-size: 56px; font-weight: 600; letter-spacing: var(--tracking-tighter); line-height: 1.02; color: var(--ink); }
+.wb-modal { width: 560px; margin-top: 88px; background: var(--surface); border-radius: 28px; box-shadow: var(--shadow-xl); padding: 28px 28px 24px; height: fit-content; max-height: calc(100vh - 120px); overflow-y: auto; }
+
+/* ── Inline (row-height) inputs used inside dense screens ── */
+.wa-inline-input {
+  font-family: var(--font-sans); font-size: 13px; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line-2); border-radius: 9px;
+  height: 32px; padding: 0 10px; width: 100%; outline: none; transition: var(--transition-control);
+}
+.wa-inline-input::placeholder { color: var(--ink-4); }
+.wa-inline-input:focus { border-color: var(--ink-2); box-shadow: var(--ring); }
+
+/* filter bar plain-text search input */
+.wa-filter-input { border: 0; outline: 0; background: none; font-family: var(--font-sans); font-size: 12.5px; color: var(--ink); min-width: 0; flex: 1; }
+.wa-filter-input::placeholder { color: var(--ink-4); }
+
+/* role pill */
+.wa-rolepill { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border: 1px solid var(--line-2); border-radius: 8px; font-size: 12; font-weight: 550; background: var(--surface); cursor: pointer; position: relative; font-family: inherit; color: var(--ink); font-size: 12px; }
+.wa-rolepill:hover { background: var(--hover-ink); }
+
+/* dropdown menu */
+.w-menu { position: absolute; top: calc(100% + 4px); right: 0; min-width: 130px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow-lg); padding: 4px; z-index: 30; }
+.w-menu-it { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 10px; border: 0; background: none; border-radius: 7px; font-family: inherit; font-size: 12.5px; color: var(--ink-2); cursor: pointer; text-align: left; }
+.w-menu-it:hover { background: var(--hover-ink); color: var(--ink); }
+
+/* settings popover */
+.w-settings { position: absolute; bottom: 8px; left: 232px; width: 260px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-xl); padding: 14px; z-index: 50; display: flex; flex-direction: column; gap: 12px; }
+.w-seg { display: inline-flex; background: var(--paper-2); border-radius: 9px; padding: 2px; gap: 2px; }
+.w-seg button { border: 0; background: none; border-radius: 7px; padding: 4px 10px; font-family: inherit; font-size: 12px; font-weight: 550; color: var(--ink-3); cursor: pointer; }
+.w-seg button.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-xs); }
+
+/* debt direction tile (add modal) */
+.w-dirtile { padding: 8px 12px 9px; border-radius: 14px; background: transparent; border: 1px solid var(--border-default); cursor: pointer; text-align: left; font-family: inherit; }
+.w-dirtile.on { background: var(--ink); border-color: var(--ink); }
+.w-dirtile .t { font-size: 13.5px; font-weight: 600; line-height: 1.25; color: var(--text-body); }
+.w-dirtile .s { font-size: 10.5px; margin-top: 2px; color: var(--text-muted); }
+.w-dirtile.on .t { color: var(--paper); }
+.w-dirtile.on .s { color: var(--paper); opacity: 0.72; }
+html[data-theme="dark"] .w-dirtile.on .t,
+html[data-theme="dark"] .w-dirtile.on .s { color: var(--brand-contrast); }
+
+/* account-kind tile (create account modal) */
+.w-kindtile { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 16px; background: var(--surface-card); border: 1px solid var(--border-default); color: var(--text-strong); cursor: pointer; text-align: left; font-family: inherit; width: 100%; }
+.w-kindtile.on { background: var(--ink); border-color: var(--ink); color: var(--paper); box-shadow: var(--shadow-sm); }
+html[data-theme="dark"] .w-kindtile.on { color: var(--brand-contrast); }
+.w-kindtile .ic { width: 36px; height: 36px; border-radius: 11px; flex: none; display: flex; align-items: center; justify-content: center; background: var(--bg-sunken); }
+.w-kindtile.on .ic { background: rgba(255,255,255,.16); color: inherit; }
+.w-kindtile .t { font-weight: 600; font-size: 14px; letter-spacing: -0.01em; line-height: 1.2; }
+.w-kindtile .s { font-size: 12px; line-height: 1.35; margin-top: 2px; color: var(--text-muted); }
+.w-kindtile.on .s { color: inherit; opacity: 0.72; }
+
+/* toast */
+.w-toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--paper); font-size: 13px; font-weight: 550; padding: 10px 16px; border-radius: 12px; box-shadow: var(--shadow-lg); z-index: 100; display: flex; align-items: center; gap: 9px; }
+html[data-theme="dark"] .w-toast { color: var(--brand-contrast); }

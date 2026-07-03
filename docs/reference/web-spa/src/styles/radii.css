@@ -1,0 +1,50 @@
+/* ============================================================
+   Money Flow — Radii, shadows & motion
+   Premium-minimal: soft generous radii, low-contrast shadows,
+   borders do most of the separation work.
+   ============================================================ */
+
+:root {
+  /* ---- Corner radii ---- */
+  --radius-xs:   6px;
+  --radius-sm:   10px;
+  --radius-md:   14px;   /* default control radius */
+  --radius-lg:   20px;   /* cards */
+  --radius-xl:   28px;   /* sheets, large cards */
+  --radius-2xl:  36px;
+  --radius-pill: 999px;
+
+  /* ---- Elevation (soft, warm-tinted) ---- */
+  --shadow-none: none;
+  --shadow-xs:   0 1px 2px rgba(24, 23, 18, 0.04);
+  --shadow-sm:   0 1px 3px rgba(24, 23, 18, 0.05), 0 1px 2px rgba(24, 23, 18, 0.04);
+  --shadow-md:   0 4px 12px rgba(24, 23, 18, 0.06), 0 1px 3px rgba(24, 23, 18, 0.04);
+  --shadow-lg:   0 12px 28px rgba(24, 23, 18, 0.08), 0 2px 6px rgba(24, 23, 18, 0.05);
+  --shadow-xl:   0 24px 56px rgba(24, 23, 18, 0.12), 0 4px 12px rgba(24, 23, 18, 0.06);
+
+  /* Focus ring (use with outline or box-shadow) */
+  --ring: 0 0 0 3px var(--focus-ring);
+
+  /* ---- Motion ---- */
+  --ease-out:    cubic-bezier(0.22, 0.61, 0.36, 1); /* @kind other */
+  --ease-in-out: cubic-bezier(0.45, 0, 0.2, 1); /* @kind other */
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1); /* @kind other */
+
+  --dur-fast:    120ms; /* @kind other */
+  --dur-base:    200ms; /* @kind other */
+  --dur-slow:    320ms; /* @kind other */
+
+  --transition-control: background-color var(--dur-fast) var(--ease-out),
+                        border-color var(--dur-fast) var(--ease-out),
+                        color var(--dur-fast) var(--ease-out),
+                        box-shadow var(--dur-fast) var(--ease-out),
+                        transform var(--dur-fast) var(--ease-out);
+}
+
+[data-theme="dark"] {
+  --shadow-xs:   0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md:   0 4px 12px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-lg:   0 12px 28px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-xl:   0 24px 56px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.45);
+}
