@@ -20,13 +20,22 @@ export const metadata: Metadata = {
   description: "Personal finance with double-entry accounting",
 };
 
+const THEME_INIT_SCRIPT = `try {
+  var s = JSON.parse(localStorage.getItem('mf-ui') || '{}');
+  document.documentElement.setAttribute('data-theme', s.theme === 'dark' ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-density', s.density === 'compact' ? 'compact' : 'comfortable');
+} catch (e) {}`;
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className={`${hanken.variable} ${splineMono.variable} font-sans`}>
         <Providers>
           <HtmlLang />
