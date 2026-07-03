@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 export type Theme = 'light' | 'dark';
 export type Density = 'comfortable' | 'compact';
@@ -44,13 +44,15 @@ function readStoredSettings(): UiSettings {
 const UiSettingsContext = createContext<UiSettingsState | null>(null);
 
 export function UiSettingsProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => readStoredSettings().theme);
-  const [density, setDensity] = useState<Density>(() => readStoredSettings().density);
-  const [showKeyHints, setShowKeyHints] = useState<boolean>(() => readStoredSettings().showKeyHints);
+  const [settings, setSettings] = useState<UiSettings>(readStoredSettings);
+  const { theme, density, showKeyHints } = settings;
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    document.documentElement.setAttribute('data-density', density);
+    // Keep in sync with the inline pre-paint script in app/layout.tsx.
+    const root = document.documentElement;
+    root.setAttribute('data-theme', theme);
+    root.setAttribute('data-density', density);
+    root.setAttribute('data-hints', showKeyHints ? 'on' : 'off');
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ theme, density, showKeyHints }));
     } catch {
@@ -58,11 +60,19 @@ export function UiSettingsProvider({ children }: { children: ReactNode }) {
     }
   }, [theme, density, showKeyHints]);
 
-  return (
-    <UiSettingsContext.Provider value={{ theme, density, showKeyHints, setTheme, setDensity, setShowKeyHints }}>
-      {children}
-    </UiSettingsContext.Provider>
+  const value = useMemo<UiSettingsState>(
+    () => ({
+      theme,
+      density,
+      showKeyHints,
+      setTheme: (t) => setSettings((s) => ({ ...s, theme: t })),
+      setDensity: (d) => setSettings((s) => ({ ...s, density: d })),
+      setShowKeyHints: (show) => setSettings((s) => ({ ...s, showKeyHints: show })),
+    }),
+    [theme, density, showKeyHints]
   );
+
+  return <UiSettingsContext.Provider value={value}>{children}</UiSettingsContext.Provider>;
 }
 
 export function useUiSettings() {

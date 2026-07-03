@@ -20,10 +20,12 @@ export const metadata: Metadata = {
   description: "Personal finance with double-entry accounting",
 };
 
+// Pre-paint settings init — keep in sync with components/ui-settings.tsx.
 const THEME_INIT_SCRIPT = `try {
   var s = JSON.parse(localStorage.getItem('mf-ui') || '{}');
   document.documentElement.setAttribute('data-theme', s.theme === 'dark' ? 'dark' : 'light');
   document.documentElement.setAttribute('data-density', s.density === 'compact' ? 'compact' : 'comfortable');
+  document.documentElement.setAttribute('data-hints', s.showKeyHints === false ? 'off' : 'on');
 } catch (e) {}`;
 
 export default function RootLayout({
