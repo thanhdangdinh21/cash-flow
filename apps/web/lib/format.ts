@@ -46,7 +46,14 @@ function dayName(index: number): string {
 
 export function parseISO(iso: string): Date {
   const [y, m, d] = iso.split("-").map(Number);
-  if (y === undefined || m === undefined || d === undefined) {
+  if (
+    y === undefined ||
+    m === undefined ||
+    d === undefined ||
+    !Number.isInteger(y) ||
+    !Number.isInteger(m) ||
+    !Number.isInteger(d)
+  ) {
     throw new RangeError(`Invalid ISO date: ${iso}`);
   }
   return new Date(y, m - 1, d);
@@ -96,7 +103,12 @@ function fullMonthName(index: number): string {
 /** "March 2026" for a "yyyy-mm" key */
 export function monthLabel(monthKey: string): string {
   const [y, m] = monthKey.split("-").map(Number);
-  if (y === undefined || m === undefined) {
+  if (
+    y === undefined ||
+    m === undefined ||
+    !Number.isInteger(y) ||
+    !Number.isInteger(m)
+  ) {
     throw new RangeError(`Invalid month key: ${monthKey}`);
   }
   return `${fullMonthName(m - 1)} ${y}`;
@@ -108,7 +120,12 @@ export function monthKeyOf(iso: string): string {
 
 export function addMonths(monthKey: string, delta: number): string {
   const [y, m] = monthKey.split("-").map(Number);
-  if (y === undefined || m === undefined) {
+  if (
+    y === undefined ||
+    m === undefined ||
+    !Number.isInteger(y) ||
+    !Number.isInteger(m)
+  ) {
     throw new RangeError(`Invalid month key: ${monthKey}`);
   }
   const d = new Date(y, m - 1 + delta, 1);

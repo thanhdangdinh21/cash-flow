@@ -5,6 +5,7 @@ import {
   money,
   monthKeyOf,
   monthLabel,
+  parseISO,
   shortDate,
 } from "./format";
 
@@ -34,23 +35,44 @@ describe("money", () => {
 });
 
 describe("dayLabel", () => {
+  const now = new Date();
+
+  function daysAgo(days: number): Date {
+    const d = new Date(now);
+    d.setDate(d.getDate() - days);
+    return d;
+  }
+
   it("labels today's date as Today", () => {
-    const today = isoOf(new Date());
-    expect(dayLabel(today)).toMatch(/^Today · /);
+    expect(dayLabel(isoOf(now))).toMatch(/^Today · /);
   });
 
   it("labels yesterday's date as Yesterday", () => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    expect(dayLabel(isoOf(yesterday))).toMatch(/^Yesterday · /);
+    expect(dayLabel(isoOf(daysAgo(1)))).toMatch(/^Yesterday · /);
   });
 
   it("labels a date 5 days ago with its weekday abbreviation", () => {
-    const fiveDaysAgo = new Date();
-    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-    expect(dayLabel(isoOf(fiveDaysAgo))).toMatch(
+    expect(dayLabel(isoOf(daysAgo(5)))).toMatch(
       /^(Sun|Mon|Tue|Wed|Thu|Fri|Sat) · /,
     );
+  });
+});
+
+describe("input validation", () => {
+  it("parseISO rejects non-numeric segments", () => {
+    expect(() => parseISO("a-b-c")).toThrow(RangeError);
+  });
+
+  it("parseISO rejects a missing day segment", () => {
+    expect(() => parseISO("2026-07")).toThrow(RangeError);
+  });
+
+  it("monthLabel rejects a garbage key", () => {
+    expect(() => monthLabel("garbage")).toThrow(RangeError);
+  });
+
+  it("addMonths rejects a garbage key", () => {
+    expect(() => addMonths("garbage", 1)).toThrow(RangeError);
   });
 });
 
