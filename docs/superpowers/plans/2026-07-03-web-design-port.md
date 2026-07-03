@@ -63,10 +63,11 @@ Files: `apps/web/hooks/{query-keys,use-auth,use-accounts,use-transactions,use-ca
 ### Task 8: Auth screens
 Files: `app/(auth)/{layout.tsx,login/page.tsx,register/page.tsx}`; locales `web.auth.*`.
 - [ ] Editorial split layout from `docs/reference/web-spa/src/features/auth/Login.tsx`; real forms via `useLogin`/`useRegister`; drop demo affordances (login-with-anything, `D` key, sample data).
+- [ ] Locales already have top-level `auth.*` keys — reuse them where the string matches; only add `web.auth.*` for design-new strings (don't duplicate).
 - [ ] Browser: bad password errors; fresh register lands authed; proxy bounces authed users off `/login` → commit.
 
 ### Task 9: Locale parity guard
-- [ ] `apps/web/scripts/check-i18n-parity.mjs` — deep-compare en/vi key sets, exit 1 on drift; run in each later task's verify step → commit.
+- [ ] `apps/web/scripts/check-i18n-parity.mjs` — deep-compare en/vi key sets, exit 1 on drift; expose as `pnpm --filter web check-i18n` (package script) so later tasks and Task 19's gate have one canonical command → commit.
 
 ### Task 10: App shell
 Files: `app/(app)/layout.tsx`, `components/shell/{sidebar,topbar,footer,settings-popover,command-bar placeholder}.tsx`, `hooks/use-global-shortcuts.ts`; restyle `components/layout/{nav-links,logo}.tsx`; locales `web.nav.*`, `web.settings.*`.
