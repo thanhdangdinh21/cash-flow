@@ -69,7 +69,7 @@ App Router route groups (restoring the structure the SPA replaced):
 | `(app)/dashboard` | KPI stats, weekly cashflow bars, accounts summary, recent activity — all from `GET /reports/home` | Budgets widget |
 | `(app)/transactions` | Day-grouped table, type filter + text search, month pager, keyboard row nav (`↑↓⏎⌫`), checkbox multi-select with bulk delete, right-hand inspector | Edit (`E` key, edit form) — inspector offers delete only |
 | `(app)/accounts` | Type-grouped table with subtotals + net worth, create-account modal (Cash & bank / Credit card / Commodity), inspector with commodity holdings add/remove or credit terms | — |
-| `(app)/categories` | Collapsible tree with type filter, category editor (name/icon/color/parent), subcategory add/rename/delete | Delete-to-Global only if API lacks it (verify during implementation; otherwise plain delete) |
+| `(app)/categories` | Collapsible tree with type filter, category editor (name/icon/color/parent), subcategory add/rename/delete | Delete-to-Global reassignment — the API soft-deletes the category (cascading to its subcategories), so the UI does a plain delete with a confirm dialog |
 | `(app)/reports` | Net-worth line, income vs spending, category donut, category trend — from the four report endpoints | Over-budget trend, "Move $ from…" budget rebalance |
 | `(app)/contacts` | Replaces design's Members screen: contact list with lending balances from `GET /contacts` + `/contacts/:id/loans`, add contact | Roles, invites, member management |
 | `/` | Redirect handled by existing `proxy.ts` (auth → dashboard, else login) | — |
@@ -79,6 +79,11 @@ types on one page — Expense, Income, Transfer, Debt/loan with the four
 directions (Lent / Borrowed / Collected / Repaid), counterparty
 (contactId or free-text contactName), interest fields for new debts,
 loan selection for settlements. Maps 1:1 to `CreateTransactionDto`.
+
+**Keyboard focus rule:** global shell shortcuts (`G` jumps, `N`/`T`/`A`) are
+suppressed while focus is in an input, dialog, or the command bar; the
+transactions table's row-nav keys apply only while the table has focus.
+Screen-level handlers win over global ones.
 
 **⌘K command bar** (`cmdk`): ports the SPA's parser
 (`merchant amount @category [#account]`, `+` prefix = income) as pure client
@@ -94,7 +99,8 @@ prefilled; fuzzy navigation commands included.
 - `hooks/use-<domain>.ts` — react-query hooks; mutations invalidate their
   domain plus `reports`.
 - 401 handling: axios response interceptor clears `authStore` and redirects
-  to `/login`.
+  to `/login`. (New work — `lib/api.ts` currently has only the request
+  interceptor that attaches the token.)
 - UI-only state (theme light/dark, table density, keyboard-hint visibility)
   in a small React context persisted to localStorage; the language preference
   keeps its existing i18next mechanism.
