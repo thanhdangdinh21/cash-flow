@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { categoriesApi } from "@/lib/api/categories";
 import type {
   Category,
@@ -10,12 +9,8 @@ import type {
   SubCategory,
   UpdateCategoryInput,
 } from "@/lib/api/types";
-import { extractErrorMessage } from "@/hooks/use-auth";
+import { handleMutationError, type MutationOptions } from "@/lib/api/errors";
 import { keys } from "@/hooks/query-keys";
-
-interface MutationOptions<TData> {
-  onSuccess?: (data: TData) => void;
-}
 
 export function useCategories() {
   return useQuery({
@@ -40,24 +35,24 @@ export function useCreateCategory(options: MutationOptions<Category> = {}) {
       invalidate();
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }
 
 export function useUpdateCategory(options: MutationOptions<Category> = {}) {
+  const queryClient = useQueryClient();
   const invalidate = useInvalidateCategories();
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: UpdateCategoryInput }) =>
       categoriesApi.update(id, input),
     onSuccess: (data) => {
       invalidate();
+      // Category renames/icons are embedded in cached transactions
+      // (subCategory.category refs).
+      queryClient.invalidateQueries({ queryKey: keys.transactionsAll });
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }
 
@@ -69,9 +64,7 @@ export function useDeleteCategory(options: MutationOptions<void> = {}) {
       invalidate();
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }
 
@@ -91,9 +84,7 @@ export function useAddSubCategory(
       invalidate();
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }
 
@@ -111,8 +102,6 @@ export function useRemoveSubCategory(options: MutationOptions<void> = {}) {
       invalidate();
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }

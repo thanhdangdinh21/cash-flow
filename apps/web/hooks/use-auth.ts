@@ -2,8 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import type { AxiosError } from "axios";
-import { toast } from "sonner";
 import { authApi } from "@/lib/api/auth";
 import { usersApi } from "@/lib/api/users";
 import { authStore } from "@/lib/auth";
@@ -15,38 +13,23 @@ import type {
   UpdateUserInput,
   User,
 } from "@/lib/api/types";
+import { handleMutationError, type MutationOptions } from "@/lib/api/errors";
 import { keys } from "@/hooks/query-keys";
-
-interface ApiErrorBody {
-  message?: string | string[];
-}
-
-/** Extracts a human-readable message from an axios error response body. */
-export function extractErrorMessage(
-  error: unknown,
-  fallback = "Something went wrong. Please try again."
-): string {
-  const err = error as AxiosError<ApiErrorBody>;
-  const message = err?.response?.data?.message;
-  if (Array.isArray(message)) return message.join(", ");
-  if (typeof message === "string" && message.length > 0) return message;
-  return fallback;
-}
-
-interface AuthMutationOptions {
-  onSuccess?: (data: AuthResponse) => void;
-}
 
 function useAuthSuccess() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   return (data: AuthResponse) => {
     authStore.setToken(data.accessToken);
+    // Drop any cached data from a previous session so signing in as a
+    // different account never renders the prior user's data.
+    queryClient.clear();
     i18n.changeLanguage(data.language);
     router.replace("/dashboard");
   };
 }
 
-export function useLogin(options: AuthMutationOptions = {}) {
+export function useLogin(options: MutationOptions<AuthResponse> = {}) {
   const handleSuccess = useAuthSuccess();
   return useMutation({
     mutationFn: (input: LoginInput) => authApi.login(input),
@@ -54,13 +37,11 @@ export function useLogin(options: AuthMutationOptions = {}) {
       handleSuccess(data);
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }
 
-export function useRegister(options: AuthMutationOptions = {}) {
+export function useRegister(options: MutationOptions<AuthResponse> = {}) {
   const handleSuccess = useAuthSuccess();
   return useMutation({
     mutationFn: (input: RegisterInput) => authApi.register(input),
@@ -68,9 +49,7 @@ export function useRegister(options: AuthMutationOptions = {}) {
       handleSuccess(data);
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }
 
@@ -80,8 +59,11 @@ export function useLogout() {
   const queryClient = useQueryClient();
   return () => {
     authStore.clearToken();
-    queryClient.clear();
     router.replace("/login");
+    // Clear after navigation kicks off: clearing while (app) screens still
+    // have mounted query observers would trigger immediate refetches of the
+    // now-unauthenticated queries before the route change unmounts them.
+    setTimeout(() => queryClient.clear(), 0);
   };
 }
 
@@ -92,10 +74,8 @@ export function useMe() {
   });
 }
 
-interface MutationOptions<TData> {
-  onSuccess?: (data: TData) => void;
-}
-
+// Note: callers that change `language` must call `i18n.changeLanguage` in
+// their own `onSuccess` — this hook does not apply locale side effects.
 export function useUpdateMe(options: MutationOptions<User> = {}) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -105,8 +85,6 @@ export function useUpdateMe(options: MutationOptions<User> = {}) {
       queryClient.invalidateQueries({ queryKey: keys.reports.all });
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }

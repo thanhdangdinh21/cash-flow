@@ -10,6 +10,7 @@
 
 import type {
   ListTransactionsParams,
+  LoanStatus,
   NetWorthPeriod,
   SpendingByCategoryParams,
 } from "@/lib/api/types";
@@ -26,7 +27,8 @@ export const keys = {
   categories: ["categories"] as const,
 
   contacts: ["contacts"] as const,
-  contactLoans: (id: string) => ["contacts", id, "loans"] as const,
+  contactLoans: (id: string, status?: LoanStatus) =>
+    ["contacts", id, "loans", status] as const,
 
   me: ["me"] as const,
 

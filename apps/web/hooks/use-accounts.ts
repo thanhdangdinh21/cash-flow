@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { accountsApi } from "@/lib/api/accounts";
 import type {
   Account,
@@ -10,12 +9,8 @@ import type {
   Holding,
   UpdateAccountInput,
 } from "@/lib/api/types";
-import { extractErrorMessage } from "@/hooks/use-auth";
+import { handleMutationError, type MutationOptions } from "@/lib/api/errors";
 import { keys } from "@/hooks/query-keys";
-
-interface MutationOptions<TData> {
-  onSuccess?: (data: TData) => void;
-}
 
 export function useAccounts() {
   return useQuery({
@@ -48,24 +43,23 @@ export function useCreateAccount(options: MutationOptions<Account> = {}) {
       invalidate();
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }
 
 export function useUpdateAccount(options: MutationOptions<Account> = {}) {
+  const queryClient = useQueryClient();
   const invalidate = useInvalidateAccounts();
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: UpdateAccountInput }) =>
       accountsApi.update(id, input),
     onSuccess: (data) => {
       invalidate();
+      // Account renames are embedded in cached transactions (debit/credit refs).
+      queryClient.invalidateQueries({ queryKey: keys.transactionsAll });
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }
 
@@ -77,9 +71,7 @@ export function useDeleteAccount(options: MutationOptions<void> = {}) {
       invalidate();
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }
 
@@ -97,9 +89,7 @@ export function useAddHolding(options: MutationOptions<Holding> = {}) {
       invalidate();
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }
 
@@ -117,8 +107,6 @@ export function useRemoveHolding(options: MutationOptions<void> = {}) {
       invalidate();
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }

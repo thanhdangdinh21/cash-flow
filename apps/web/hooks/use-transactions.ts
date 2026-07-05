@@ -1,19 +1,14 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { transactionsApi } from "@/lib/api/transactions";
 import type {
   CreateTransactionInput,
   ListTransactionsParams,
   Transaction,
 } from "@/lib/api/types";
-import { extractErrorMessage } from "@/hooks/use-auth";
+import { handleMutationError, type MutationOptions } from "@/lib/api/errors";
 import { keys } from "@/hooks/query-keys";
-
-interface MutationOptions<TData> {
-  onSuccess?: (data: TData) => void;
-}
 
 export function useTransactions(filters: ListTransactionsParams = {}) {
   return useQuery({
@@ -51,9 +46,7 @@ export function useCreateTransaction(
       invalidate();
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }
 
@@ -65,8 +58,6 @@ export function useDeleteTransaction(options: MutationOptions<void> = {}) {
       invalidate();
       options.onSuccess?.(data);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error));
-    },
+    onError: (error) => handleMutationError(error, options),
   });
 }
