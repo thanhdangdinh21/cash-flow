@@ -1,14 +1,21 @@
+/**
+ * Converts an API decimal string (Prisma Decimal fields serialize as strings,
+ * e.g. "25.5") to a number for arithmetic — sums, comparisons, chart values.
+ */
+export const toAmount = (v: string | number): number => Number(v);
+
 export function money(
-  n: number,
+  n: string | number,
   opts: { sign?: boolean; cents?: boolean } = {},
 ): string {
   const { sign = false, cents = true } = opts;
-  const abs = Math.abs(n);
+  const value = toAmount(n);
+  const abs = Math.abs(value);
   const s = abs.toLocaleString("en-US", {
     minimumFractionDigits: cents ? 2 : 0,
     maximumFractionDigits: cents ? 2 : 0,
   });
-  const prefix = sign ? (n >= 0 ? "+ $" : "− $") : "$";
+  const prefix = sign ? (value >= 0 ? "+ $" : "− $") : "$";
   return prefix + s;
 }
 

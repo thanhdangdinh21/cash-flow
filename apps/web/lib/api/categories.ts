@@ -13,13 +13,16 @@ export const categoriesApi = {
     api.post<Category>("/categories", input).then((r) => r.data),
   update: (id: string, input: UpdateCategoryInput) =>
     api.patch<Category>(`/categories/${id}`, input).then((r) => r.data),
-  remove: (id: string) => api.delete(`/categories/${id}`).then((r) => r.data),
+  // 204 No Content
+  remove: (id: string) =>
+    api.delete<void>(`/categories/${id}`).then(() => undefined),
   addSubCategory: (categoryId: string, input: CreateSubCategoryInput) =>
     api
       .post<SubCategory>(`/categories/${categoryId}/sub-categories`, input)
       .then((r) => r.data),
+  // 204 No Content
   removeSubCategory: (categoryId: string, subId: string) =>
     api
-      .delete(`/categories/${categoryId}/sub-categories/${subId}`)
-      .then((r) => r.data),
+      .delete<void>(`/categories/${categoryId}/sub-categories/${subId}`)
+      .then(() => undefined),
 };

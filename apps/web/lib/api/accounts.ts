@@ -16,13 +16,16 @@ export const accountsApi = {
     api.post<Account>("/accounts", input).then((r) => r.data),
   update: (id: string, input: UpdateAccountInput) =>
     api.patch<Account>(`/accounts/${id}`, input).then((r) => r.data),
-  remove: (id: string) => api.delete(`/accounts/${id}`).then((r) => r.data),
+  // 204 No Content
+  remove: (id: string) =>
+    api.delete<void>(`/accounts/${id}`).then(() => undefined),
   addHolding: (accountId: string, input: CreateHoldingInput) =>
     api
       .post<Holding>(`/accounts/${accountId}/holdings`, input)
       .then((r) => r.data),
+  // 204 No Content
   removeHolding: (accountId: string, holdingId: string) =>
     api
-      .delete(`/accounts/${accountId}/holdings/${holdingId}`)
-      .then((r) => r.data),
+      .delete<void>(`/accounts/${accountId}/holdings/${holdingId}`)
+      .then(() => undefined),
 };

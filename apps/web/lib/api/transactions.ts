@@ -15,5 +15,7 @@ export const transactionsApi = {
     api.get<Transaction>(`/transactions/${id}`).then((r) => r.data),
   create: (input: CreateTransactionInput) =>
     api.post<Transaction>("/transactions", input).then((r) => r.data),
-  remove: (id: string) => api.delete(`/transactions/${id}`).then((r) => r.data),
+  // 204 No Content
+  remove: (id: string) =>
+    api.delete<void>(`/transactions/${id}`).then(() => undefined),
 };

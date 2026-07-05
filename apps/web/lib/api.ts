@@ -15,13 +15,13 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(undefined, (error: unknown) => {
   const status = axios.isAxiosError(error) ? error.response?.status : undefined;
-  if (
-    status === 401 &&
-    typeof window !== "undefined" &&
-    !window.location.pathname.startsWith("/login")
-  ) {
-    authStore.clearToken();
-    window.location.href = "/login";
+  if (status === 401 && typeof window !== "undefined") {
+    const { pathname } = window.location;
+    const onLogin = pathname === "/login" || pathname.startsWith("/login/");
+    if (!onLogin) {
+      authStore.clearToken();
+      window.location.href = "/login";
+    }
   }
   return Promise.reject(error);
 });

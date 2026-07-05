@@ -12,7 +12,9 @@
 //   - Contact.balance                                   -> string
 //   - Loan.principal / remainingAmount / interestRate   -> string
 //   - Holding.currentQuantity / currentCost             -> string
-// Screens must call Number(...) (or a shared parser) before formatting.
+// Screens should pass these strings straight to `money()` in lib/format.ts
+// (it accepts `string | number`), and use `toAmount()` from the same module
+// for arithmetic (sums, comparisons, chart values).
 //
 // By contrast, report use-cases (home, net-worth, spending-by-category,
 // category-trend) compute their aggregate numbers in JS via `Number(...)`
@@ -280,6 +282,10 @@ export interface TransactionLoanRef {
   remainingAmount: string;
   status: LoanStatus;
 }
+
+/** Narrows `Transaction.loan` to the full Loan shape (GET /transactions/:id). */
+export const isFullLoan = (l: TransactionLoanRef | Loan): l is Loan =>
+  "principal" in l;
 
 export interface Transaction {
   id: string;

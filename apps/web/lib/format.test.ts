@@ -7,6 +7,7 @@ import {
   monthLabel,
   parseISO,
   shortDate,
+  toAmount,
 } from "./format";
 
 function isoOf(d: Date): string {
@@ -31,6 +32,20 @@ describe("money", () => {
 
   it("formats without cents when cents: false", () => {
     expect(money(1234.5, { cents: false })).toBe("$1,235");
+  });
+
+  it("accepts an API decimal string", () => {
+    expect(money("1234.5")).toBe("$1,234.50");
+  });
+
+  it("accepts a negative decimal string with a sign", () => {
+    expect(money("-20", { sign: true })).toBe("− $20.00");
+  });
+});
+
+describe("toAmount", () => {
+  it("converts an API decimal string to a number", () => {
+    expect(toAmount("25.5")).toBe(25.5);
   });
 });
 
