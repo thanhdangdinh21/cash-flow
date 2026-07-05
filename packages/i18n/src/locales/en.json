@@ -279,5 +279,12 @@
     "netWorth6m": "Net worth · 6 months",
     "addAccount": "Add an account",
     "balancesAppear": "Balances appear here"
+  },
+  "web": {
+    "auth": {
+      "headline": "Know where your money flows.",
+      "subhead": "Every dollar in, every dollar out — one calm place. Budgets that nudge, never nag.",
+      "tagline": "Personal finance · light + dark · multi-currency"
+    }
   }
 }
