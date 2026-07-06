@@ -285,6 +285,34 @@
       "headline": "Know where your money flows.",
       "subhead": "Every dollar in, every dollar out — one calm place. Budgets that nudge, never nag.",
       "tagline": "Personal finance · light + dark · multi-currency"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "transactions": "Transactions",
+      "accounts": "Accounts",
+      "categories": "Categories",
+      "reports": "Reports",
+      "contacts": "Contacts"
+    },
+    "settings": {
+      "title": "Settings",
+      "appearance": "Appearance",
+      "theme": "Dark mode",
+      "density": "Compact density",
+      "keyHints": "Keyboard hints",
+      "language": "Language"
+    },
+    "shell": {
+      "comingSoon": "Coming soon",
+      "search": "Search or jump to…",
+      "newTransaction": "New transaction",
+      "hints": {
+        "dashboard": "Dashboard",
+        "newTransaction": "New transaction",
+        "transfer": "Transfer",
+        "newAccount": "New account",
+        "command": "Command"
+      }
     }
   }
 }

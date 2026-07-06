@@ -285,6 +285,34 @@
       "headline": "Biết rõ dòng tiền của bạn.",
       "subhead": "Từng đồng vào, từng đồng ra — tất cả trong một nơi yên tĩnh. Ngân sách chỉ nhắc nhẹ, không làm phiền.",
       "tagline": "Tài chính cá nhân · sáng + tối · đa tiền tệ"
+    },
+    "nav": {
+      "dashboard": "Tổng quan",
+      "transactions": "Giao dịch",
+      "accounts": "Tài khoản",
+      "categories": "Danh mục",
+      "reports": "Báo cáo",
+      "contacts": "Liên hệ"
+    },
+    "settings": {
+      "title": "Cài đặt",
+      "appearance": "Giao diện",
+      "theme": "Chế độ tối",
+      "density": "Hiển thị gọn",
+      "keyHints": "Gợi ý phím tắt",
+      "language": "Ngôn ngữ"
+    },
+    "shell": {
+      "comingSoon": "Sắp ra mắt",
+      "search": "Tìm hoặc chuyển đến…",
+      "newTransaction": "Giao dịch mới",
+      "hints": {
+        "dashboard": "Tổng quan",
+        "newTransaction": "Giao dịch mới",
+        "transfer": "Chuyển khoản",
+        "newAccount": "Tài khoản mới",
+        "command": "Lệnh nhanh"
+      }
     }
   }
 }

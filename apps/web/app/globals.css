@@ -215,3 +215,11 @@
   font-variant-numeric: tabular-nums lining-nums;
   letter-spacing: -0.015em;
 }
+
+/* Keyboard-hint chips — hidden whenever the user turns off hints via
+   Settings. Keyed off the `data-hints` attribute on <html> (see
+   components/ui-settings.tsx) rather than a render branch, so this stays a
+   pure CSS toggle and never causes a client/server hydration mismatch. */
+[data-hints="off"] .kbd-hint {
+  display: none;
+}
