@@ -52,7 +52,10 @@ function dayName(index: number): string {
 }
 
 export function parseISO(iso: string): Date {
-  const [y, m, d] = iso.split("-").map(Number);
+  // API date fields (e.g. Transaction.date) arrive as full ISO 8601
+  // datetimes ("2026-07-02T00:00:00.000Z"), not bare "yyyy-mm-dd" — take
+  // just the date portion before splitting.
+  const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
   if (
     y === undefined ||
     m === undefined ||

@@ -71,6 +71,10 @@ describe("dayLabel", () => {
       /^(Sun|Mon|Tue|Wed|Thu|Fri|Sat) · /,
     );
   });
+
+  it("accepts a full ISO 8601 datetime string (API Transaction.date shape)", () => {
+    expect(dayLabel(`${isoOf(now)}T00:00:00.000Z`)).toMatch(/^Today · /);
+  });
 });
 
 describe("input validation", () => {

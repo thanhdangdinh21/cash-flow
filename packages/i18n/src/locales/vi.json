@@ -4,7 +4,8 @@
     "save": "Lưu",
     "cancel": "Hủy",
     "signOut": "Đăng xuất",
-    "error": "Đã xảy ra lỗi"
+    "error": "Đã xảy ra lỗi",
+    "retry": "Thử lại"
   },
   "auth": {
     "login": {
@@ -45,10 +46,6 @@
     "activity": "Hoạt động",
     "insights": "Thống kê",
     "profile": "Hồ sơ"
-  },
-  "dashboard": {
-    "title": "Tổng quan",
-    "comingSoon": "Sắp ra mắt — Giai đoạn 3"
   },
   "accounts": {
     "title": "Tài khoản",
@@ -285,6 +282,38 @@
       "headline": "Biết rõ dòng tiền của bạn.",
       "subhead": "Từng đồng vào, từng đồng ra — tất cả trong một nơi yên tĩnh. Ngân sách chỉ nhắc nhẹ, không làm phiền.",
       "tagline": "Tài chính cá nhân · sáng + tối · đa tiền tệ"
+    },
+    "dashboard": {
+      "title": "Tổng quan",
+      "kpi": {
+        "totalAssets": "Tổng tài sản",
+        "totalAssetsSub": "{{count}} tài khoản",
+        "totalAssetsSub_other": "{{count}} tài khoản",
+        "monthIncome": "Thu nhập · tháng này",
+        "monthIncomeSub": "Tiền vào",
+        "monthSpent": "Chi tiêu · tháng này",
+        "monthSpentSub": "Tiền ra",
+        "net": "Dòng tiền ròng",
+        "netSubKept": "Giữ lại {{pct}}% thu nhập",
+        "netSubOver": "Chi tiêu vượt thu nhập"
+      },
+      "cashflow": {
+        "title": "Dòng tiền · theo tuần",
+        "in": "Vào",
+        "out": "Ra",
+        "empty": "Chưa có hoạt động nào trong tháng này"
+      },
+      "accounts": {
+        "title": "Tài khoản",
+        "manage": "Quản lý",
+        "empty": "Chưa có tài khoản nào"
+      },
+      "recent": {
+        "title": "Hoạt động gần đây",
+        "viewAll": "Xem tất cả",
+        "empty": "Chưa có giao dịch nào",
+        "fallbackDescription": "Giao dịch"
+      }
     },
     "nav": {
       "dashboard": "Tổng quan",

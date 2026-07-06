@@ -4,7 +4,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "signOut": "Sign out",
-    "error": "Something went wrong"
+    "error": "Something went wrong",
+    "retry": "Retry"
   },
   "auth": {
     "login": {
@@ -45,10 +46,6 @@
     "activity": "Activity",
     "insights": "Insights",
     "profile": "Profile"
-  },
-  "dashboard": {
-    "title": "Dashboard",
-    "comingSoon": "Coming soon — Phase 3"
   },
   "accounts": {
     "title": "Accounts",
@@ -285,6 +282,38 @@
       "headline": "Know where your money flows.",
       "subhead": "Every dollar in, every dollar out — one calm place. Budgets that nudge, never nag.",
       "tagline": "Personal finance · light + dark · multi-currency"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "kpi": {
+        "totalAssets": "Total assets",
+        "totalAssetsSub": "{{count}} account",
+        "totalAssetsSub_other": "{{count}} accounts",
+        "monthIncome": "Income · this month",
+        "monthIncomeSub": "Money in",
+        "monthSpent": "Spent · this month",
+        "monthSpentSub": "Money out",
+        "net": "Net flow",
+        "netSubKept": "{{pct}}% of income kept",
+        "netSubOver": "Spending exceeds income"
+      },
+      "cashflow": {
+        "title": "Cashflow · weekly",
+        "in": "In",
+        "out": "Out",
+        "empty": "No activity yet this month"
+      },
+      "accounts": {
+        "title": "Accounts",
+        "manage": "Manage",
+        "empty": "No accounts yet"
+      },
+      "recent": {
+        "title": "Recent activity",
+        "viewAll": "View all",
+        "empty": "No transactions yet",
+        "fallbackDescription": "Transaction"
+      }
     },
     "nav": {
       "dashboard": "Dashboard",
