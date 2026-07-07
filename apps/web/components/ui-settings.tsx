@@ -48,7 +48,7 @@ export function UiSettingsProvider({ children }: { children: ReactNode }) {
   const { theme, density, showKeyHints } = settings;
 
   useEffect(() => {
-    // Keep in sync with the inline pre-paint script in app/layout.tsx.
+    // Keep in sync with the pre-paint script in public/mf-ui-init.js.
     const root = document.documentElement;
     root.setAttribute('data-theme', theme);
     root.setAttribute('data-density', density);

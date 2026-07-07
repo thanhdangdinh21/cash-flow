@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Hanken_Grotesk, Spline_Sans_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
@@ -21,14 +20,6 @@ export const metadata: Metadata = {
   description: "Personal finance with double-entry accounting",
 };
 
-// Pre-paint settings init — keep in sync with components/ui-settings.tsx.
-const THEME_INIT_SCRIPT = `try {
-  var s = JSON.parse(localStorage.getItem('mf-ui') || '{}');
-  document.documentElement.setAttribute('data-theme', s.theme === 'dark' ? 'dark' : 'light');
-  document.documentElement.setAttribute('data-density', s.density === 'compact' ? 'compact' : 'comfortable');
-  document.documentElement.setAttribute('data-hints', s.showKeyHints === false ? 'off' : 'on');
-} catch (e) {}`;
-
 export default function RootLayout({
   children,
 }: {
@@ -37,13 +28,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* next/script keeps React from re-rendering a raw <script> on client
-            navigations (console error flood) while still injecting pre-paint. */}
-        <Script
-          id="mf-ui-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
-        />
+        {/* Pre-paint settings init (public/mf-ui-init.js). async src makes it a
+            React hoistable script (no dev warning); blocking="render" keeps the
+            before-first-paint guarantee in browsers that support it. */}
+        {/* eslint-disable-next-line react/no-unknown-property -- blocking="render" is a valid HTML attribute the plugin doesn't know yet */}
+        <script async src="/mf-ui-init.js" blocking="render" />
       </head>
       <body className={`${hanken.variable} ${splineMono.variable} font-sans`}>
         <Providers>
