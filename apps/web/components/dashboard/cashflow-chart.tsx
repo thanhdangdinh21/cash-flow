@@ -57,7 +57,9 @@ export function CashflowChart({ weeks }: { weeks: HomeReportWeek[] }) {
           </span>
         </div>
       </div>
-      <div className="min-h-0 flex-1 p-3">
+      {/* Fixed plot height: a flex-measured 100% height lets Recharts mount on a
+          pre-settle measurement and freeze bar scales there (stale-scale race). */}
+      <div className="h-[190px] p-3">
         {weeks.length === 0 ? (
           <div className="flex h-full items-center justify-center text-sm text-ink-3">
             {t("web.dashboard.cashflow.empty")}
@@ -73,8 +75,8 @@ export function CashflowChart({ weeks }: { weeks: HomeReportWeek[] }) {
                 tick={{ fill: "var(--ink-3)", fontSize: 11 }}
               />
               <Tooltip content={(props) => <ChartTooltip {...props} />} cursor={{ fill: "var(--paper-2)" }} />
-              <Bar dataKey="income" fill="var(--positive)" radius={[4, 4, 0, 0]} maxBarSize={22} />
-              <Bar dataKey="spent" fill="var(--negative)" radius={[4, 4, 0, 0]} maxBarSize={22} />
+              <Bar dataKey="income" fill="var(--positive)" radius={[4, 4, 0, 0]} maxBarSize={22} isAnimationActive={false} />
+              <Bar dataKey="spent" fill="var(--negative)" radius={[4, 4, 0, 0]} maxBarSize={22} isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         )}
