@@ -223,3 +223,11 @@
 [data-hints="off"] .kbd-hint {
   display: none;
 }
+
+/* Density-aware table rows — compact tightens vertical padding only,
+   keyed off `data-density` on <html> the same way (see
+   components/ui-settings.tsx), so switching density never re-renders rows. */
+[data-density="compact"] .density-row > td {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}

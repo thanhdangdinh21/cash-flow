@@ -342,6 +342,36 @@
         "newAccount": "Tài khoản mới",
         "command": "Lệnh nhanh"
       }
+    },
+    "transactions": {
+      "title": "Giao dịch",
+      "prevMonth": "Tháng trước",
+      "nextMonth": "Tháng sau",
+      "searchPlaceholder": "Tìm theo mô tả, tài khoản, danh mục…",
+      "selectAll": "Chọn tất cả",
+      "columns": {
+        "description": "Mô tả",
+        "account": "Tài khoản",
+        "amount": "Số tiền"
+      },
+      "emptyMonth": "Không có giao dịch nào trong tháng này.",
+      "emptyFiltered": "Không có giao dịch nào khớp với bộ lọc.",
+      "morePagination": "Đang hiển thị 100 giao dịch đầu tiên — thu hẹp bộ lọc để xem thêm.",
+      "selectedCount": "Đã chọn {{count}}",
+      "bulkDelete": "Xoá mục đã chọn",
+      "clearSelection": "Bỏ chọn",
+      "transactionCount": "{{count}} giao dịch",
+      "transactionCount_other": "{{count}} giao dịch",
+      "deletedToast": "Đã xoá {{count}} giao dịch",
+      "deletedToast_other": "Đã xoá {{count}} giao dịch",
+      "deleteManyTitle": "Xoá {{count}} giao dịch?",
+      "deleteManyMessage": "Số dư sẽ được khôi phục như những giao dịch này chưa từng xảy ra.",
+      "inspector": {
+        "account": "Tài khoản",
+        "loanRemaining": "Còn lại",
+        "notesEmpty": "Chưa có ghi chú",
+        "excluded": "Không tính vào báo cáo"
+      }
     }
   }
 }

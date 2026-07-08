@@ -124,6 +124,27 @@ export function monthLabel(monthKey: string): string {
   return `${fullMonthName(m - 1)} ${y}`;
 }
 
+/**
+ * Last calendar day of a "yyyy-mm" month key, as "yyyy-mm-dd". The
+ * transactions API's `to` filter is an inclusive `lte`, so range queries
+ * for "this month" must pass this rather than the 1st of next month —
+ * the latter would also match any transaction dated exactly midnight on
+ * the 1st of the following month.
+ */
+export function monthEndDate(monthKey: string): string {
+  const [y, m] = monthKey.split("-").map(Number);
+  if (
+    y === undefined ||
+    m === undefined ||
+    !Number.isInteger(y) ||
+    !Number.isInteger(m)
+  ) {
+    throw new RangeError(`Invalid month key: ${monthKey}`);
+  }
+  const d = new Date(y, m, 0); // day 0 of next month = last day of this month
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export function monthKeyOf(iso: string): string {
   return iso.slice(0, 7);
 }

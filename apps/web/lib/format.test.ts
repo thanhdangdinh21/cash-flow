@@ -3,6 +3,7 @@ import {
   addMonths,
   dayLabel,
   money,
+  monthEndDate,
   monthKeyOf,
   monthLabel,
   parseISO,
@@ -108,6 +109,28 @@ describe("addMonths", () => {
 
   it("adds a month across a year boundary", () => {
     expect(addMonths("2026-12", 1)).toBe("2027-01");
+  });
+});
+
+describe("monthEndDate", () => {
+  it("returns the last day of a 30-day month", () => {
+    expect(monthEndDate("2026-06")).toBe("2026-06-30");
+  });
+
+  it("returns the last day of a 31-day month", () => {
+    expect(monthEndDate("2026-12")).toBe("2026-12-31");
+  });
+
+  it("returns Feb 28 in a non-leap year", () => {
+    expect(monthEndDate("2026-02")).toBe("2026-02-28");
+  });
+
+  it("returns Feb 29 in a leap year", () => {
+    expect(monthEndDate("2024-02")).toBe("2024-02-29");
+  });
+
+  it("rejects a garbage key", () => {
+    expect(() => monthEndDate("garbage")).toThrow(RangeError);
   });
 });
 

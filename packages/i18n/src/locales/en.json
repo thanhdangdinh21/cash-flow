@@ -342,6 +342,36 @@
         "newAccount": "New account",
         "command": "Command"
       }
+    },
+    "transactions": {
+      "title": "Transactions",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "searchPlaceholder": "Search description, account, category…",
+      "selectAll": "Select all",
+      "columns": {
+        "description": "Description",
+        "account": "Account",
+        "amount": "Amount"
+      },
+      "emptyMonth": "No transactions this month.",
+      "emptyFiltered": "No transactions match your filters.",
+      "morePagination": "Showing the first 100 — narrow the filters to see more.",
+      "selectedCount": "{{count}} selected",
+      "bulkDelete": "Delete selected",
+      "clearSelection": "Clear",
+      "transactionCount": "{{count}} transaction",
+      "transactionCount_other": "{{count}} transactions",
+      "deletedToast": "Deleted {{count}} transaction",
+      "deletedToast_other": "Deleted {{count}} transactions",
+      "deleteManyTitle": "Delete {{count}} transactions?",
+      "deleteManyMessage": "Balances will be restored as if they never happened.",
+      "inspector": {
+        "account": "Account",
+        "loanRemaining": "Remaining",
+        "notesEmpty": "No notes",
+        "excluded": "Excluded from reports"
+      }
     }
   }
 }
