@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useOverlays } from "@/components/shell/overlays-context";
+import { isDialogOpen } from "@/lib/dom";
 
 const GO_TARGETS: Record<string, string> = {
   d: "/dashboard",
@@ -24,10 +25,6 @@ function isTypingTarget(target: EventTarget | null): boolean {
     tag === "SELECT" ||
     target.isContentEditable
   );
-}
-
-function isDialogOpen(): boolean {
-  return document.querySelector('[role="dialog"]') !== null;
 }
 
 /**

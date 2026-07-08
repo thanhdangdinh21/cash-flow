@@ -349,6 +349,7 @@
       "nextMonth": "Next month",
       "searchPlaceholder": "Search description, account, category…",
       "selectAll": "Select all",
+      "selectRow": "Select {{description}}, {{amount}}",
       "columns": {
         "description": "Description",
         "account": "Account",

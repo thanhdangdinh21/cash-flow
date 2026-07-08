@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { isDialogOpen } from "@/lib/dom";
 import { dayLabel, money, toAmount } from "@/lib/format";
 import { txnAccountLabel, txnSign, txnTitle } from "@/lib/txn";
 import { cn } from "@/lib/utils";
@@ -48,10 +49,6 @@ function groupByDay(items: Transaction[]): DayGroup[] {
     map.set(key, group);
   }
   return [...map.values()];
-}
-
-function isDialogOpen(): boolean {
-  return document.querySelector('[role="dialog"]') !== null;
 }
 
 export function TransactionsTable({
@@ -133,7 +130,7 @@ export function TransactionsTable({
         aria-label={t("web.transactions.title")}
         tabIndex={0}
         onKeyDown={handleKeyDown}
-        className="min-h-0 flex-1 overflow-y-auto focus:outline-none"
+        className="min-h-0 flex-1 overflow-y-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus-ring"
       >
         {transactions.length === 0 ? (
           <div className="flex h-full items-center justify-center px-6 py-16 text-center text-sm text-ink-3">
@@ -199,7 +196,10 @@ export function TransactionsTable({
                       >
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <Checkbox
-                            aria-label={txnTitle(txn, titleLabels)}
+                            aria-label={t("web.transactions.selectRow", {
+                              description: txnTitle(txn, titleLabels),
+                              amount: money(toAmount(txn.amount)),
+                            })}
                             checked={checkedIds.has(txn.id)}
                             onCheckedChange={() => onToggleChecked(txn.id)}
                           />

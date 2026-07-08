@@ -93,25 +93,25 @@ export default function TransactionsPage() {
     if (!pendingDeleteIds) return;
     setIsDeleting(true);
     const ids = pendingDeleteIds;
-    let succeeded = 0;
+    const succeededIds: string[] = [];
     for (const id of ids) {
       try {
         await deleteMutation.mutateAsync(id);
-        succeeded += 1;
+        succeededIds.push(id);
       } catch {
         // the mutation's own onError already surfaced a toast
       }
     }
     setIsDeleting(false);
     setPendingDeleteIds(null);
-    if (succeeded > 0) {
-      toast.success(t("web.transactions.deletedToast", { count: succeeded }));
+    if (succeededIds.length > 0) {
+      toast.success(t("web.transactions.deletedToast", { count: succeededIds.length }));
       setCheckedIds((prev) => {
         const next = new Set(prev);
-        ids.forEach((id) => next.delete(id));
+        succeededIds.forEach((id) => next.delete(id));
         return next;
       });
-      if (focusedId && ids.includes(focusedId)) {
+      if (focusedId && succeededIds.includes(focusedId)) {
         setFocusedId(null);
       }
     }
