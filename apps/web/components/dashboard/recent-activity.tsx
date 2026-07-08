@@ -10,6 +10,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { dayLabel, money, toAmount } from "@/lib/format";
+import { txnAccountLabel, txnSign, txnTitle } from "@/lib/txn";
 import { cn } from "@/lib/utils";
 import type { Transaction, TransactionType } from "@/lib/api/types";
 
@@ -20,21 +21,12 @@ const TYPE_ICON: Record<TransactionType, LucideIcon> = {
   LOAN: HandCoins,
 };
 
-function descriptionFor(t: Transaction, fallbackLabel: string): string {
-  if (t.description) return t.description;
-  if (t.subCategory) return t.subCategory.name;
-  if (t.transactionType === "TRANSFER") {
-    return `${t.debitAccount.name} → ${t.creditAccount.name}`;
-  }
-  return fallbackLabel;
-}
-
-function accountLabelFor(t: Transaction): string {
-  return t.transactionType === "INCOME" ? t.debitAccount.name : t.creditAccount.name;
-}
-
 export function RecentActivity({ recent }: { recent: Transaction[] }) {
   const { t } = useTranslation();
+  const titleLabels = {
+    transfer: t("add.types.transfer"),
+    uncategorized: t("web.dashboard.recent.fallbackDescription"),
+  };
 
   return (
     <div className="flex h-full flex-col rounded-lg border border-line bg-surface">
@@ -52,9 +44,7 @@ export function RecentActivity({ recent }: { recent: Transaction[] }) {
         ) : (
           recent.map((txn) => {
             const Icon = TYPE_ICON[txn.transactionType];
-            const isIncome = txn.transactionType === "INCOME";
-            const isExpense = txn.transactionType === "EXPENSE";
-            const signed = isIncome ? toAmount(txn.amount) : isExpense ? -toAmount(txn.amount) : toAmount(txn.amount);
+            const sign = txnSign(txn);
 
             return (
               <div
@@ -66,21 +56,23 @@ export function RecentActivity({ recent }: { recent: Transaction[] }) {
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium text-ink">
-                    {descriptionFor(txn, t("web.dashboard.recent.fallbackDescription"))}
+                    {txnTitle(txn, titleLabels)}
                   </div>
                   <div className="truncate text-[11.5px] text-ink-3">
-                    {accountLabelFor(txn)} · {dayLabel(txn.date)}
+                    {txnAccountLabel(txn)} · {dayLabel(txn.date)}
                   </div>
                 </div>
                 <span
                   className={cn(
                     "amount shrink-0 text-sm font-semibold",
-                    isIncome && "text-positive",
-                    isExpense && "text-negative",
-                    !isIncome && !isExpense && "text-ink"
+                    sign > 0 && "text-positive",
+                    sign < 0 && "text-negative",
+                    sign === 0 && "text-ink"
                   )}
                 >
-                  {money(signed, { sign: isIncome || isExpense })}
+                  {money(sign === 0 ? toAmount(txn.amount) : sign * toAmount(txn.amount), {
+                    sign: sign !== 0,
+                  })}
                 </span>
               </div>
             );

@@ -11,8 +11,9 @@ import { cn } from "@/lib/utils";
  * Shared loading/error/success wrapper around a react-query result.
  *
  * - While loading: renders `skeleton` (or a default pulse block).
- * - On error: renders an inline message with a retry button that calls
- *   `query.refetch()`.
+ * - On error with no cached data: renders an inline message with a retry
+ *   button that calls `query.refetch()`. If cached data exists despite the
+ *   error (failed background refetch), the data keeps rendering.
  * - On success: renders `children(data)` — a function so screens keep full
  *   control of layout without extra intermediate wrapper divs.
  *
@@ -34,7 +35,11 @@ export function QueryState<TData>({
     return <>{skeleton ?? <DefaultSkeleton />}</>;
   }
 
-  if (query.isError || query.data === undefined) {
+  // Only surface the error panel when there is nothing to show. A failed
+  // background refetch (isError with data still cached) keeps rendering the
+  // stale data — otherwise a network blip on tab refocus wipes a populated
+  // screen.
+  if (query.data === undefined) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-line bg-surface px-6 py-12 text-center">
         <p className="text-sm text-ink-3">{t("common.error")}</p>
