@@ -30,6 +30,11 @@ export function debtDirMeta(id: DebtDirection) {
   return meta;
 }
 
+/** Settling COLLECTED pays back a loan you LENT; REPAID pays back one you BORROWED. */
+export function settleDirectionFor(debtDir: DebtDirection): LoanDirection {
+  return debtDir === "COLLECTED" ? "LENT" : "BORROWED";
+}
+
 const NEW_CONTACT_VALUE = "__new__";
 
 export function DebtFields({
@@ -67,7 +72,7 @@ export function DebtFields({
   const dir = debtDirMeta(debtDir);
   const selectedContact = contacts.find((c) => c.id === contactId);
 
-  const settleDirection: LoanDirection = debtDir === "COLLECTED" ? "LENT" : "BORROWED";
+  const settleDirection: LoanDirection = settleDirectionFor(debtDir);
   const { data: contactLoans = [] } = useContactLoans(
     !dir.newDebt ? contactId : "",
     "ACTIVE"

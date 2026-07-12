@@ -21,11 +21,16 @@ import {
 } from "@/components/ui/select";
 import { useAccounts } from "@/hooks/use-accounts";
 import { useCategories } from "@/hooks/use-categories";
-import { useContacts } from "@/hooks/use-contacts";
+import { useContactLoans, useContacts } from "@/hooks/use-contacts";
 import { useCreateTransaction } from "@/hooks/use-transactions";
-import { money } from "@/lib/format";
+import { money, toAmount } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { DebtFields, debtDirMeta, type DebtDirection } from "@/components/transactions/debt-fields";
+import {
+  DebtFields,
+  debtDirMeta,
+  settleDirectionFor,
+  type DebtDirection,
+} from "@/components/transactions/debt-fields";
 import type { AddTransactionPreset } from "@/components/shell/overlays-context";
 import type { CreateTransactionInput, TransactionType } from "@/lib/api/types";
 
@@ -97,6 +102,15 @@ function AddTransactionForm({
   const amountColor = moneyIn ? "text-positive" : type === "EXPENSE" ? "text-negative" : "text-ink";
   const amountPrefix = type === "TRANSFER" ? "$" : moneyIn ? "+ $" : type === "EXPENSE" ? "− $" : "$";
 
+  // Shares a react-query cache key with DebtFields's own fetch — no extra request.
+  const { data: contactLoans = [] } = useContactLoans(
+    type === "LOAN" && !dir.newDebt ? contactId : "",
+    "ACTIVE"
+  );
+  const selectedLoan = contactLoans.find(
+    (l) => l.id === loanId && l.direction === settleDirectionFor(debtDir)
+  );
+
   function validate(): string | null {
     if (!amountOk) return t("add.errors.amount");
     if (!accountId) return t("add.errors.account");
@@ -107,6 +121,9 @@ function AddTransactionForm({
     if (type === "LOAN") {
       if (dir.newDebt && !contactId && !newContactName.trim()) return t("add.errors.contact");
       if (!dir.newDebt && !loanId) return t("add.errors.loan");
+      if (!dir.newDebt && selectedLoan && amount > toAmount(selectedLoan.remainingAmount)) {
+        return t("add.errors.overRemaining");
+      }
     }
     return null;
   }
