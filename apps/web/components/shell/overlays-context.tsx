@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { AddTransactionModal } from "@/components/transactions/add-transaction-modal";
 
 export type AddTransactionPreset = "expense" | "income" | "transfer" | "debt";
 
@@ -15,26 +16,37 @@ interface OverlaysState {
 const OverlaysContext = createContext<OverlaysState | null>(null);
 
 /**
- * Placeholder overlays provider for Task 10.
- *
- * The topbar buttons and global shortcuts call into these actions, but the
- * actual modals (add-transaction, create-account, command bar) land in
- * Tasks 13/14/15. Until then every action surfaces a "coming soon" toast so
- * the shell is fully wired and navigable.
+ * Shell-level overlay state. `openAddTransaction` is real (Task 13); the
+ * create-account and command-bar actions remain "coming soon" toasts until
+ * Tasks 14/15 land.
  */
 export function OverlaysProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
+  const [addOpen, setAddOpen] = useState(false);
+  const [addPreset, setAddPreset] = useState<AddTransactionPreset | undefined>(undefined);
 
   const value = useMemo<OverlaysState>(() => {
     const comingSoon = () => toast(t("web.shell.comingSoon"));
     return {
-      openAddTransaction: () => comingSoon(),
+      openAddTransaction: (preset) => {
+        setAddPreset(preset);
+        setAddOpen(true);
+      },
       openCreateAccount: () => comingSoon(),
       openCommandBar: () => comingSoon(),
     };
   }, [t]);
 
-  return <OverlaysContext.Provider value={value}>{children}</OverlaysContext.Provider>;
+  return (
+    <OverlaysContext.Provider value={value}>
+      {children}
+      <AddTransactionModal
+        open={addOpen}
+        preset={addPreset}
+        onClose={() => setAddOpen(false)}
+      />
+    </OverlaysContext.Provider>
+  );
 }
 
 export function useOverlays() {
