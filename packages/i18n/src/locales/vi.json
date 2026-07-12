@@ -289,7 +289,6 @@
       "quickAdd": "Thêm nhanh",
       "navigate": "Chuyển đến",
       "uncategorized": "Chưa phân loại",
-      "addInstant": "Thêm {{type}}",
       "editDetails": "Chỉnh sửa chi tiết",
       "added": "Đã thêm {{type}} · {{amount}}"
     },

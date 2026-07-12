@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { Plus, Wallet } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -41,12 +42,6 @@ export function CommandBar({ open, onClose }: { open: boolean; onClose: () => vo
     [accounts, categories, query]
   );
 
-  const matchingNavItems = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q || parsed) return NAV_ITEMS;
-    return NAV_ITEMS.filter((item) => t(item.labelKey).toLowerCase().includes(q));
-  }, [query, parsed, t]);
-
   function reset() {
     setQuery("");
   }
@@ -63,6 +58,44 @@ export function CommandBar({ open, onClose }: { open: boolean; onClose: () => vo
     reset();
     onClose();
   }
+
+  const navCommands = NAV_ITEMS.map((item) => ({
+    id: `nav-${item.href}`,
+    label: t(item.labelKey),
+    icon: item.icon,
+    kbd: item.kbd,
+    run: () => go(item.href),
+  }));
+  const actionCommands = [
+    {
+      id: "new-transaction",
+      label: t("web.shell.newTransaction"),
+      icon: Plus,
+      kbd: "N",
+      run: () => {
+        overlays.openAddTransaction();
+        reset();
+        onClose();
+      },
+    },
+    {
+      id: "new-account",
+      label: t("web.shell.hints.newAccount"),
+      icon: Wallet,
+      kbd: "A",
+      run: () => {
+        overlays.openCreateAccount();
+        reset();
+        onClose();
+      },
+    },
+  ];
+  const allCommands = [...navCommands, ...actionCommands];
+  const commandQuery = query.trim().toLowerCase();
+  const matchingCommands =
+    !commandQuery || parsed
+      ? allCommands
+      : allCommands.filter((c) => c.label.toLowerCase().includes(commandQuery));
 
   function addInstantly() {
     if (!parsed) return;
@@ -152,17 +185,13 @@ export function CommandBar({ open, onClose }: { open: boolean; onClose: () => vo
           </CommandGroup>
         )}
 
-        {matchingNavItems.length > 0 && (
+        {matchingCommands.length > 0 && (
           <CommandGroup heading={t("web.commandBar.navigate")}>
-            {matchingNavItems.map((item) => (
-              <CommandItem
-                key={item.href}
-                value={`nav-${item.href}`}
-                onSelect={() => go(item.href)}
-              >
-                <item.icon className="h-4 w-4 text-ink-3" />
-                <span>{t(item.labelKey)}</span>
-                <CommandShortcut>{item.kbd}</CommandShortcut>
+            {matchingCommands.map((cmd) => (
+              <CommandItem key={cmd.id} value={cmd.id} onSelect={cmd.run}>
+                <cmd.icon className="h-4 w-4 text-ink-3" />
+                <span>{cmd.label}</span>
+                <CommandShortcut>{cmd.kbd}</CommandShortcut>
               </CommandItem>
             ))}
           </CommandGroup>

@@ -289,7 +289,6 @@
       "quickAdd": "Quick add",
       "navigate": "Navigate",
       "uncategorized": "Uncategorized",
-      "addInstant": "Add {{type}}",
       "editDetails": "Edit details first",
       "added": "Added {{type}} · {{amount}}"
     },
