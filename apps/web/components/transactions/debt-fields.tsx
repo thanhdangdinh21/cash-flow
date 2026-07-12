@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { money, toAmount } from "@/lib/format";
+import { money, sanitizeAmountInput, toAmount } from "@/lib/format";
 import { useContactLoans } from "@/hooks/use-contacts";
 import { cn } from "@/lib/utils";
 import type { Contact, LoanDirection } from "@/lib/api/types";
@@ -177,7 +177,7 @@ export function DebtFields({
             <Label>{t("add.interest")}</Label>
             <Input
               value={interestRate}
-              onChange={(e) => onInterestRateChange(e.target.value.replace(/[^0-9.]/g, ""))}
+              onChange={(e) => onInterestRateChange(sanitizeAmountInput(e.target.value))}
               placeholder="0"
               className="w-24"
             />

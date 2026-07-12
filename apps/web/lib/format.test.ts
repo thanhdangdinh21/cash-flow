@@ -6,7 +6,9 @@ import {
   monthEndDate,
   monthKeyOf,
   monthLabel,
+  parseAmountText,
   parseISO,
+  sanitizeAmountInput,
   shortDate,
   toAmount,
 } from "./format";
@@ -109,6 +111,57 @@ describe("addMonths", () => {
 
   it("adds a month across a year boundary", () => {
     expect(addMonths("2026-12", 1)).toBe("2027-01");
+  });
+});
+
+describe("sanitizeAmountInput", () => {
+  it("strips non-numeric characters", () => {
+    expect(sanitizeAmountInput("abc12.50xyz")).toBe("12.50");
+  });
+
+  it("keeps a single decimal point", () => {
+    expect(sanitizeAmountInput("12.50")).toBe("12.50");
+  });
+
+  it("keeps a single decimal comma", () => {
+    expect(sanitizeAmountInput("12,50")).toBe("12,50");
+  });
+
+  it("drops a second separator instead of silently truncating the value", () => {
+    // A pasted thousands-formatted amount ("1,234.56") must not silently
+    // become 1.234 (parseFloat stopping at the second separator) — the
+    // extra separator is dropped and its surrounding digits kept in place.
+    expect(sanitizeAmountInput("1,234.56")).toBe("1,23456");
+  });
+
+  it("drops a repeated decimal point", () => {
+    expect(sanitizeAmountInput("12..50")).toBe("12.50");
+  });
+
+  it("returns an empty string unchanged", () => {
+    expect(sanitizeAmountInput("")).toBe("");
+  });
+});
+
+describe("parseAmountText", () => {
+  it("parses a plain decimal amount", () => {
+    expect(parseAmountText("12.50")).toBe(12.5);
+  });
+
+  it("parses a comma-decimal amount", () => {
+    expect(parseAmountText("12,50")).toBe(12.5);
+  });
+
+  it("never silently truncates a multi-separator paste to the wrong magnitude", () => {
+    // Must not equal 1.234 (the old bug) — the exact interpretation of a
+    // thousands-formatted paste is out of scope, but it must stay in the
+    // same order of magnitude as the digits entered.
+    expect(parseAmountText("1,234.56")).not.toBe(1.234);
+    expect(parseAmountText("1,234.56")).toBeCloseTo(1.23456);
+  });
+
+  it("returns 0 for an empty string", () => {
+    expect(parseAmountText("")).toBe(0);
   });
 });
 

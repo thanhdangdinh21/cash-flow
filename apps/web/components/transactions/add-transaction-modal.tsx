@@ -23,7 +23,8 @@ import { useAccounts } from "@/hooks/use-accounts";
 import { useCategories } from "@/hooks/use-categories";
 import { useContactLoans, useContacts } from "@/hooks/use-contacts";
 import { useCreateTransaction } from "@/hooks/use-transactions";
-import { money, toAmount } from "@/lib/format";
+import { extractErrorMessage } from "@/lib/api/errors";
+import { money, parseAmountText, sanitizeAmountInput, toAmount } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
   DebtFields,
@@ -96,7 +97,7 @@ function AddTransactionForm({
   );
 
   const dir = debtDirMeta(debtDir);
-  const amount = parseFloat(amountText.replace(",", ".") || "0");
+  const amount = parseAmountText(amountText);
   const amountOk = !Number.isNaN(amount) && amount > 0;
   const moneyIn = type === "INCOME" || (type === "LOAN" && dir.in);
   const amountColor = moneyIn ? "text-positive" : type === "EXPENSE" ? "text-negative" : "text-ink";
@@ -162,7 +163,7 @@ function AddTransactionForm({
               loanDirection: debtDir as "LENT" | "BORROWED",
               ...(contactId ? { contactId } : { contactName: newContactName.trim() }),
               ...(interestRate && {
-                interestRate: parseFloat(interestRate),
+                interestRate: parseAmountText(interestRate),
                 interestPeriod,
               }),
             }
@@ -174,9 +175,7 @@ function AddTransactionForm({
         onClose();
       },
       onError: (err: unknown) => {
-        setError(
-          err instanceof Error ? err.message : t("common.error")
-        );
+        setError(extractErrorMessage(err));
       },
     });
   }
@@ -212,7 +211,7 @@ function AddTransactionForm({
           <input
             autoFocus
             value={amountText}
-            onChange={(e) => setAmountText(e.target.value.replace(/[^0-9.,]/g, ""))}
+            onChange={(e) => setAmountText(sanitizeAmountInput(e.target.value))}
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSave();
             }}

@@ -145,6 +145,34 @@ export function monthEndDate(monthKey: string): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+/**
+ * Filters raw amount-input text down to digits and at most one decimal
+ * separator (`.` or `,`). Any additional separator is dropped rather than
+ * kept — passing the result straight to `parseFloat` after normalizing the
+ * separator to `.` (see `parseAmountText`) would otherwise silently stop at
+ * the second separator and produce a wildly wrong magnitude (e.g. a pasted
+ * "1,234.56" becoming 1.234 via naive single-replace + parseFloat).
+ */
+export function sanitizeAmountInput(raw: string): string {
+  let seenSeparator = false;
+  let result = "";
+  for (const ch of raw) {
+    if (ch >= "0" && ch <= "9") {
+      result += ch;
+    } else if ((ch === "." || ch === ",") && !seenSeparator) {
+      result += ch;
+      seenSeparator = true;
+    }
+  }
+  return result;
+}
+
+/** Sanitizes then parses raw amount-input text into a number (0 if empty). */
+export function parseAmountText(raw: string): number {
+  const sanitized = sanitizeAmountInput(raw).replace(",", ".");
+  return parseFloat(sanitized || "0");
+}
+
 export function monthKeyOf(iso: string): string {
   return iso.slice(0, 7);
 }
