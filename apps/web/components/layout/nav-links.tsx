@@ -12,7 +12,7 @@ import {
   Users,
 } from "lucide-react";
 
-const NAV_ITEMS = [
+export const NAV_ITEMS = [
   { href: "/dashboard", labelKey: "web.nav.dashboard", icon: LayoutDashboard, kbd: "G D" },
   { href: "/transactions", labelKey: "web.nav.transactions", icon: Receipt, kbd: "G T" },
   { href: "/accounts", labelKey: "web.nav.accounts", icon: Wallet, kbd: "G A" },

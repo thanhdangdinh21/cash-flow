@@ -47,10 +47,15 @@ export function useGlobalShortcuts() {
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
+      if (e.repeat) return;
       const meta = e.metaKey || e.ctrlKey;
 
       if (meta && e.key.toLowerCase() === "k") {
         e.preventDefault();
+        // Clear any pending G-chord — otherwise the next keypress after
+        // closing the command bar could be misread as its second key.
+        goPending.current = false;
+        clearTimeout(goTimer.current);
         overlays.openCommandBar();
         return;
       }

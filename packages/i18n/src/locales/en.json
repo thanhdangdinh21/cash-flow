@@ -283,6 +283,16 @@
       "subhead": "Every dollar in, every dollar out — one calm place. Budgets that nudge, never nag.",
       "tagline": "Personal finance · light + dark · multi-currency"
     },
+    "commandBar": {
+      "placeholder": "Type merchant, amount, @category — or search…",
+      "empty": "No results.",
+      "quickAdd": "Quick add",
+      "navigate": "Navigate",
+      "uncategorized": "Uncategorized",
+      "addInstant": "Add {{type}}",
+      "editDetails": "Edit details first",
+      "added": "Added {{type}} · {{amount}}"
+    },
     "dashboard": {
       "title": "Dashboard",
       "kpi": {
