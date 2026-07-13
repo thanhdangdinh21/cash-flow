@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CreditCard, Gem, Trash2, Wallet } from "lucide-react";
+import { CreditCard, Gem, Pencil, Trash2, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +15,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { QueryState, SkeletonBlock } from "@/components/ui/query-state";
-import { useAccount, useAddHolding, useDeleteAccount, useRemoveHolding } from "@/hooks/use-accounts";
+import {
+  useAccount,
+  useAddHolding,
+  useDeleteAccount,
+  useRemoveHolding,
+  useUpdateAccount,
+} from "@/hooks/use-accounts";
 import { useTransactions } from "@/hooks/use-transactions";
 import { dayLabel, money, toAmount } from "@/lib/format";
 import { txnAccountLabel, txnSign, txnTitle } from "@/lib/txn";
@@ -40,6 +46,7 @@ function HoldingsSection({ account }: { account: AccountDetail }) {
   const removeHolding = useRemoveHolding();
 
   const purchases = account.lots.filter((l) => l.type === "DEBIT" && l.quantity);
+  const holdingById = new Map(account.holdings.map((h) => [h.id, h]));
 
   return (
     <div className="flex flex-col gap-3">
@@ -132,6 +139,7 @@ function HoldingsSection({ account }: { account: AccountDetail }) {
           <p className="py-2 text-sm text-ink-4">{t("accounts.detail.noPurchases")}</p>
         ) : (
           purchases.map((lot) => {
+            const holding = lot.holdingId ? holdingById.get(lot.holdingId) : undefined;
             const qty = toAmount(lot.quantity ?? "0");
             const amount = toAmount(lot.amount);
             const unit = qty > 0 ? amount / qty : 0;
@@ -141,8 +149,11 @@ function HoldingsSection({ account }: { account: AccountDetail }) {
                 className="flex items-center justify-between gap-3 border-b border-line py-2 text-sm last:border-0"
               >
                 <div>
-                  <div className="font-medium text-ink">+ {qty} {account.holdings[0]?.unitName ?? ""}</div>
+                  <div className="font-medium text-ink">
+                    + {qty} {holding?.unitName ?? ""}
+                  </div>
                   <div className="text-xs text-ink-3">
+                    {holding && account.holdings.length > 1 ? `${holding.name} · ` : ""}
                     {dayLabel(lot.transaction.date)} · {money(unit)}
                   </div>
                 </div>
@@ -225,7 +236,16 @@ export function AccountInspector({
   const { t } = useTranslation();
   const query = useAccount(accountId);
   const deleteAccount = useDeleteAccount();
+  const updateAccount = useUpdateAccount();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [renaming, setRenaming] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+
+  function saveRename(id: string) {
+    const next = nameDraft.trim();
+    if (!next) return;
+    updateAccount.mutate({ id, input: { name: next } }, { onSuccess: () => setRenaming(false) });
+  }
 
   return (
     <aside className="flex w-[340px] shrink-0 flex-col gap-4 overflow-y-auto rounded-lg border border-line bg-surface p-5">
@@ -248,14 +268,64 @@ export function AccountInspector({
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-paper-2 text-ink-2">
                   <Icon className="h-[18px] w-[18px]" />
                 </span>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[15px] font-semibold text-ink">{account.name}</div>
-                  <div className="truncate text-xs text-ink-3">
-                    {t(`accounts.type.${account.type}`)}
-                    {isCommodity ? ` · ${t("accounts.commodity")}` : ""}
+                {renaming ? (
+                  <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                    <Input
+                      autoFocus
+                      value={nameDraft}
+                      onChange={(e) => setNameDraft(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") saveRename(account.id);
+                        if (e.key === "Escape") setRenaming(false);
+                      }}
+                      className="h-8 text-sm"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="h-8 px-2.5"
+                      disabled={updateAccount.isPending}
+                      onClick={() => saveRename(account.id)}
+                    >
+                      {t("common.save")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2.5"
+                      onClick={() => setRenaming(false)}
+                    >
+                      {t("common.cancel")}
+                    </Button>
                   </div>
-                </div>
-                {account.isDefault && <Badge variant="secondary">{t("accounts.defaultAccount")}</Badge>}
+                ) : (
+                  <>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-[15px] font-semibold text-ink">{account.name}</div>
+                      <div className="truncate text-xs text-ink-3">
+                        {t(`accounts.type.${account.type}`)}
+                        {isCommodity ? ` · ${t("accounts.commodity")}` : ""}
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 shrink-0 p-0"
+                      aria-label={t("common.edit")}
+                      onClick={() => {
+                        setNameDraft(account.name);
+                        setRenaming(true);
+                      }}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    {account.isDefault && (
+                      <Badge variant="secondary">{t("accounts.defaultAccount")}</Badge>
+                    )}
+                  </>
+                )}
               </div>
 
               {!isCommodity && (

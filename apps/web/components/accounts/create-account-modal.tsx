@@ -29,6 +29,12 @@ const KINDS: { id: AccountKind; icon: typeof Wallet; type: AccountType }[] = [
   { id: "commodity", icon: Gem, type: "ASSET" },
 ];
 
+const KIND_TYPE: Record<AccountKind, AccountType> = {
+  cash: "ASSET",
+  credit: "LIABILITY",
+  commodity: "ASSET",
+};
+
 function CreateAccountForm({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const createAccount = useCreateAccount({ toastOnError: false });
@@ -49,13 +55,10 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
     }
     setError(null);
 
-    const selectedKind = KINDS.find((k) => k.id === kind);
-    if (!selectedKind) return;
-
     createAccount.mutate(
       {
         name: name.trim(),
-        type: selectedKind.type,
+        type: KIND_TYPE[kind],
         currencyCode,
         initialBalance: initialBalance ? parseAmountText(initialBalance) : undefined,
         holdings:
