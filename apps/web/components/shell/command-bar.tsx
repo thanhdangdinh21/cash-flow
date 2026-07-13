@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Plus, Wallet } from "lucide-react";
+import { ArrowLeftRight, Plus, Wallet } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -79,6 +79,17 @@ export function CommandBar({ open, onClose }: { open: boolean; onClose: () => vo
       },
     },
     {
+      id: "new-transfer",
+      label: t("web.shell.hints.transfer"),
+      icon: ArrowLeftRight,
+      kbd: "T",
+      run: () => {
+        overlays.openAddTransaction("transfer");
+        reset();
+        onClose();
+      },
+    },
+    {
       id: "new-account",
       label: t("web.shell.hints.newAccount"),
       icon: Wallet,
@@ -92,8 +103,11 @@ export function CommandBar({ open, onClose }: { open: boolean; onClose: () => vo
   ];
   const allCommands = [...navCommands, ...actionCommands];
   const commandQuery = query.trim().toLowerCase();
-  const matchingCommands =
-    !commandQuery || parsed
+  const matchingCommands = parsed
+    ? // A quick-add is showing — keep the nav list short so it doesn't
+      // compete with the primary action.
+      allCommands.slice(0, 3)
+    : !commandQuery
       ? allCommands
       : allCommands.filter((c) => c.label.toLowerCase().includes(commandQuery));
 
