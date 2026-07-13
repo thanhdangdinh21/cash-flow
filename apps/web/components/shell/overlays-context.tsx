@@ -1,9 +1,8 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
-import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { AddTransactionModal } from "@/components/transactions/add-transaction-modal";
+import { CreateAccountModal } from "@/components/accounts/create-account-modal";
 import { CommandBar } from "@/components/shell/command-bar";
 
 export type AddTransactionPreset = "expense" | "income" | "transfer" | "debt";
@@ -26,21 +25,16 @@ interface OverlaysState {
 
 const OverlaysContext = createContext<OverlaysState | null>(null);
 
-/**
- * Shell-level overlay state. `openAddTransaction`/`openAddTransactionPrefilled`
- * and the command bar are real (Tasks 13/14); create-account remains a
- * "coming soon" toast until Task 15 lands.
- */
+/** Shell-level overlay state, mounted once in the (app) layout. */
 export function OverlaysProvider({ children }: { children: ReactNode }) {
-  const { t } = useTranslation();
   const [addOpen, setAddOpen] = useState(false);
   const [addPreset, setAddPreset] = useState<AddTransactionPreset | undefined>(undefined);
   const [addPrefill, setAddPrefill] = useState<AddTransactionPrefill | undefined>(undefined);
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [createAccountOpen, setCreateAccountOpen] = useState(false);
 
-  const value = useMemo<OverlaysState>(() => {
-    const comingSoon = () => toast(t("web.shell.comingSoon"));
-    return {
+  const value = useMemo<OverlaysState>(
+    () => ({
       openAddTransaction: (preset) => {
         setAddPreset(preset);
         setAddPrefill(undefined);
@@ -51,11 +45,12 @@ export function OverlaysProvider({ children }: { children: ReactNode }) {
         setAddPrefill(prefill);
         setAddOpen(true);
       },
-      openCreateAccount: () => comingSoon(),
+      openCreateAccount: () => setCreateAccountOpen(true),
       // Toggles rather than only opening — pressing Cmd/Ctrl+K again closes it.
       openCommandBar: () => setCmdOpen((prev) => !prev),
-    };
-  }, [t]);
+    }),
+    []
+  );
 
   return (
     <OverlaysContext.Provider value={value}>
@@ -67,6 +62,7 @@ export function OverlaysProvider({ children }: { children: ReactNode }) {
         onClose={() => setAddOpen(false)}
       />
       <CommandBar open={cmdOpen} onClose={() => setCmdOpen(false)} />
+      <CreateAccountModal open={createAccountOpen} onClose={() => setCreateAccountOpen(false)} />
     </OverlaysContext.Provider>
   );
 }

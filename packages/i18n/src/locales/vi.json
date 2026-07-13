@@ -104,6 +104,20 @@
       "unitName": "Tên đơn vị",
       "unitPlaceholder": "gram"
     },
+    "kind": {
+      "cash": {
+        "title": "Tiền mặt & ngân hàng",
+        "sub": "Theo dõi chi tiêu qua ví và tài khoản ngân hàng"
+      },
+      "credit": {
+        "title": "Thẻ tín dụng",
+        "sub": "Theo dõi khoản nợ thẻ tín dụng"
+      },
+      "commodity": {
+        "title": "Hàng hoá",
+        "sub": "Theo dõi tài sản như vàng, tiền số, cổ phiếu"
+      }
+    },
     "detail": {
       "totalQty": "Tổng số lượng nắm giữ",
       "totalCost": "Tổng chi phí",
@@ -282,6 +296,11 @@
       "headline": "Biết rõ dòng tiền của bạn.",
       "subhead": "Từng đồng vào, từng đồng ra — tất cả trong một nơi yên tĩnh. Ngân sách chỉ nhắc nhẹ, không làm phiền.",
       "tagline": "Tài chính cá nhân · sáng + tối · đa tiền tệ"
+    },
+    "accounts": {
+      "netWorth": "Tài sản ròng",
+      "balance": "Số dư",
+      "selectHint": "Chọn một tài khoản để xem chi tiết."
     },
     "commandBar": {
       "placeholder": "Nhập tên, số tiền, @danh mục — hoặc tìm kiếm…",

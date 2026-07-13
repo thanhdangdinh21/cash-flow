@@ -104,6 +104,20 @@
       "unitName": "Unit name",
       "unitPlaceholder": "gram"
     },
+    "kind": {
+      "cash": {
+        "title": "Cash & bank",
+        "sub": "Track spending with wallets and bank accounts"
+      },
+      "credit": {
+        "title": "Credit card",
+        "sub": "Track what you owe with credit cards"
+      },
+      "commodity": {
+        "title": "Commodity",
+        "sub": "Track assets like gold, crypto, or stock"
+      }
+    },
     "detail": {
       "totalQty": "Total quantity held",
       "totalCost": "Total cost",
@@ -282,6 +296,11 @@
       "headline": "Know where your money flows.",
       "subhead": "Every dollar in, every dollar out — one calm place. Budgets that nudge, never nag.",
       "tagline": "Personal finance · light + dark · multi-currency"
+    },
+    "accounts": {
+      "netWorth": "Net worth",
+      "balance": "Balance",
+      "selectHint": "Select an account to see details."
     },
     "commandBar": {
       "placeholder": "Type merchant, amount, @category — or search…",
