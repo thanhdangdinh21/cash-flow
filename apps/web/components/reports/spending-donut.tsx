@@ -11,10 +11,8 @@ import { money, monthEndDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SpendingDirection, SpendingByCategoryItem } from "@/lib/api/types";
 
-const UNCATEGORIZED_TINT = "#8C897D";
-
 function tintFor(item: SpendingByCategoryItem): string {
-  return item.categoryId ? categoryMeta(item.icon).tint : UNCATEGORIZED_TINT;
+  return item.categoryId ? categoryMeta(item.icon).tint : "var(--ink-3)";
 }
 
 function ChartTooltip({ active, payload }: TooltipContentProps) {
@@ -98,21 +96,22 @@ export function SpendingDonut({
                         paddingAngle={2}
                         isAnimationActive={false}
                         onClick={(entry) => {
-                          const item = entry as unknown as SpendingByCategoryItem;
+                          const item = entry.payload as SpendingByCategoryItem;
                           if (item.categoryId) onSelectCategory(item.categoryId);
                         }}
                       >
-                        {data.items.map((item) => (
-                          <Cell
-                            key={item.categoryId ?? "uncategorized"}
-                            fill={tintFor(item)}
-                            className={item.categoryId ? "cursor-pointer" : undefined}
-                            stroke={
-                              item.categoryId === selectedCategoryId ? "var(--ink)" : "var(--surface)"
-                            }
-                            strokeWidth={item.categoryId === selectedCategoryId ? 2 : 1}
-                          />
-                        ))}
+                        {data.items.map((item) => {
+                          const isSelected = item.categoryId !== null && item.categoryId === selectedCategoryId;
+                          return (
+                            <Cell
+                              key={item.categoryId ?? "uncategorized"}
+                              fill={tintFor(item)}
+                              className={item.categoryId ? "cursor-pointer" : undefined}
+                              stroke={isSelected ? "var(--ink)" : "var(--surface)"}
+                              strokeWidth={isSelected ? 2 : 1}
+                            />
+                          );
+                        })}
                       </Pie>
                       <Tooltip content={(props) => <ChartTooltip {...props} />} />
                     </PieChart>
@@ -128,7 +127,7 @@ export function SpendingDonut({
                       className={cn(
                         "flex items-center gap-2 rounded-md px-1.5 py-1 text-left",
                         item.categoryId && "hover:bg-paper-2",
-                        item.categoryId === selectedCategoryId && "bg-paper-2"
+                        item.categoryId !== null && item.categoryId === selectedCategoryId && "bg-paper-2"
                       )}
                     >
                       <span

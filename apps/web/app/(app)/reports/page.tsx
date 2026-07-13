@@ -27,7 +27,17 @@ export default function ReportsPage() {
       <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-2 gap-4">
         <NetWorthChart period={period} onPeriodChange={setPeriod} />
 
-        <QueryState query={homeReport} skeleton={<SkeletonBlock className="h-full" />}>
+        <QueryState
+          query={homeReport}
+          skeleton={
+            <div className="flex h-full flex-col rounded-lg border border-line bg-surface">
+              <div className="border-b border-line px-4 py-3">
+                <h3 className="text-sm font-semibold text-ink">{t("web.reports.cashflow.title")}</h3>
+              </div>
+              <SkeletonBlock className="m-3 flex-1" />
+            </div>
+          }
+        >
           {(data) => (
             <CashflowChart weeks={data.weeks} title={t("web.reports.cashflow.title")} />
           )}
@@ -35,10 +45,7 @@ export default function ReportsPage() {
 
         <SpendingDonut
           monthKey={monthKey}
-          onMonthChange={(next) => {
-            setMonthKey(next);
-            setSelectedCategoryId(null);
-          }}
+          onMonthChange={setMonthKey}
           direction={direction}
           onDirectionChange={(next) => {
             setDirection(next);
