@@ -305,6 +305,9 @@
       "balance": "Số dư",
       "selectHint": "Chọn một tài khoản để xem chi tiết."
     },
+    "categories": {
+      "selectHint": "Chọn một danh mục để xem chi tiết."
+    },
     "commandBar": {
       "placeholder": "Nhập tên, số tiền, @danh mục — hoặc tìm kiếm…",
       "empty": "Không có kết quả.",

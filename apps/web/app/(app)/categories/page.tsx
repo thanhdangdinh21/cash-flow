@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,13 @@ export default function CategoriesPage() {
   const { t } = useTranslation();
   const query = useCategories();
   const [selection, setSelection] = useState<Selection>(null);
+
+  useEffect(() => {
+    if (!query.data) return;
+    if (selection?.mode === "edit" && !query.data.some((c) => c.id === selection.id)) {
+      setSelection(null);
+    }
+  }, [query.data, selection]);
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -67,6 +74,11 @@ export default function CategoriesPage() {
                   onClose={() => setSelection(null)}
                   onDeleted={() => setSelection(null)}
                 />
+              )}
+              {!selection && (
+                <aside className="flex w-[380px] shrink-0 items-center justify-center rounded-lg border border-line bg-surface p-5 text-center text-sm text-ink-4">
+                  {t("web.categories.selectHint")}
+                </aside>
               )}
             </div>
           );

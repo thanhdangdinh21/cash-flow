@@ -49,9 +49,14 @@ export function CategoryEditor({
   const { t } = useTranslation();
   const isNew = category === null;
 
+  const initialScope: Scope =
+    category?.accountType === "EXPENSE" || category?.accountType === "INCOME"
+      ? category.accountType
+      : "all";
+
   const [name, setName] = useState(category?.name ?? "");
   const [icon, setIcon] = useState<string>(category?.icon ?? CATEGORY_ICON_KEYS[0] ?? "cart");
-  const [scope, setScope] = useState<Scope>((category?.accountType as Scope) ?? "all");
+  const [scope, setScope] = useState<Scope>(initialScope);
   const [newSub, setNewSub] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -165,10 +170,13 @@ export function CategoryEditor({
               onChange={(e) => setNewSub(e.target.value)}
               placeholder={t("categories.addSubcategory")}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && newSub.trim()) {
+                if (e.key === "Enter" && newSub.trim() && !addSubCategory.isPending) {
                   addSubCategory.mutate(
                     { categoryId: category.id, input: { name: newSub.trim() } },
-                    { onSuccess: () => setNewSub("") }
+                    {
+                      onSuccess: () => setNewSub(""),
+                      onError: (err) => setError(extractErrorMessage(err)),
+                    }
                   );
                 }
               }}
@@ -183,7 +191,10 @@ export function CategoryEditor({
               onClick={() =>
                 addSubCategory.mutate(
                   { categoryId: category.id, input: { name: newSub.trim() } },
-                  { onSuccess: () => setNewSub("") }
+                  {
+                    onSuccess: () => setNewSub(""),
+                    onError: (err) => setError(extractErrorMessage(err)),
+                  }
                 )
               }
             >
@@ -239,6 +250,10 @@ export function CategoryEditor({
                     onSuccess: () => {
                       setConfirmOpen(false);
                       onDeleted();
+                    },
+                    onError: (err) => {
+                      setConfirmOpen(false);
+                      setError(extractErrorMessage(err));
                     },
                   })
                 }

@@ -305,6 +305,9 @@
       "balance": "Balance",
       "selectHint": "Select an account to see details."
     },
+    "categories": {
+      "selectHint": "Select a category to see details."
+    },
     "commandBar": {
       "placeholder": "Type merchant, amount, @category — or search…",
       "empty": "No results.",
