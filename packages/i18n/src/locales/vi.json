@@ -357,6 +357,27 @@
       "reports": "Báo cáo",
       "contacts": "Liên hệ"
     },
+    "reports": {
+      "netWorth": {
+        "title": "Tài sản ròng",
+        "periodMonth": "6 tháng",
+        "periodYear": "12 tháng"
+      },
+      "cashflow": {
+        "title": "Thu nhập và chi tiêu"
+      },
+      "spending": {
+        "title": "Chi tiêu theo danh mục",
+        "empty": "Chưa có dữ liệu để hiển thị.",
+        "uncategorized": "Chưa phân loại"
+      },
+      "trend": {
+        "title": "Xu hướng danh mục",
+        "placeholder": "Chọn một danh mục để xem xu hướng.",
+        "thisMonth": "Tháng này",
+        "average": "Trung bình 6 tháng"
+      }
+    },
     "settings": {
       "title": "Cài đặt",
       "appearance": "Giao diện",

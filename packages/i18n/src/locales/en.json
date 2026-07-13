@@ -357,6 +357,27 @@
       "reports": "Reports",
       "contacts": "Contacts"
     },
+    "reports": {
+      "netWorth": {
+        "title": "Net worth",
+        "periodMonth": "6 months",
+        "periodYear": "12 months"
+      },
+      "cashflow": {
+        "title": "Income vs spending"
+      },
+      "spending": {
+        "title": "Spending by category",
+        "empty": "Nothing to chart yet.",
+        "uncategorized": "Uncategorized"
+      },
+      "trend": {
+        "title": "Category trend",
+        "placeholder": "Select a category slice to see its trend.",
+        "thisMonth": "This month",
+        "average": "6-month average"
+      }
+    },
     "settings": {
       "title": "Settings",
       "appearance": "Appearance",

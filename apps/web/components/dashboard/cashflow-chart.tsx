@@ -39,13 +39,22 @@ function ChartTooltip({ active, payload, label }: TooltipContentProps) {
   );
 }
 
-export function CashflowChart({ weeks }: { weeks: HomeReportWeek[] }) {
+export function CashflowChart({
+  weeks,
+  title,
+}: {
+  weeks: HomeReportWeek[];
+  /** Overrides the default "Cashflow · weekly" dashboard title (e.g. for the reports screen). */
+  title?: string;
+}) {
   const { t } = useTranslation();
 
   return (
     <div className="flex h-full flex-col rounded-lg border border-line bg-surface">
       <div className="flex items-center justify-between border-b border-line px-4 py-3">
-        <h3 className="text-sm font-semibold text-ink">{t("web.dashboard.cashflow.title")}</h3>
+        <h3 className="text-sm font-semibold text-ink">
+          {title ?? t("web.dashboard.cashflow.title")}
+        </h3>
         <div className="flex items-center gap-3.5 text-xs text-ink-3">
           <span className="inline-flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-positive" />
