@@ -32,7 +32,11 @@ import {
   settleDirectionFor,
   type DebtDirection,
 } from "@/components/transactions/debt-fields";
-import type { AddTransactionPreset, AddTransactionPrefill } from "@/components/shell/overlays-context";
+import type {
+  AddTransactionPreset,
+  AddTransactionPrefill,
+  SettleLoanPrefill,
+} from "@/components/shell/overlays-context";
 import type { CreateTransactionInput, TransactionType } from "@/lib/api/types";
 
 const TYPE_BY_PRESET: Record<AddTransactionPreset, TransactionType> = {
@@ -57,10 +61,12 @@ function todayISO(): string {
 function AddTransactionForm({
   preset,
   prefill,
+  settlePrefill,
   onClose,
 }: {
   preset?: AddTransactionPreset;
   prefill?: AddTransactionPrefill;
+  settlePrefill?: SettleLoanPrefill;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
@@ -70,16 +76,16 @@ function AddTransactionForm({
   const createTransaction = useCreateTransaction({ toastOnError: false });
 
   const [type, setType] = useState<TransactionType>(
-    prefill?.type ?? (preset ? TYPE_BY_PRESET[preset] : "EXPENSE")
+    settlePrefill ? "LOAN" : (prefill?.type ?? (preset ? TYPE_BY_PRESET[preset] : "EXPENSE"))
   );
-  const [debtDir, setDebtDir] = useState<DebtDirection>("LENT");
+  const [debtDir, setDebtDir] = useState<DebtDirection>(settlePrefill?.debtDir ?? "LENT");
   const [amountText, setAmountText] = useState(prefill?.amountText ?? "");
   const [accountId, setAccountId] = useState(prefill?.accountId ?? "");
   const [counterAccountId, setCounterAccountId] = useState("");
   const [subCategoryId, setSubCategoryId] = useState(prefill?.subCategoryId ?? "");
-  const [contactId, setContactId] = useState("");
+  const [contactId, setContactId] = useState(settlePrefill?.contactId ?? "");
   const [newContactName, setNewContactName] = useState("");
-  const [loanId, setLoanId] = useState("");
+  const [loanId, setLoanId] = useState(settlePrefill?.loanId ?? "");
   const [interestRate, setInterestRate] = useState("");
   const [interestPeriod, setInterestPeriod] = useState<"yearly" | "monthly">("yearly");
   const [date, setDate] = useState(todayISO());
@@ -401,17 +407,25 @@ export function AddTransactionModal({
   open,
   preset,
   prefill,
+  settlePrefill,
   onClose,
 }: {
   open: boolean;
   preset?: AddTransactionPreset;
   prefill?: AddTransactionPrefill;
+  settlePrefill?: SettleLoanPrefill;
   onClose: () => void;
 }) {
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent className="flex max-h-[85vh] max-w-xl flex-col gap-4 overflow-y-auto">
-        <AddTransactionForm preset={preset} prefill={prefill} onClose={onClose} />
+        <AddTransactionForm
+          key={settlePrefill ? `${settlePrefill.contactId}-${settlePrefill.loanId}` : "default"}
+          preset={preset}
+          prefill={prefill}
+          settlePrefill={settlePrefill}
+          onClose={onClose}
+        />
       </DialogContent>
     </Dialog>
   );

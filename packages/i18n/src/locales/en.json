@@ -162,6 +162,23 @@
     "deleteTitle": "Delete category?",
     "deleteMessage": "Historical transactions keep their category."
   },
+  "contacts": {
+    "title": "Contacts",
+    "subtitle": "Track money you lend or borrow",
+    "newContact": "New contact",
+    "namePlaceholder": "Contact name",
+    "empty": "No contacts yet.",
+    "selectHint": "Select a contact to see details.",
+    "owesYou": "Owes you",
+    "youOwe": "You owe",
+    "settled": "Settled",
+    "loans": "Loans",
+    "noLoans": "No loans with this contact.",
+    "active": "Active",
+    "settledStatus": "Settled",
+    "ofPrincipal": "of {{amount}}",
+    "recordSettlement": "Record settlement"
+  },
   "activity": {
     "title": "Activity",
     "all": "All",

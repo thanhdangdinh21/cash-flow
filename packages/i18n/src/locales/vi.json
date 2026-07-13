@@ -162,6 +162,23 @@
     "deleteTitle": "Xoá danh mục?",
     "deleteMessage": "Các giao dịch cũ vẫn giữ danh mục của chúng."
   },
+  "contacts": {
+    "title": "Liên hệ",
+    "subtitle": "Theo dõi khoản tiền bạn cho vay hoặc mượn",
+    "newContact": "Liên hệ mới",
+    "namePlaceholder": "Tên liên hệ",
+    "empty": "Chưa có liên hệ nào.",
+    "selectHint": "Chọn một liên hệ để xem chi tiết.",
+    "owesYou": "Nợ bạn",
+    "youOwe": "Bạn nợ",
+    "settled": "Đã tất toán",
+    "loans": "Khoản vay",
+    "noLoans": "Chưa có khoản vay nào với liên hệ này.",
+    "active": "Đang hoạt động",
+    "settledStatus": "Đã tất toán",
+    "ofPrincipal": "trên tổng {{amount}}",
+    "recordSettlement": "Ghi nhận tất toán"
+  },
   "activity": {
     "title": "Hoạt động",
     "all": "Tất cả",

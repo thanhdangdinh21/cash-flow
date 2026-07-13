@@ -16,9 +16,17 @@ export interface AddTransactionPrefill {
   subCategoryId?: string;
 }
 
+/** Prefill produced by the contacts screen's "Record settlement" action. */
+export interface SettleLoanPrefill {
+  contactId: string;
+  loanId: string;
+  debtDir: "COLLECTED" | "REPAID";
+}
+
 interface OverlaysState {
   openAddTransaction: (preset?: AddTransactionPreset) => void;
   openAddTransactionPrefilled: (prefill: AddTransactionPrefill) => void;
+  openSettleLoan: (prefill: SettleLoanPrefill) => void;
   openCreateAccount: () => void;
   openCommandBar: () => void;
 }
@@ -30,6 +38,7 @@ export function OverlaysProvider({ children }: { children: ReactNode }) {
   const [addOpen, setAddOpen] = useState(false);
   const [addPreset, setAddPreset] = useState<AddTransactionPreset | undefined>(undefined);
   const [addPrefill, setAddPrefill] = useState<AddTransactionPrefill | undefined>(undefined);
+  const [settlePrefill, setSettlePrefill] = useState<SettleLoanPrefill | undefined>(undefined);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [createAccountOpen, setCreateAccountOpen] = useState(false);
 
@@ -38,11 +47,19 @@ export function OverlaysProvider({ children }: { children: ReactNode }) {
       openAddTransaction: (preset) => {
         setAddPreset(preset);
         setAddPrefill(undefined);
+        setSettlePrefill(undefined);
         setAddOpen(true);
       },
       openAddTransactionPrefilled: (prefill) => {
         setAddPreset(undefined);
         setAddPrefill(prefill);
+        setSettlePrefill(undefined);
+        setAddOpen(true);
+      },
+      openSettleLoan: (prefill) => {
+        setAddPreset(undefined);
+        setAddPrefill(undefined);
+        setSettlePrefill(prefill);
         setAddOpen(true);
       },
       openCreateAccount: () => setCreateAccountOpen(true),
@@ -59,6 +76,7 @@ export function OverlaysProvider({ children }: { children: ReactNode }) {
         open={addOpen}
         preset={addPreset}
         prefill={addPrefill}
+        settlePrefill={settlePrefill}
         onClose={() => setAddOpen(false)}
       />
       <CommandBar open={cmdOpen} onClose={() => setCmdOpen(false)} />
