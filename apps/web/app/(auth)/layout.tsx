@@ -6,8 +6,7 @@ import { LogoLockup } from "@/components/layout/logo";
 /**
  * Editorial split shell shared by /login and /register: a wide left panel
  * carrying brand voice (logo, headline, tagline) and a narrower right panel
- * that hosts the actual form. See docs/reference/web-spa/src/features/auth/Login.tsx
- * for the layout this was ported from.
+ * that hosts the actual form.
  */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
