@@ -12,14 +12,14 @@ like the existing i18n and soft-delete plans.
 
 ## Where we are
 
-| Phase | What | Status |
-|---|---|---|
-| 1 | Auth — register/login on API, web, mobile; schema v1 | ✅ Done (May 2026) |
-| 2 | Accounts + currencies + holdings | ✅ Done (May 2026) |
-| — | i18n (en, vi), user language preference | ✅ Done (May 2026) |
-| — | Transactions (expense/income/transfer/loan), contacts, loans, reports | ✅ Done (Jun 2026) |
-| — | Soft delete for transactions/journal entries/loans + integration test harness | ✅ Done (Jun 2026) |
-| — | Docker Compose for API + Postgres | ✅ Done (Jun 2026) |
+| Phase | What                                                                          | Status             |
+| ----- | ----------------------------------------------------------------------------- | ------------------ |
+| 1     | Auth — register/login on API, web, mobile; schema v1                          | ✅ Done (May 2026) |
+| 2     | Accounts + currencies + holdings                                              | ✅ Done (May 2026) |
+| —     | i18n (en, vi), user language preference                                       | ✅ Done (May 2026) |
+| —     | Transactions (expense/income/transfer/loan), contacts, loans, reports         | ✅ Done (Jun 2026) |
+| —     | Soft delete for transactions/journal entries/loans + integration test harness | ✅ Done (Jun 2026) |
+| —     | Docker Compose for API + Postgres                                             | ✅ Done (Jun 2026) |
 
 Budgets were built and then removed on 2026-06-22 (commit `bf6601e`). The removed
 code — API module, mobile tab, `BudgetRow` component — is in git history at
@@ -77,6 +77,7 @@ Close the gaps in what the app already does before adding features.
 Required before submitting to either store.
 
 **Backend / infra**
+
 - [ ] Host the API (HTTPS) + managed Postgres with automated backups; production env config and secrets
 - [ ] Rate limiting on auth endpoints (`@nestjs/throttler`) and security headers
 - [ ] Session handling: refresh tokens, or a deliberate longer-lived token with re-login UX (today: 7-day JWT, no refresh)
@@ -85,6 +86,7 @@ Required before submitting to either store.
 - [ ] Structured logging + error tracking on the API
 
 **Mobile**
+
 - [ ] App identity: real name (currently `"mobile"`), bundle ID / package name, icon, splash, store screenshots
 - [ ] EAS Build + EAS Submit (`eas.json`), separate dev/preview/production profiles and API URLs
 - [ ] Crash reporting (e.g. Sentry) and OTA updates (`expo-updates`)
@@ -93,6 +95,7 @@ Required before submitting to either store.
 - [ ] Wire up or remove the existing `notificationsOn` toggle (push notifications are not implemented)
 
 **Store and legal**
+
 - [ ] Privacy policy URL; App Store privacy labels; Google Play Data safety form
 - [ ] Beta: TestFlight + Play internal testing track
 - [ ] Store listings in English and Vietnamese
