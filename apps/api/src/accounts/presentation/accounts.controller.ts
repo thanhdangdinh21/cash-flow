@@ -11,6 +11,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/infrastructure/guards/jwt-auth.guard';
 import type { AuthRequest } from '../../auth/auth-request';
 import { CreateAccountDto } from '../application/dtos/create-account.dto';
@@ -24,6 +25,8 @@ import { CreateHoldingUseCase } from '../application/use-cases/create-holding.us
 import { DeleteHoldingUseCase } from '../application/use-cases/delete-holding.use-case';
 import { GetAccountDetailUseCase } from '../application/use-cases/get-account-detail.use-case';
 
+@ApiTags('accounts')
+@ApiBearerAuth()
 @Controller('accounts')
 @UseGuards(JwtAuthGuard)
 export class AccountsController {

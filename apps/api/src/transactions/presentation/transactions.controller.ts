@@ -11,6 +11,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/infrastructure/guards/jwt-auth.guard';
 import type { AuthRequest } from '../../auth/auth-request';
 import { CreateTransactionDto } from '../application/dtos/create-transaction.dto';
@@ -21,6 +22,8 @@ import {
   ListTransactionsUseCase,
 } from '../application/use-cases/query-transactions.use-cases';
 
+@ApiTags('transactions')
+@ApiBearerAuth()
 @Controller('transactions')
 @UseGuards(JwtAuthGuard)
 export class TransactionsController {
@@ -32,6 +35,39 @@ export class TransactionsController {
   ) {}
 
   @Get()
+  @ApiQuery({
+    name: 'accountId',
+    required: false,
+    description: 'Only transactions debiting or crediting this account',
+  })
+  @ApiQuery({
+    name: 'categoryId',
+    required: false,
+    description: 'Only transactions in a sub-category of this category',
+  })
+  @ApiQuery({
+    name: 'from',
+    required: false,
+    description: 'Earliest date, inclusive (ISO 8601)',
+    example: '2026-01-01',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: false,
+    description: 'Latest date, inclusive (ISO 8601)',
+    example: '2026-01-31',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Page size (default 50, max 100)',
+  })
+  @ApiQuery({
+    name: 'cursor',
+    required: false,
+    description: '`nextCursor` from the previous page',
+  })
   list(
     @Request() req: AuthRequest,
     @Query('accountId') accountId?: string,

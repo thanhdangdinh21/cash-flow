@@ -85,6 +85,7 @@ Start the apps individually — root `pnpm dev` only covers `web` (the API uses 
 | `DATABASE_URL` | Postgres connection string (e.g. `postgresql://user:pass@localhost:5432/money_flow`) |
 | `JWT_SECRET`   | Signs/verifies auth tokens |
 | `PORT`         | Optional — API port (default `3001`) |
+| `API_DOCS`     | Optional — `true` serves `/api/docs` even when `NODE_ENV=production` |
 
 **Client overrides** (optional; both default to `http://localhost:3001/api`): `NEXT_PUBLIC_API_URL` (web), `EXPO_PUBLIC_API_URL` (mobile).
 
@@ -149,6 +150,8 @@ Reports are computed **live** today from journal entries (e.g. the net-worth cha
 All routes are prefixed `/api`; most need a `Bearer` JWT from `/api/auth`.
 
 `/api/auth` · `/api/users` · `/api/accounts` · `/api/categories` · `/api/contacts` · `/api/transactions` · `/api/reports`
+
+Interactive docs are at [`localhost:3001/api/docs`](http://localhost:3001/api/docs) (OpenAPI spec at `/api/docs-json`). They're off in production unless `API_DOCS=true`. See [`apps/api/README.md`](apps/api/README.md).
 
 ## Common Scripts
 

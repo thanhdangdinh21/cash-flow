@@ -6,6 +6,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/infrastructure/guards/jwt-auth.guard';
 import type { AuthRequest } from '../../auth/auth-request';
 import { HomeReportUseCase } from '../application/use-cases/home-report.use-case';
@@ -15,6 +16,8 @@ import {
   CategoryTrendUseCase,
 } from '../application/use-cases/spending-report.use-cases';
 
+@ApiTags('reports')
+@ApiBearerAuth()
 @Controller('reports')
 @UseGuards(JwtAuthGuard)
 export class ReportsController {
@@ -31,6 +34,12 @@ export class ReportsController {
   }
 
   @Get('net-worth')
+  @ApiQuery({
+    name: 'period',
+    required: false,
+    enum: ['month', 'year'],
+    description: 'Bucket size (default month)',
+  })
   netWorth(
     @Request() req: AuthRequest,
     @Query('period') period?: 'month' | 'year',
@@ -39,6 +48,24 @@ export class ReportsController {
   }
 
   @Get('spending-by-category')
+  @ApiQuery({
+    name: 'from',
+    required: false,
+    description: 'Range start, inclusive (ISO 8601; default start of month)',
+    example: '2026-01-01',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: false,
+    description: 'Range end, exclusive (ISO 8601; default start of next month)',
+    example: '2026-02-01',
+  })
+  @ApiQuery({
+    name: 'direction',
+    required: false,
+    enum: ['out', 'in'],
+    description: 'out = expenses, in = income (default out)',
+  })
   spending(
     @Request() req: AuthRequest,
     @Query('from') from?: string,
@@ -53,6 +80,12 @@ export class ReportsController {
   }
 
   @Get('category-trend/:categoryId')
+  @ApiQuery({
+    name: 'months',
+    required: false,
+    type: Number,
+    description: 'Number of months, ending with the current one (default 6)',
+  })
   trend(
     @Request() req: AuthRequest,
     @Param('categoryId') categoryId: string,

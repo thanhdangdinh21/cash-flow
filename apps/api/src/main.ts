@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { setupApiDocs, shouldServeApiDocs } from './api-docs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -8,6 +9,7 @@ async function bootstrap() {
   app.enableCors({ origin: 'http://localhost:3000', credentials: true });
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  if (shouldServeApiDocs()) setupApiDocs(app);
 
   await app.listen(process.env.PORT ?? 3001);
 }
