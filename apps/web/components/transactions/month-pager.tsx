@@ -12,7 +12,7 @@ export function MonthPager({
   monthKey: string;
   onChange: (next: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   return (
     <div className="flex items-center gap-1 rounded-md border border-line-2 bg-surface px-1 py-1">
@@ -27,7 +27,7 @@ export function MonthPager({
         <ChevronLeft className="h-4 w-4" />
       </Button>
       <span className="min-w-[9.5rem] text-center text-sm font-semibold text-ink">
-        {monthLabel(monthKey)}
+        {monthLabel(monthKey, i18n.language)}
       </span>
       <Button
         type="button"

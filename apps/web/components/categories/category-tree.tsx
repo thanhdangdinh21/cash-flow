@@ -71,42 +71,50 @@ export function CategoryTree({
               <li key={category.id} className="border-b border-line last:border-0">
                 <div
                   className={cn(
-                    "flex cursor-pointer items-center gap-2.5 px-4 py-3 hover:bg-paper-2",
+                    "flex items-center gap-2.5 pl-4 hover:bg-paper-2",
                     selectedId === category.id && "bg-paper-2"
                   )}
-                  onClick={() => onSelect(category.id)}
                 >
-                  <button
-                    type="button"
-                    className="flex h-5 w-5 shrink-0 items-center justify-center text-ink-3"
-                    aria-label={isOpen ? t("common.collapse") : t("common.expand")}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleExpanded(category.id);
-                    }}
-                  >
-                    {hasSubs ? (
-                      isOpen ? (
+                  {hasSubs ? (
+                    <button
+                      type="button"
+                      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-ink-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                      aria-label={isOpen ? t("common.collapse") : t("common.expand")}
+                      aria-expanded={isOpen}
+                      onClick={() => toggleExpanded(category.id)}
+                    >
+                      {isOpen ? (
                         <ChevronDown className="h-3.5 w-3.5" />
                       ) : (
                         <ChevronRight className="h-3.5 w-3.5" />
-                      )
-                    ) : null}
-                  </button>
-                  <CategoryIcon icon={category.icon} size={32} />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium text-ink">{category.name}</div>
-                    <div className="truncate text-xs text-ink-3">
-                      {hasSubs
-                        ? category.subCategories.map((s) => s.name).join(" · ")
-                        : t("categories.noSubcategories")}
+                      )}
+                    </button>
+                  ) : (
+                    <span className="h-5 w-5 shrink-0" aria-hidden="true" />
+                  )}
+                  {/* Separate from the chevron so the row is keyboard-selectable
+                      without nesting buttons. */}
+                  <button
+                    type="button"
+                    className="flex min-w-0 flex-1 items-center gap-2.5 py-3 pr-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus-ring"
+                    aria-pressed={selectedId === category.id}
+                    onClick={() => onSelect(category.id)}
+                  >
+                    <CategoryIcon icon={category.icon} size={32} />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium text-ink">{category.name}</div>
+                      <div className="truncate text-xs text-ink-3">
+                        {hasSubs
+                          ? category.subCategories.map((s) => s.name).join(" · ")
+                          : t("categories.noSubcategories")}
+                      </div>
                     </div>
-                  </div>
-                  <Badge variant="secondary" className="shrink-0">
-                    {category.accountType
-                      ? t(`accounts.type.${category.accountType}`)
-                      : t("categories.allTypes")}
-                  </Badge>
+                    <Badge variant="secondary" className="shrink-0">
+                      {category.accountType
+                        ? t(`accounts.type.${category.accountType}`)
+                        : t("categories.allTypes")}
+                    </Badge>
+                  </button>
                 </div>
 
                 {isOpen && hasSubs && (

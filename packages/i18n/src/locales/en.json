@@ -323,7 +323,8 @@
       "selectHint": "Select an account to see details."
     },
     "categories": {
-      "selectHint": "Select a category to see details."
+      "selectHint": "Select a category to see details.",
+      "iconOption": "Icon: {{name}}"
     },
     "commandBar": {
       "placeholder": "Type merchant, amount, @category — or search…",
@@ -346,7 +347,8 @@
         "monthSpentSub": "Money out",
         "net": "Net flow",
         "netSubKept": "{{pct}}% of income kept",
-        "netSubOver": "Spending exceeds income"
+        "netSubOver": "Spending exceeds income",
+        "netSubEmpty": "No activity this month"
       },
       "cashflow": {
         "title": "Cashflow · weekly",

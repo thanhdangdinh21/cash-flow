@@ -60,6 +60,7 @@ export function SpendingDonut({
                 key={d}
                 type="button"
                 onClick={() => onDirectionChange(d)}
+                aria-pressed={direction === d}
                 className={cn(
                   "rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors",
                   direction === d

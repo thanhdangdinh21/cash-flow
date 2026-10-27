@@ -5,7 +5,7 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis } f
 import type { TooltipContentProps } from "recharts";
 import { QueryState, SkeletonBlock } from "@/components/ui/query-state";
 import { useNetWorthReport } from "@/hooks/use-reports";
-import { money } from "@/lib/format";
+import { chartMonthLabel, money } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { NetWorthPeriod } from "@/lib/api/types";
 
@@ -29,7 +29,7 @@ export function NetWorthChart({
   period: NetWorthPeriod;
   onPeriodChange: (next: NetWorthPeriod) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const query = useNetWorthReport(period);
 
   return (
@@ -42,6 +42,7 @@ export function NetWorthChart({
               key={p}
               type="button"
               onClick={() => onPeriodChange(p)}
+              aria-pressed={period === p}
               className={cn(
                 "rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors",
                 period === p
@@ -67,7 +68,7 @@ export function NetWorthChart({
               <div className="h-[calc(100%-2rem)]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
-                    data={data.series}
+                    data={data.series.map((p) => ({ ...p, label: chartMonthLabel(p.label, i18n.language) }))}
                     margin={{ top: 4, right: 8, left: 8, bottom: 0 }}
                   >
                     <CartesianGrid vertical={false} stroke="var(--line-2)" strokeDasharray="3 3" />

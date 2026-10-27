@@ -62,9 +62,11 @@ export function KpiCards({ report }: { report: HomeReport }) {
         label={t("web.dashboard.kpi.net")}
         value={net}
         sub={
-          net >= 0 && monthIncome > 0
-            ? t("web.dashboard.kpi.netSubKept", { pct: keptPct })
-            : t("web.dashboard.kpi.netSubOver")
+          monthIncome === 0 && monthSpent === 0
+            ? t("web.dashboard.kpi.netSubEmpty")
+            : net >= 0 && monthIncome > 0
+              ? t("web.dashboard.kpi.netSubKept", { pct: keptPct })
+              : t("web.dashboard.kpi.netSubOver")
         }
         tone={net > 0 ? "positive" : net < 0 ? "negative" : undefined}
       />

@@ -19,7 +19,20 @@ export function money(
   return prefix + s;
 }
 
-const MONTHS = [
+// Date labels follow the UI language (i18next `i18n.language`: "en" | "vi").
+// Callers pass that code; Intl does the month/weekday/"today" wording.
+const INTL_LOCALES: Record<string, string> = { en: "en-US", vi: "vi-VN" };
+
+function intlLocale(lang: string): string {
+  return INTL_LOCALES[lang] ?? "en-US";
+}
+
+function capitalize(s: string, locale: string): string {
+  return s.charAt(0).toLocaleUpperCase(locale) + s.slice(1);
+}
+
+// The reports API labels chart points with fixed English abbreviations.
+const API_MONTH_ABBRS = [
   "Jan",
   "Feb",
   "Mar",
@@ -33,23 +46,6 @@ const MONTHS = [
   "Nov",
   "Dec",
 ];
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-function monthName(index: number): string {
-  const name = MONTHS[index];
-  if (name === undefined) {
-    throw new RangeError(`Invalid month index: ${index}`);
-  }
-  return name;
-}
-
-function dayName(index: number): string {
-  const name = DAYS[index];
-  if (name === undefined) {
-    throw new RangeError(`Invalid day index: ${index}`);
-  }
-  return name;
-}
 
 export function parseISO(iso: string): Date {
   // API date fields (e.g. Transaction.date) arrive as full ISO 8601
@@ -69,59 +65,58 @@ export function parseISO(iso: string): Date {
   return new Date(y, m - 1, d);
 }
 
-/** "Today · Mar 24" / "Yesterday · Mar 23" / "Fri · Mar 20" */
-export function dayLabel(iso: string): string {
+/** "Mar 24" (en) / "24 thg 3" (vi) */
+export function shortDate(iso: string, lang = "en"): string {
+  const d = parseISO(iso);
+  return new Intl.DateTimeFormat(intlLocale(lang), { month: "short", day: "numeric" }).format(d);
+}
+
+/** "Today · Mar 24" / "Yesterday · Mar 23" / "Fri · Mar 20", localized */
+export function dayLabel(iso: string, lang = "en"): string {
+  const locale = intlLocale(lang);
   const d = parseISO(iso);
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const diff = Math.round((today.getTime() - d.getTime()) / 86_400_000);
-  const md = `${monthName(d.getMonth())} ${d.getDate()}`;
-  if (diff === 0) return `Today · ${md}`;
-  if (diff === 1) return `Yesterday · ${md}`;
-  return `${dayName(d.getDay())} · ${md}`;
-}
-
-/** "Mar 24" */
-export function shortDate(iso: string): string {
-  const d = parseISO(iso);
-  return `${monthName(d.getMonth())} ${d.getDate()}`;
-}
-
-const FULL_MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-function fullMonthName(index: number): string {
-  const name = FULL_MONTHS[index];
-  if (name === undefined) {
-    throw new RangeError(`Invalid month index: ${index}`);
+  const md = shortDate(iso, lang);
+  if (diff === 0 || diff === 1) {
+    const relative = new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(-diff, "day");
+    return `${capitalize(relative, locale)} · ${md}`;
   }
-  return name;
+  const weekday = new Intl.DateTimeFormat(locale, { weekday: "short" }).format(d);
+  return `${weekday} · ${md}`;
 }
 
-/** "March 2026" for a "yyyy-mm" key */
-export function monthLabel(monthKey: string): string {
+/** "March 2026" for a "yyyy-mm" key, localized */
+export function monthLabel(monthKey: string, lang = "en"): string {
   const [y, m] = monthKey.split("-").map(Number);
   if (
     y === undefined ||
     m === undefined ||
     !Number.isInteger(y) ||
-    !Number.isInteger(m)
+    !Number.isInteger(m) ||
+    m < 1 ||
+    m > 12
   ) {
     throw new RangeError(`Invalid month key: ${monthKey}`);
   }
-  return `${fullMonthName(m - 1)} ${y}`;
+  const locale = intlLocale(lang);
+  const label = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(
+    new Date(y, m - 1, 1),
+  );
+  return capitalize(label, locale);
+}
+
+/**
+ * Localizes a reports-API month abbreviation ("Jan".."Dec") for chart axes
+ * and tooltips. Unknown labels (e.g. weekly day-of-month buckets) pass through.
+ */
+export function chartMonthLabel(apiLabel: string, lang = "en"): string {
+  const index = API_MONTH_ABBRS.indexOf(apiLabel);
+  if (index === -1) return apiLabel;
+  return new Intl.DateTimeFormat(intlLocale(lang), { month: "short" }).format(
+    new Date(2000, index, 1),
+  );
 }
 
 /**

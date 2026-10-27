@@ -16,7 +16,7 @@ function settleDirFor(direction: LoanDirection): "COLLECTED" | "REPAID" {
 }
 
 function LoanRow({ loan, contactId }: { loan: Loan; contactId: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const overlays = useOverlays();
   const isActive = loan.status === "ACTIVE";
 
@@ -31,7 +31,7 @@ function LoanRow({ loan, contactId }: { loan: Loan; contactId: string }) {
             {isActive ? t("contacts.active") : t("contacts.settledStatus")}
           </Badge>
         </div>
-        <div className="text-xs text-ink-3">{dayLabel(loan.date)}</div>
+        <div className="text-xs text-ink-3">{dayLabel(loan.date, i18n.language)}</div>
       </div>
       <div className="shrink-0 text-right">
         <div className="amount font-semibold text-ink">{money(loan.remainingAmount)}</div>

@@ -38,7 +38,7 @@ function Field({ label, value }: { label: string; value: string }) {
 }
 
 function HoldingsSection({ account }: { account: AccountDetail }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [adding, setAdding] = useState(false);
   const [holdingName, setHoldingName] = useState("");
   const [unitName, setUnitName] = useState("");
@@ -87,38 +87,44 @@ function HoldingsSection({ account }: { account: AccountDetail }) {
       )}
 
       {adding ? (
-        <div className="flex flex-col gap-2 rounded-md border border-line-2 p-3">
+        <form
+          className="flex flex-col gap-2 rounded-md border border-line-2 p-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!holdingName.trim() || addHolding.isPending) return;
+            addHolding.mutate(
+              {
+                accountId: account.id,
+                input: { name: holdingName.trim(), unitName: unitName.trim() || "unit" },
+              },
+              {
+                onSuccess: () => {
+                  setAdding(false);
+                  setHoldingName("");
+                  setUnitName("");
+                },
+              }
+            );
+          }}
+        >
           <Input
             autoFocus
             value={holdingName}
             onChange={(e) => setHoldingName(e.target.value)}
             placeholder={t("accounts.form.name")}
+            aria-label={t("accounts.form.name")}
           />
           <Input
             value={unitName}
             onChange={(e) => setUnitName(e.target.value)}
             placeholder={t("accounts.create.unitPlaceholder")}
+            aria-label={t("accounts.create.unitName")}
           />
           <div className="flex gap-2">
             <Button
-              type="button"
+              type="submit"
               size="sm"
               disabled={!holdingName.trim() || addHolding.isPending}
-              onClick={() =>
-                addHolding.mutate(
-                  {
-                    accountId: account.id,
-                    input: { name: holdingName.trim(), unitName: unitName.trim() || "unit" },
-                  },
-                  {
-                    onSuccess: () => {
-                      setAdding(false);
-                      setHoldingName("");
-                      setUnitName("");
-                    },
-                  }
-                )
-              }
             >
               {t("accounts.form.addHolding")}
             </Button>
@@ -126,7 +132,7 @@ function HoldingsSection({ account }: { account: AccountDetail }) {
               {t("common.cancel")}
             </Button>
           </div>
-        </div>
+        </form>
       ) : (
         <Button type="button" variant="outline" size="sm" onClick={() => setAdding(true)}>
           {t("accounts.form.addHolding")}
@@ -154,7 +160,7 @@ function HoldingsSection({ account }: { account: AccountDetail }) {
                   </div>
                   <div className="text-xs text-ink-3">
                     {holding && account.holdings.length > 1 ? `${holding.name} · ` : ""}
-                    {dayLabel(lot.transaction.date)} · {money(unit)}
+                    {dayLabel(lot.transaction.date, i18n.language)} · {money(unit)}
                   </div>
                 </div>
                 <span className="amount font-semibold text-ink">− {money(amount)}</span>
@@ -168,7 +174,7 @@ function HoldingsSection({ account }: { account: AccountDetail }) {
 }
 
 function TransactionHistory({ accountId }: { accountId: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const query = useTransactions({ accountId, limit: 20 });
   const titleLabels = {
     transfer: t("add.types.transfer"),
@@ -201,7 +207,7 @@ function TransactionHistory({ accountId }: { accountId: string }) {
                   <div className="min-w-0">
                     <div className="truncate font-medium text-ink">{txnTitle(txn, titleLabels)}</div>
                     <div className="truncate text-xs text-ink-3">
-                      {txnAccountLabel(txn)} · {dayLabel(txn.date)}
+                      {txnAccountLabel(txn)} · {dayLabel(txn.date, i18n.language)}
                     </div>
                   </div>
                   <span

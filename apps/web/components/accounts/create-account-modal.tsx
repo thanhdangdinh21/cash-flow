@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CreditCard, Gem, Wallet } from "lucide-react";
 import { CURRENCIES } from "@repo/shared/currencies";
@@ -37,6 +37,7 @@ const KIND_TYPE: Record<AccountKind, AccountType> = {
 
 function CreateAccountForm({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
+  const fieldId = useId();
   const createAccount = useCreateAccount({ toastOnError: false });
 
   const [kind, setKind] = useState<AccountKind>("cash");
@@ -83,6 +84,7 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
             key={k.id}
             type="button"
             onClick={() => setKind(k.id)}
+            aria-pressed={kind === k.id}
             className={cn(
               "flex items-center gap-3 rounded-md border px-3.5 py-3 text-left transition-colors",
               kind === k.id
@@ -103,8 +105,9 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
 
       <div className="grid grid-cols-2 gap-3.5">
         <div className="col-span-2 flex flex-col gap-1.5">
-          <Label>{t("accounts.form.name")}</Label>
+          <Label htmlFor={`${fieldId}-name`}>{t("accounts.form.name")}</Label>
           <Input
+            id={`${fieldId}-name`}
             autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -116,9 +119,9 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label>{t("accounts.form.currency")}</Label>
+          <Label htmlFor={`${fieldId}-currency`}>{t("accounts.form.currency")}</Label>
           <Select value={currencyCode} onValueChange={setCurrencyCode}>
-            <SelectTrigger>
+            <SelectTrigger id={`${fieldId}-currency`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -132,8 +135,9 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label>{t("accounts.form.initialBalance")}</Label>
+          <Label htmlFor={`${fieldId}-balance`}>{t("accounts.form.initialBalance")}</Label>
           <Input
+            id={`${fieldId}-balance`}
             value={initialBalance}
             onChange={(e) => setInitialBalance(sanitizeAmountInput(e.target.value))}
             placeholder="0.00"
@@ -142,8 +146,9 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
 
         {kind === "commodity" && (
           <div className="col-span-2 flex flex-col gap-1.5">
-            <Label>{t("accounts.create.unitName")}</Label>
+            <Label htmlFor={`${fieldId}-unit`}>{t("accounts.create.unitName")}</Label>
             <Input
+              id={`${fieldId}-unit`}
               value={unitName}
               onChange={(e) => setUnitName(e.target.value)}
               placeholder={t("accounts.create.unitPlaceholder")}

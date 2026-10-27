@@ -6,7 +6,7 @@ import type { TooltipContentProps } from "recharts";
 import { QueryState, SkeletonBlock } from "@/components/ui/query-state";
 import { CategoryIcon } from "@/components/categories/category-icon";
 import { useCategoryTrend } from "@/hooks/use-reports";
-import { money } from "@/lib/format";
+import { chartMonthLabel, money } from "@/lib/format";
 
 function ChartTooltip({ active, payload, label }: TooltipContentProps) {
   if (!active || !payload?.length) return null;
@@ -22,7 +22,7 @@ function ChartTooltip({ active, payload, label }: TooltipContentProps) {
 }
 
 export function CategoryTrendChart({ categoryId }: { categoryId: string | null }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const query = useCategoryTrend(categoryId ?? "", 6);
 
   return (
@@ -55,7 +55,7 @@ export function CategoryTrendChart({ categoryId }: { categoryId: string | null }
                 <div className="h-[calc(100%-3rem)]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
-                      data={data.series}
+                      data={data.series.map((p) => ({ ...p, label: chartMonthLabel(p.label, i18n.language) }))}
                       margin={{ top: 4, right: 8, left: 8, bottom: 0 }}
                     >
                       <CartesianGrid vertical={false} stroke="var(--line-2)" strokeDasharray="3 3" />

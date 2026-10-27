@@ -22,7 +22,7 @@ const TYPE_ICON: Record<TransactionType, LucideIcon> = {
 };
 
 export function RecentActivity({ recent }: { recent: Transaction[] }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const titleLabels = {
     transfer: t("add.types.transfer"),
     uncategorized: t("web.dashboard.recent.fallbackDescription"),
@@ -59,7 +59,7 @@ export function RecentActivity({ recent }: { recent: Transaction[] }) {
                     {txnTitle(txn, titleLabels)}
                   </div>
                   <div className="truncate text-[11.5px] text-ink-3">
-                    {txnAccountLabel(txn)} · {dayLabel(txn.date)}
+                    {txnAccountLabel(txn)} · {dayLabel(txn.date, i18n.language)}
                   </div>
                 </div>
                 <span

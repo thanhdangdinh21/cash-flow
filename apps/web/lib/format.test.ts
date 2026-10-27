@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   addMonths,
+  chartMonthLabel,
   dayLabel,
   money,
   monthEndDate,
@@ -78,6 +79,11 @@ describe("dayLabel", () => {
   it("accepts a full ISO 8601 datetime string (API Transaction.date shape)", () => {
     expect(dayLabel(`${isoOf(now)}T00:00:00.000Z`)).toMatch(/^Today · /);
   });
+
+  it("localizes Today / Yesterday for Vietnamese", () => {
+    expect(dayLabel(isoOf(now), "vi")).toMatch(/^Hôm nay · /);
+    expect(dayLabel(isoOf(daysAgo(1)), "vi")).toMatch(/^Hôm qua · /);
+  });
 });
 
 describe("input validation", () => {
@@ -101,6 +107,14 @@ describe("input validation", () => {
 describe("monthLabel", () => {
   it("formats a yyyy-mm key as a full month name and year", () => {
     expect(monthLabel("2026-07")).toBe("July 2026");
+  });
+
+  it("localizes the month name for Vietnamese", () => {
+    expect(monthLabel("2026-07", "vi")).toBe("Tháng 7 năm 2026");
+  });
+
+  it("rejects an out-of-range month", () => {
+    expect(() => monthLabel("2026-13")).toThrow(RangeError);
   });
 });
 
@@ -196,5 +210,23 @@ describe("monthKeyOf", () => {
 describe("shortDate", () => {
   it("formats an ISO date as an abbreviated month and day", () => {
     expect(shortDate("2026-03-24")).toBe("Mar 24");
+  });
+
+  it("localizes for Vietnamese", () => {
+    expect(shortDate("2026-03-24", "vi")).toBe("24 thg 3");
+  });
+});
+
+describe("chartMonthLabel", () => {
+  it("keeps the API's English abbreviation in English", () => {
+    expect(chartMonthLabel("Oct")).toBe("Oct");
+  });
+
+  it("localizes the API's month abbreviation for Vietnamese", () => {
+    expect(chartMonthLabel("Oct", "vi")).toBe("Tháng 10");
+  });
+
+  it("passes through non-month labels such as weekly day buckets", () => {
+    expect(chartMonthLabel("26", "vi")).toBe("26");
   });
 });

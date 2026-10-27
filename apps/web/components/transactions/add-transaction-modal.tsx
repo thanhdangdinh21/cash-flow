@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -70,6 +70,7 @@ function AddTransactionForm({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+  const fieldId = useId();
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
   const { data: contacts = [] } = useContacts();
@@ -202,6 +203,7 @@ function AddTransactionForm({
             key={tab.id}
             type="button"
             onClick={() => setType(tab.id)}
+            aria-pressed={type === tab.id}
             className={cn(
               "rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
               type === tab.id
@@ -243,9 +245,9 @@ function AddTransactionForm({
         {(type === "EXPENSE" || type === "INCOME") && (
           <>
             <div className="col-span-2 flex flex-col gap-1.5">
-              <Label>{t("add.category")}</Label>
+              <Label htmlFor={`${fieldId}-category`}>{t("add.category")}</Label>
               <Select value={subCategoryId} onValueChange={setSubCategoryId}>
-                <SelectTrigger>
+                <SelectTrigger id={`${fieldId}-category`}>
                   <SelectValue placeholder={t("add.categoryLater")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -263,9 +265,9 @@ function AddTransactionForm({
               </Select>
             </div>
             <div className="col-span-2 flex flex-col gap-1.5">
-              <Label>{type === "INCOME" ? t("add.toAccount") : t("add.fromAccount")}</Label>
+              <Label htmlFor={`${fieldId}-account`}>{type === "INCOME" ? t("add.toAccount") : t("add.fromAccount")}</Label>
               <Select value={accountId} onValueChange={setAccountId}>
-                <SelectTrigger>
+                <SelectTrigger id={`${fieldId}-account`}>
                   <SelectValue placeholder={t("add.pickAccount")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -283,9 +285,9 @@ function AddTransactionForm({
         {type === "TRANSFER" && (
           <>
             <div className="flex flex-col gap-1.5">
-              <Label>{t("add.fromAccount")}</Label>
+              <Label htmlFor={`${fieldId}-account`}>{t("add.fromAccount")}</Label>
               <Select value={accountId} onValueChange={setAccountId}>
-                <SelectTrigger>
+                <SelectTrigger id={`${fieldId}-account`}>
                   <SelectValue placeholder={t("add.pickAccount")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -298,9 +300,9 @@ function AddTransactionForm({
               </Select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label>{t("add.toAccount")}</Label>
+              <Label htmlFor={`${fieldId}-counter`}>{t("add.toAccount")}</Label>
               <Select value={counterAccountId} onValueChange={setCounterAccountId}>
-                <SelectTrigger>
+                <SelectTrigger id={`${fieldId}-counter`}>
                   <SelectValue placeholder={t("add.pickAccount")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -318,9 +320,9 @@ function AddTransactionForm({
         {type === "LOAN" && (
           <>
             <div className="flex flex-col gap-1.5">
-              <Label>{dir.in ? t("add.toAccount") : t("add.fromAccount")}</Label>
+              <Label htmlFor={`${fieldId}-account`}>{dir.in ? t("add.toAccount") : t("add.fromAccount")}</Label>
               <Select value={accountId} onValueChange={setAccountId}>
-                <SelectTrigger>
+                <SelectTrigger id={`${fieldId}-account`}>
                   <SelectValue placeholder={t("add.pickAccount")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -359,20 +361,22 @@ function AddTransactionForm({
         )}
 
         <div className="flex flex-col gap-1.5">
-          <Label>{t("add.date")}</Label>
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <Label htmlFor={`${fieldId}-date`}>{t("add.date")}</Label>
+          <Input id={`${fieldId}-date`} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label>{t("add.description")}</Label>
+          <Label htmlFor={`${fieldId}-description`}>{t("add.description")}</Label>
           <Input
+            id={`${fieldId}-description`}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder={t("add.optional")}
           />
         </div>
         <div className="col-span-2 flex flex-col gap-1.5">
-          <Label>{t("txn.notes")}</Label>
+          <Label htmlFor={`${fieldId}-notes`}>{t("txn.notes")}</Label>
           <Input
+            id={`${fieldId}-notes`}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder={t("add.optional")}

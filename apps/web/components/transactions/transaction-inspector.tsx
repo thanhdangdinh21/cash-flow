@@ -49,7 +49,7 @@ export function TransactionInspector({
   transaction: Transaction;
   onRequestDelete: (ids: string[]) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const Icon = TYPE_ICON[transaction.transactionType];
   const sign = txnSign(transaction);
   const loan = transaction.loan;
@@ -92,7 +92,7 @@ export function TransactionInspector({
           label={t("web.transactions.inspector.account")}
           value={txnAccountLabel(transaction)}
         />
-        <Field label={t("add.date")} value={shortDate(transaction.date)} />
+        <Field label={t("add.date")} value={shortDate(transaction.date, i18n.language)} />
         {loan && isFullLoan(loan) && loan.interestRate && (
           <Field
             label={t("add.interest")}

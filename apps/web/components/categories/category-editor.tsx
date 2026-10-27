@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,7 @@ export function CategoryEditor({
   onDeleted: () => void;
 }) {
   const { t } = useTranslation();
+  const fieldId = useId();
   const isNew = category === null;
 
   const initialScope: Scope =
@@ -100,8 +101,9 @@ export function CategoryEditor({
       <div className="flex items-center gap-3.5">
         <CategoryIcon icon={icon} size={48} />
         <div className="min-w-0 flex-1">
-          <Label className="mb-1 block">{t("categories.name")}</Label>
+          <Label htmlFor={`${fieldId}-name`} className="mb-1 block">{t("categories.name")}</Label>
           <Input
+            id={`${fieldId}-name`}
             autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -116,6 +118,8 @@ export function CategoryEditor({
             key={key}
             type="button"
             onClick={() => setIcon(key)}
+            aria-label={t("web.categories.iconOption", { name: key })}
+            aria-pressed={icon === key}
             className={cn(
               "rounded-lg border-2 p-0.5",
               icon === key ? "border-ink" : "border-transparent"
@@ -127,9 +131,9 @@ export function CategoryEditor({
       </div>
 
       <div className="border-t border-line pt-3.5">
-        <Label className="mb-2 block">{t("categories.appliesTo")}</Label>
+        <Label htmlFor={`${fieldId}-scope`} className="mb-2 block">{t("categories.appliesTo")}</Label>
         <Select value={scope} onValueChange={(v) => setScope(v as Scope)}>
-          <SelectTrigger>
+          <SelectTrigger id={`${fieldId}-scope`}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

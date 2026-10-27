@@ -323,7 +323,8 @@
       "selectHint": "Chọn một tài khoản để xem chi tiết."
     },
     "categories": {
-      "selectHint": "Chọn một danh mục để xem chi tiết."
+      "selectHint": "Chọn một danh mục để xem chi tiết.",
+      "iconOption": "Biểu tượng: {{name}}"
     },
     "commandBar": {
       "placeholder": "Nhập tên, số tiền, @danh mục — hoặc tìm kiếm…",
@@ -346,7 +347,8 @@
         "monthSpentSub": "Tiền ra",
         "net": "Dòng tiền ròng",
         "netSubKept": "Giữ lại {{pct}}% thu nhập",
-        "netSubOver": "Chi tiêu vượt thu nhập"
+        "netSubOver": "Chi tiêu vượt thu nhập",
+        "netSubEmpty": "Chưa có giao dịch tháng này"
       },
       "cashflow": {
         "title": "Dòng tiền · theo tuần",

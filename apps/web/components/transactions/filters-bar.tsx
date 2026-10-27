@@ -37,6 +37,7 @@ export function FiltersBar({
             key={f.id}
             type="button"
             onClick={() => onFilterChange(f.id)}
+            aria-pressed={filter === f.id}
             className={cn(
               "rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
               filter === f.id

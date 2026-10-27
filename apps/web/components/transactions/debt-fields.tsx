@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,6 +70,7 @@ export function DebtFields({
   amount: number;
 }) {
   const { t } = useTranslation();
+  const fieldId = useId();
   const dir = debtDirMeta(debtDir);
   const selectedContact = contacts.find((c) => c.id === contactId);
 
@@ -83,12 +85,13 @@ export function DebtFields({
   return (
     <div className="col-span-2 flex flex-col gap-4">
       <div>
-        <Label className="mb-2 block eyebrow">{t("add.direction")}</Label>
-        <div className="grid grid-cols-2 gap-1.5">
+        <Label id={`${fieldId}-direction`} className="mb-2 block eyebrow">{t("add.direction")}</Label>
+        <div role="group" aria-labelledby={`${fieldId}-direction`} className="grid grid-cols-2 gap-1.5">
           {DEBT_DIRS.map((d) => (
             <button
               key={d.id}
               type="button"
+              aria-pressed={d.id === debtDir}
               onClick={() => {
                 onDebtDirChange(d.id);
                 onLoanIdChange("");
@@ -111,12 +114,12 @@ export function DebtFields({
 
       <div className="grid grid-cols-2 gap-3.5">
         <div className="flex flex-col gap-1.5">
-          <Label>{debtDir === "LENT" || debtDir === "COLLECTED" ? t("add.borrower") : t("add.lender")}</Label>
+          <Label htmlFor={`${fieldId}-contact`}>{debtDir === "LENT" || debtDir === "COLLECTED" ? t("add.borrower") : t("add.lender")}</Label>
           <Select
             value={contactId}
             onValueChange={(v) => onContactIdChange(v === NEW_CONTACT_VALUE ? "" : v)}
           >
-            <SelectTrigger>
+            <SelectTrigger id={`${fieldId}-contact`}>
               <SelectValue placeholder={t("add.pickContact")} />
             </SelectTrigger>
             <SelectContent>
@@ -139,8 +142,9 @@ export function DebtFields({
 
         {dir.newDebt && !contactId ? (
           <div className="flex flex-col gap-1.5">
-            <Label className="opacity-0">{t("add.newContact")}</Label>
+            <Label htmlFor={`${fieldId}-new-contact`} className="opacity-0">{t("add.newContact")}</Label>
             <Input
+              id={`${fieldId}-new-contact`}
               value={newContactName}
               onChange={(e) => onNewContactNameChange(e.target.value)}
               placeholder={t("add.newContact")}
@@ -148,9 +152,9 @@ export function DebtFields({
           </div>
         ) : !dir.newDebt && contactId ? (
           <div className="flex flex-col gap-1.5">
-            <Label>{t("add.loan")}</Label>
+            <Label htmlFor={`${fieldId}-loan`}>{t("add.loan")}</Label>
             <Select value={loanId} onValueChange={onLoanIdChange}>
-              <SelectTrigger>
+              <SelectTrigger id={`${fieldId}-loan`}>
                 <SelectValue placeholder={t("add.pickLoan")} />
               </SelectTrigger>
               <SelectContent>
@@ -174,8 +178,9 @@ export function DebtFields({
       {dir.newDebt && (
         <div className="flex items-end gap-3 border-t border-line pt-3.5">
           <div className="flex flex-col gap-1.5">
-            <Label>{t("add.interest")}</Label>
+            <Label htmlFor={`${fieldId}-interest`}>{t("add.interest")}</Label>
             <Input
+              id={`${fieldId}-interest`}
               value={interestRate}
               onChange={(e) => onInterestRateChange(sanitizeAmountInput(e.target.value))}
               placeholder="0"
@@ -188,6 +193,7 @@ export function DebtFields({
               <button
                 key={p}
                 type="button"
+                aria-pressed={interestPeriod === p}
                 onClick={() => onInterestPeriodChange(p)}
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",

@@ -39,11 +39,11 @@ interface DayGroup {
   items: Transaction[];
 }
 
-function groupByDay(items: Transaction[]): DayGroup[] {
+function groupByDay(items: Transaction[], lang: string): DayGroup[] {
   const map = new Map<string, DayGroup>();
   for (const t of items) {
     const key = t.date.slice(0, 10);
-    const group = map.get(key) ?? { key, label: dayLabel(t.date), total: 0, items: [] };
+    const group = map.get(key) ?? { key, label: dayLabel(t.date, lang), total: 0, items: [] };
     group.total += txnSign(t) * toAmount(t.amount);
     group.items.push(t);
     map.set(key, group);
@@ -78,8 +78,8 @@ export function TransactionsTable({
   onToggleInspector: () => void;
   moreAvailable: boolean;
 }) {
-  const { t } = useTranslation();
-  const groups = useMemo(() => groupByDay(transactions), [transactions]);
+  const { t, i18n } = useTranslation();
+  const groups = useMemo(() => groupByDay(transactions, i18n.language), [transactions, i18n.language]);
   const flatIds = useMemo(() => groups.flatMap((g) => g.items.map((txn) => txn.id)), [groups]);
 
   useEffect(() => {
