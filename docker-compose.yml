@@ -46,6 +46,8 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/money_flow
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
       PORT: 3001
+      # The image runs with NODE_ENV=production, so /api/docs is off unless this is "true".
+      API_DOCS: ${API_DOCS:-false}
     ports:
       - "3001:3001"
     depends_on:

@@ -11,6 +11,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/infrastructure/guards/jwt-auth.guard';
 import type { AuthRequest } from '../../auth/auth-request';
 import { CreateCategoryDto } from '../application/dtos/create-category.dto';
@@ -25,6 +26,8 @@ import {
   DeleteSubCategoryUseCase,
 } from '../application/use-cases/mutate-category.use-cases';
 
+@ApiTags('categories')
+@ApiBearerAuth()
 @Controller('categories')
 @UseGuards(JwtAuthGuard)
 export class CategoriesController {

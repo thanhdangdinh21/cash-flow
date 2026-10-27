@@ -8,6 +8,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { LoanStatus } from '@prisma/client';
 import { JwtAuthGuard } from '../../auth/infrastructure/guards/jwt-auth.guard';
 import type { AuthRequest } from '../../auth/auth-request';
@@ -18,6 +19,8 @@ import {
   ListContactLoansUseCase,
 } from '../application/use-cases/contact.use-cases';
 
+@ApiTags('contacts')
+@ApiBearerAuth()
 @Controller('contacts')
 @UseGuards(JwtAuthGuard)
 export class ContactsController {
@@ -38,6 +41,7 @@ export class ContactsController {
   }
 
   @Get(':id/loans')
+  @ApiQuery({ name: 'status', required: false, enum: LoanStatus })
   loans(
     @Request() req: AuthRequest,
     @Param('id') id: string,

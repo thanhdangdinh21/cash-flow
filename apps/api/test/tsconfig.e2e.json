@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    // Transpile @scalar's ESM-only packages to CommonJS for Jest
+    "allowJs": true,
+    // The swagger plugin needs a type checker, which isolated transpilation skips.
+    // ts-jest warns (TS151002) about nodenext without isolatedModules, but still
+    // emits CommonJS here, so jest-e2e.json silences that code.
+    "isolatedModules": false
+  }
+}

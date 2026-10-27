@@ -1,9 +1,11 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { LoginUseCase } from '../application/use-cases/login.use-case';
 import { RegisterUseCase } from '../application/use-cases/register.use-case';
 import { LoginDto } from '../application/dtos/login.dto';
 import { RegisterDto } from '../application/dtos/register.dto';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(

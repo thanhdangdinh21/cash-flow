@@ -6,11 +6,14 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/infrastructure/guards/jwt-auth.guard';
 import { UpdateUserUseCase } from '../application/use-cases/update-user.use-case';
 import { GetMeUseCase } from '../application/use-cases/get-me.use-case';
 import { UpdateUserDto } from '../application/dtos/update-user.dto';
 
+@ApiTags('users')
+@ApiBearerAuth()
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
