@@ -6,7 +6,7 @@
 # (This stage also has the Prisma CLI, so the `migrate` compose service
 #  reuses it to run migrations.)
 # ──────────────────────────────────────────────────────────────────────
-FROM node:22-slim AS builder
+FROM node:24-slim AS builder
 
 # Prisma needs OpenSSL to select its engine; the slim image omits it.
 RUN apt-get update && apt-get install -y --no-install-recommends openssl \
@@ -52,7 +52,7 @@ RUN cp -R /app/apps/api/dist /prod/dist \
 # Migrations run separately (see the `migrate` service in docker-compose.yml),
 # so this image doesn't carry the Prisma CLI.
 # ──────────────────────────────────────────────────────────────────────
-FROM node:22-slim AS runtime
+FROM node:24-slim AS runtime
 
 RUN apt-get update && apt-get install -y --no-install-recommends openssl \
     && rm -rf /var/lib/apt/lists/*

@@ -43,6 +43,6 @@ export class CreateHoldingUseCase {
       );
     return this.prisma.holding.create({
       data: { accountId, name: dto.name, unitName: dto.unitName },
-    }) as Promise<HoldingEntity>;
+    });
   }
 }

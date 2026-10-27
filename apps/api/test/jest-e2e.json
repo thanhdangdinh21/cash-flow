@@ -16,6 +16,5 @@
         }
       }
     ]
-  },
-  "transformIgnorePatterns": ["/node_modules/(?!(\\.pnpm|@scalar)/)"]
+  }
 }

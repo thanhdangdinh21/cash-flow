@@ -52,7 +52,7 @@ Both clients call the same REST API with a `Bearer <JWT>` header (web stores it 
 
 ## Prerequisites
 
-- **Node ≥ 18** (developed on Node 22)
+- **Node 24 LTS (≥ 24.15)**: `nvm use` picks it up from `.nvmrc`. The NestJS 12 CLI and Jest need it.
 - **pnpm 9** — `corepack enable && corepack prepare pnpm@9.0.0 --activate`
 - **PostgreSQL** reachable via a connection string
 - Mobile: **Xcode** (iOS) and/or **Android Studio**
