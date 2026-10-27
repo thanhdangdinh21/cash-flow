@@ -1,25 +1,28 @@
-import { NavLinks } from '@/components/layout/nav-links';
-import { LogoLockup } from '@/components/layout/logo';
+"use client";
+
+import { Sidebar } from "@/components/shell/sidebar";
+import { Topbar } from "@/components/shell/topbar";
+import { Footer } from "@/components/shell/footer";
+import { OverlaysProvider } from "@/components/shell/overlays-context";
+import { useGlobalShortcuts } from "@/hooks/use-global-shortcuts";
+
+function GlobalShortcuts() {
+  useGlobalShortcuts();
+  return null;
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen bg-paper">
-      {/* Sidebar */}
-      <aside className="w-60 shrink-0 border-r border-line flex flex-col">
-        <div className="h-16 flex items-center px-5">
-          <LogoLockup />
+    <OverlaysProvider>
+      <GlobalShortcuts />
+      <div className="flex h-screen bg-paper">
+        <Sidebar />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Topbar />
+          <main className="flex-1 overflow-y-auto p-8">{children}</main>
+          <Footer />
         </div>
-        <nav className="flex-1 p-3 space-y-1">
-          <NavLinks />
-        </nav>
-      </aside>
-
-      {/* Main */}
-      <div className="flex flex-col flex-1 min-w-0">
-        <main className="flex-1 overflow-y-auto p-8">
-          {children}
-        </main>
       </div>
-    </div>
+    </OverlaysProvider>
   );
 }

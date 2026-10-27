@@ -26,7 +26,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Pre-paint settings init (public/mf-ui-init.js). async src makes it a
+            React hoistable script (no dev warning); blocking="render" keeps the
+            before-first-paint guarantee in browsers that support it. */}
+        {/* eslint-disable-next-line react/no-unknown-property -- blocking="render" is a valid HTML attribute the plugin doesn't know yet */}
+        <script async src="/mf-ui-init.js" blocking="render" />
+      </head>
       <body className={`${hanken.variable} ${splineMono.variable} font-sans`}>
         <Providers>
           <HtmlLang />

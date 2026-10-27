@@ -3,8 +3,12 @@
     "loading": "Loading…",
     "save": "Save",
     "cancel": "Cancel",
+    "edit": "Edit",
+    "expand": "Expand",
+    "collapse": "Collapse",
     "signOut": "Sign out",
-    "error": "Something went wrong"
+    "error": "Something went wrong",
+    "retry": "Retry"
   },
   "auth": {
     "login": {
@@ -45,10 +49,6 @@
     "activity": "Activity",
     "insights": "Insights",
     "profile": "Profile"
-  },
-  "dashboard": {
-    "title": "Dashboard",
-    "comingSoon": "Coming soon — Phase 3"
   },
   "accounts": {
     "title": "Accounts",
@@ -107,6 +107,20 @@
       "unitName": "Unit name",
       "unitPlaceholder": "gram"
     },
+    "kind": {
+      "cash": {
+        "title": "Cash & bank",
+        "sub": "Track spending with wallets and bank accounts"
+      },
+      "credit": {
+        "title": "Credit card",
+        "sub": "Track what you owe with credit cards"
+      },
+      "commodity": {
+        "title": "Commodity",
+        "sub": "Track assets like gold, crypto, or stock"
+      }
+    },
     "detail": {
       "totalQty": "Total quantity held",
       "totalCost": "Total cost",
@@ -147,6 +161,23 @@
     "delete": "Delete",
     "deleteTitle": "Delete category?",
     "deleteMessage": "Historical transactions keep their category."
+  },
+  "contacts": {
+    "title": "Contacts",
+    "subtitle": "Track money you lend or borrow",
+    "newContact": "New contact",
+    "namePlaceholder": "Contact name",
+    "empty": "No contacts yet.",
+    "selectHint": "Select a contact to see details.",
+    "owesYou": "Owes you",
+    "youOwe": "You owe",
+    "settled": "Settled",
+    "loans": "Loans",
+    "noLoans": "No loans with this contact.",
+    "active": "Active",
+    "settledStatus": "Settled",
+    "ofPrincipal": "of {{amount}}",
+    "recordSettlement": "Record settlement"
   },
   "activity": {
     "title": "Activity",
@@ -279,5 +310,143 @@
     "netWorth6m": "Net worth · 6 months",
     "addAccount": "Add an account",
     "balancesAppear": "Balances appear here"
+  },
+  "web": {
+    "auth": {
+      "headline": "Know where your money flows.",
+      "subhead": "Every dollar in, every dollar out — one calm place. Budgets that nudge, never nag.",
+      "tagline": "Personal finance · light + dark · multi-currency"
+    },
+    "accounts": {
+      "netWorth": "Net worth",
+      "balance": "Balance",
+      "selectHint": "Select an account to see details."
+    },
+    "categories": {
+      "selectHint": "Select a category to see details.",
+      "iconOption": "Icon: {{name}}"
+    },
+    "commandBar": {
+      "placeholder": "Type merchant, amount, @category — or search…",
+      "empty": "No results.",
+      "quickAdd": "Quick add",
+      "navigate": "Navigate",
+      "uncategorized": "Uncategorized",
+      "editDetails": "Edit details first",
+      "added": "Added {{type}} · {{amount}}"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "kpi": {
+        "totalAssets": "Total assets",
+        "totalAssetsSub": "{{count}} account",
+        "totalAssetsSub_other": "{{count}} accounts",
+        "monthIncome": "Income · this month",
+        "monthIncomeSub": "Money in",
+        "monthSpent": "Spent · this month",
+        "monthSpentSub": "Money out",
+        "net": "Net flow",
+        "netSubKept": "{{pct}}% of income kept",
+        "netSubOver": "Spending exceeds income",
+        "netSubEmpty": "No activity this month"
+      },
+      "cashflow": {
+        "title": "Cashflow · weekly",
+        "in": "In",
+        "out": "Out",
+        "empty": "No activity yet this month"
+      },
+      "accounts": {
+        "title": "Accounts",
+        "manage": "Manage",
+        "empty": "No accounts yet"
+      },
+      "recent": {
+        "title": "Recent activity",
+        "viewAll": "View all",
+        "empty": "No transactions yet",
+        "fallbackDescription": "Transaction"
+      }
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "transactions": "Transactions",
+      "accounts": "Accounts",
+      "categories": "Categories",
+      "reports": "Reports",
+      "contacts": "Contacts"
+    },
+    "reports": {
+      "netWorth": {
+        "title": "Net worth",
+        "periodMonth": "6 months",
+        "periodYear": "12 months"
+      },
+      "cashflow": {
+        "title": "Income vs spending"
+      },
+      "spending": {
+        "title": "Spending by category",
+        "empty": "Nothing to chart yet.",
+        "uncategorized": "Uncategorized"
+      },
+      "trend": {
+        "title": "Category trend",
+        "placeholder": "Select a category slice to see its trend.",
+        "thisMonth": "This month",
+        "average": "6-month average"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "appearance": "Appearance",
+      "theme": "Dark mode",
+      "density": "Compact density",
+      "keyHints": "Keyboard hints",
+      "language": "Language"
+    },
+    "shell": {
+      "comingSoon": "Coming soon",
+      "search": "Search or jump to…",
+      "newTransaction": "New transaction",
+      "hints": {
+        "dashboard": "Dashboard",
+        "newTransaction": "New transaction",
+        "transfer": "Transfer",
+        "newAccount": "New account",
+        "command": "Command"
+      }
+    },
+    "transactions": {
+      "title": "Transactions",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "searchPlaceholder": "Search description, account, category…",
+      "selectAll": "Select all",
+      "selectRow": "Select {{description}}, {{amount}}",
+      "columns": {
+        "description": "Description",
+        "account": "Account",
+        "amount": "Amount"
+      },
+      "emptyMonth": "No transactions this month.",
+      "emptyFiltered": "No transactions match your filters.",
+      "morePagination": "Showing the first 100 — narrow the filters to see more.",
+      "selectedCount": "{{count}} selected",
+      "bulkDelete": "Delete selected",
+      "clearSelection": "Clear",
+      "transactionCount": "{{count}} transaction",
+      "transactionCount_other": "{{count}} transactions",
+      "deletedToast": "Deleted {{count}} transaction",
+      "deletedToast_other": "Deleted {{count}} transactions",
+      "deleteManyTitle": "Delete {{count}} transactions?",
+      "deleteManyMessage": "Balances will be restored as if they never happened.",
+      "inspector": {
+        "account": "Account",
+        "loanRemaining": "Remaining",
+        "notesEmpty": "No notes",
+        "excluded": "Excluded from reports"
+      }
+    }
   }
 }

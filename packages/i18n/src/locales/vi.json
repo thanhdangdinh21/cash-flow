@@ -3,8 +3,12 @@
     "loading": "Đang tải…",
     "save": "Lưu",
     "cancel": "Hủy",
+    "edit": "Sửa",
+    "expand": "Mở rộng",
+    "collapse": "Thu gọn",
     "signOut": "Đăng xuất",
-    "error": "Đã xảy ra lỗi"
+    "error": "Đã xảy ra lỗi",
+    "retry": "Thử lại"
   },
   "auth": {
     "login": {
@@ -45,10 +49,6 @@
     "activity": "Hoạt động",
     "insights": "Thống kê",
     "profile": "Hồ sơ"
-  },
-  "dashboard": {
-    "title": "Tổng quan",
-    "comingSoon": "Sắp ra mắt — Giai đoạn 3"
   },
   "accounts": {
     "title": "Tài khoản",
@@ -107,6 +107,20 @@
       "unitName": "Tên đơn vị",
       "unitPlaceholder": "gram"
     },
+    "kind": {
+      "cash": {
+        "title": "Tiền mặt & ngân hàng",
+        "sub": "Theo dõi chi tiêu qua ví và tài khoản ngân hàng"
+      },
+      "credit": {
+        "title": "Thẻ tín dụng",
+        "sub": "Theo dõi khoản nợ thẻ tín dụng"
+      },
+      "commodity": {
+        "title": "Hàng hoá",
+        "sub": "Theo dõi tài sản như vàng, tiền số, cổ phiếu"
+      }
+    },
     "detail": {
       "totalQty": "Tổng số lượng nắm giữ",
       "totalCost": "Tổng chi phí",
@@ -147,6 +161,23 @@
     "delete": "Xoá",
     "deleteTitle": "Xoá danh mục?",
     "deleteMessage": "Các giao dịch cũ vẫn giữ danh mục của chúng."
+  },
+  "contacts": {
+    "title": "Liên hệ",
+    "subtitle": "Theo dõi khoản tiền bạn cho vay hoặc mượn",
+    "newContact": "Liên hệ mới",
+    "namePlaceholder": "Tên liên hệ",
+    "empty": "Chưa có liên hệ nào.",
+    "selectHint": "Chọn một liên hệ để xem chi tiết.",
+    "owesYou": "Nợ bạn",
+    "youOwe": "Bạn nợ",
+    "settled": "Đã tất toán",
+    "loans": "Khoản vay",
+    "noLoans": "Chưa có khoản vay nào với liên hệ này.",
+    "active": "Đang hoạt động",
+    "settledStatus": "Đã tất toán",
+    "ofPrincipal": "trên tổng {{amount}}",
+    "recordSettlement": "Ghi nhận tất toán"
   },
   "activity": {
     "title": "Hoạt động",
@@ -279,5 +310,143 @@
     "netWorth6m": "Tài sản ròng · 6 tháng",
     "addAccount": "Thêm tài khoản",
     "balancesAppear": "Số dư sẽ hiện ở đây"
+  },
+  "web": {
+    "auth": {
+      "headline": "Biết rõ dòng tiền của bạn.",
+      "subhead": "Từng đồng vào, từng đồng ra — tất cả trong một nơi yên tĩnh. Ngân sách chỉ nhắc nhẹ, không làm phiền.",
+      "tagline": "Tài chính cá nhân · sáng + tối · đa tiền tệ"
+    },
+    "accounts": {
+      "netWorth": "Tài sản ròng",
+      "balance": "Số dư",
+      "selectHint": "Chọn một tài khoản để xem chi tiết."
+    },
+    "categories": {
+      "selectHint": "Chọn một danh mục để xem chi tiết.",
+      "iconOption": "Biểu tượng: {{name}}"
+    },
+    "commandBar": {
+      "placeholder": "Nhập tên, số tiền, @danh mục — hoặc tìm kiếm…",
+      "empty": "Không có kết quả.",
+      "quickAdd": "Thêm nhanh",
+      "navigate": "Chuyển đến",
+      "uncategorized": "Chưa phân loại",
+      "editDetails": "Chỉnh sửa chi tiết",
+      "added": "Đã thêm {{type}} · {{amount}}"
+    },
+    "dashboard": {
+      "title": "Tổng quan",
+      "kpi": {
+        "totalAssets": "Tổng tài sản",
+        "totalAssetsSub": "{{count}} tài khoản",
+        "totalAssetsSub_other": "{{count}} tài khoản",
+        "monthIncome": "Thu nhập · tháng này",
+        "monthIncomeSub": "Tiền vào",
+        "monthSpent": "Chi tiêu · tháng này",
+        "monthSpentSub": "Tiền ra",
+        "net": "Dòng tiền ròng",
+        "netSubKept": "Giữ lại {{pct}}% thu nhập",
+        "netSubOver": "Chi tiêu vượt thu nhập",
+        "netSubEmpty": "Chưa có giao dịch tháng này"
+      },
+      "cashflow": {
+        "title": "Dòng tiền · theo tuần",
+        "in": "Vào",
+        "out": "Ra",
+        "empty": "Chưa có hoạt động nào trong tháng này"
+      },
+      "accounts": {
+        "title": "Tài khoản",
+        "manage": "Quản lý",
+        "empty": "Chưa có tài khoản nào"
+      },
+      "recent": {
+        "title": "Hoạt động gần đây",
+        "viewAll": "Xem tất cả",
+        "empty": "Chưa có giao dịch nào",
+        "fallbackDescription": "Giao dịch"
+      }
+    },
+    "nav": {
+      "dashboard": "Tổng quan",
+      "transactions": "Giao dịch",
+      "accounts": "Tài khoản",
+      "categories": "Danh mục",
+      "reports": "Báo cáo",
+      "contacts": "Liên hệ"
+    },
+    "reports": {
+      "netWorth": {
+        "title": "Tài sản ròng",
+        "periodMonth": "6 tháng",
+        "periodYear": "12 tháng"
+      },
+      "cashflow": {
+        "title": "Thu nhập và chi tiêu"
+      },
+      "spending": {
+        "title": "Chi tiêu theo danh mục",
+        "empty": "Chưa có dữ liệu để hiển thị.",
+        "uncategorized": "Chưa phân loại"
+      },
+      "trend": {
+        "title": "Xu hướng danh mục",
+        "placeholder": "Chọn một danh mục để xem xu hướng.",
+        "thisMonth": "Tháng này",
+        "average": "Trung bình 6 tháng"
+      }
+    },
+    "settings": {
+      "title": "Cài đặt",
+      "appearance": "Giao diện",
+      "theme": "Chế độ tối",
+      "density": "Hiển thị gọn",
+      "keyHints": "Gợi ý phím tắt",
+      "language": "Ngôn ngữ"
+    },
+    "shell": {
+      "comingSoon": "Sắp ra mắt",
+      "search": "Tìm hoặc chuyển đến…",
+      "newTransaction": "Giao dịch mới",
+      "hints": {
+        "dashboard": "Tổng quan",
+        "newTransaction": "Giao dịch mới",
+        "transfer": "Chuyển khoản",
+        "newAccount": "Tài khoản mới",
+        "command": "Lệnh nhanh"
+      }
+    },
+    "transactions": {
+      "title": "Giao dịch",
+      "prevMonth": "Tháng trước",
+      "nextMonth": "Tháng sau",
+      "searchPlaceholder": "Tìm theo mô tả, tài khoản, danh mục…",
+      "selectAll": "Chọn tất cả",
+      "selectRow": "Chọn {{description}}, {{amount}}",
+      "columns": {
+        "description": "Mô tả",
+        "account": "Tài khoản",
+        "amount": "Số tiền"
+      },
+      "emptyMonth": "Không có giao dịch nào trong tháng này.",
+      "emptyFiltered": "Không có giao dịch nào khớp với bộ lọc.",
+      "morePagination": "Đang hiển thị 100 giao dịch đầu tiên — thu hẹp bộ lọc để xem thêm.",
+      "selectedCount": "Đã chọn {{count}}",
+      "bulkDelete": "Xoá mục đã chọn",
+      "clearSelection": "Bỏ chọn",
+      "transactionCount": "{{count}} giao dịch",
+      "transactionCount_other": "{{count}} giao dịch",
+      "deletedToast": "Đã xoá {{count}} giao dịch",
+      "deletedToast_other": "Đã xoá {{count}} giao dịch",
+      "deleteManyTitle": "Xoá {{count}} giao dịch?",
+      "deleteManyMessage": "Số dư sẽ được khôi phục như những giao dịch này chưa từng xảy ra.",
+      "inspector": {
+        "account": "Tài khoản",
+        "loanRemaining": "Còn lại",
+        "notesEmpty": "Chưa có ghi chú",
+        "excluded": "Không tính vào báo cáo"
+      }
+    }
   }
 }

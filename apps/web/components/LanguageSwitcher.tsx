@@ -18,7 +18,7 @@ const LOCALE_NAMES: Record<Locale, string> = {
 };
 
 export function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   async function handleChange(locale: string) {
     await i18n.changeLanguage(locale);
@@ -27,7 +27,7 @@ export function LanguageSwitcher() {
 
   return (
     <Select value={i18n.language} onValueChange={handleChange}>
-      <SelectTrigger className="w-48">
+      <SelectTrigger className="w-48" aria-label={t("web.settings.language")}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
