@@ -20,5 +20,7 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|favicon.ico|api).*)"],
+  // Skip Next internals, the API, and any path with a file extension (public/
+  // assets like mf-ui-init.js), which must load even when signed out.
+  matcher: ["/((?!_next|favicon.ico|api|.*\\..*).*)"],
 };
