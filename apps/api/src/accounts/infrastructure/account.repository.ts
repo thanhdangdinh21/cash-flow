@@ -18,13 +18,13 @@ export class AccountRepository implements IAccountRepository {
       where: { ownerId, isActive: true, deletedAt: null, isSystem: false },
       include: { holdings: { where: { deletedAt: null } } },
       orderBy: { createdAt: 'asc' },
-    }) as Promise<AccountEntity[]>;
+    });
   }
 
   findById(id: string): Promise<AccountEntity | null> {
     return this.prisma.account.findFirst({
       where: { id, deletedAt: null },
-    }) as Promise<AccountEntity | null>;
+    });
   }
 
   async create(data: CreateAccountWithHoldingsData): Promise<AccountEntity> {
@@ -62,7 +62,7 @@ export class AccountRepository implements IAccountRepository {
     return this.prisma.account.update({
       where: { id },
       data,
-    }) as Promise<AccountEntity>;
+    });
   }
 
   async softDelete(id: string): Promise<void> {
