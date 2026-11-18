@@ -3,7 +3,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { api, TOKEN } from '@/lib/api';
+import { api } from '@/lib/api';
+import { signOut } from '@/lib/session';
 import { useMe } from '@/lib/hooks';
 import { Page } from '@/components/ui/Page';
 import { Head } from '@/components/ui/Head';
@@ -41,11 +42,7 @@ export default function ProfileScreen() {
       {
         text: t('profile.logout'),
         style: 'destructive',
-        onPress: async () => {
-          await TOKEN.clear();
-          queryClient.clear();
-          router.replace('/(auth)/login');
-        },
+        onPress: () => signOut(),
       },
     ]);
   }
