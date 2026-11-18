@@ -8,6 +8,9 @@
 //   LOAN:     one leg is a system account (Receivables/Payables) — lent/repaid
 //             put the user's account on the credit leg (money out),
 //             borrowed/collected put it on the debit leg (money in).
+//   OPENING_BALANCE: one leg is the system "Opening balances" (EQUITY)
+//             account — an asset opening debits the user's account (+),
+//             a liability opening (money owed) credits it (−).
 // =============================================================================
 
 import type { Transaction } from "./api/types";
@@ -36,15 +39,20 @@ export function txnAccountLabel(t: Transaction): string {
   return t.debitAccount.isSystem ? t.creditAccount.name : t.debitAccount.name;
 }
 
+export interface TxnTitleLabels {
+  transfer: string;
+  uncategorized: string;
+  openingBalance: string;
+}
+
 /**
- * Row title fallback chain: description → contact (loans) → category name.
- * Final fallbacks are caller-supplied so screens can pass translated strings.
+ * Row title fallback chain: description → opening balance → contact (loans)
+ * → category name. Final fallbacks are caller-supplied so screens can pass
+ * translated strings (see useTxnTitleLabels).
  */
-export function txnTitle(
-  t: Transaction,
-  labels: { transfer: string; uncategorized: string }
-): string {
+export function txnTitle(t: Transaction, labels: TxnTitleLabels): string {
   if (t.description) return t.description;
+  if (t.transactionType === "OPENING_BALANCE") return labels.openingBalance;
   if (t.transactionType === "LOAN" && t.contact) return t.contact.name;
   if (t.subCategory) return t.subCategory.category.name;
   return t.transactionType === "TRANSFER" ? labels.transfer : labels.uncategorized;

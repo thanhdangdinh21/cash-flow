@@ -79,7 +79,8 @@
       "remove": "Remove",
       "saving": "Saving…",
       "saveChanges": "Save changes",
-      "createAccount": "Create account"
+      "createAccount": "Create account",
+      "amountOwed": "Amount owed"
     },
     "commodity": "commodity",
     "defaultAccount": "Default account",
@@ -192,7 +193,9 @@
     "to": "To",
     "notes": "Notes",
     "attachment": "Attachment",
-    "addAttachment": "Add"
+    "addAttachment": "Add",
+    "openingBalance": "Opening balance",
+    "openingBalanceHint": "Starting balance when the account was added"
   },
   "add": {
     "title": "New transaction",

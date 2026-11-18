@@ -6,6 +6,8 @@ import type { TransactionData } from '@/lib/types';
 //   money out (−1): credit leg is a real account, debit leg is system
 //                   (EXPENSE, loan lent/repaid)
 //   neutral    (0): both legs are real accounts (TRANSFER)
+// OPENING_BALANCE pairs the account with the system "Opening balances"
+// equity account: an asset opening reads +, a liability (money owed) −.
 export function txnSign(t: TransactionData): 1 | -1 | 0 {
   const debitSystem = t.debitAccount.isSystem;
   const creditSystem = t.creditAccount.isSystem;
@@ -22,8 +24,10 @@ export function txnAccountLabel(t: TransactionData): string {
   return t.debitAccount.isSystem ? t.creditAccount.name : t.debitAccount.name;
 }
 
-export function txnTitle(t: TransactionData): string {
+// `openingBalance` is the translated label for server-posted opening entries
+export function txnTitle(t: TransactionData, labels?: { openingBalance: string }): string {
   if (t.description) return t.description;
+  if (t.transactionType === 'OPENING_BALANCE') return labels?.openingBalance ?? 'Opening balance';
   if (t.transactionType === 'LOAN' && t.contact) return t.contact.name;
   if (t.subCategory) return t.subCategory.category.name;
   return t.transactionType === 'TRANSFER' ? 'Transfer' : 'Uncategorized';
@@ -32,6 +36,7 @@ export function txnTitle(t: TransactionData): string {
 // Icon key for CategoryIcon: category icon, or a per-type fallback
 export function txnIcon(t: TransactionData): string {
   if (t.subCategory) return t.subCategory.category.icon;
+  if (t.transactionType === 'OPENING_BALANCE') return 'flag';
   if (t.transactionType === 'TRANSFER') return 'wallet';
   if (t.transactionType === 'LOAN') return 'users';
   if (t.transactionType === 'INCOME') return 'trendUp';

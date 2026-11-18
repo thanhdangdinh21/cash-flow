@@ -6,11 +6,13 @@ import {
   ArrowDownLeft,
   ArrowLeftRight,
   ArrowUpRight,
+  Flag,
   HandCoins,
   type LucideIcon,
 } from "lucide-react";
 import { dayLabel, money, toAmount } from "@/lib/format";
 import { txnAccountLabel, txnSign, txnTitle } from "@/lib/txn";
+import { useTxnTitleLabels } from "@/lib/use-txn-labels";
 import { cn } from "@/lib/utils";
 import type { Transaction, TransactionType } from "@/lib/api/types";
 
@@ -19,14 +21,12 @@ const TYPE_ICON: Record<TransactionType, LucideIcon> = {
   EXPENSE: ArrowUpRight,
   TRANSFER: ArrowLeftRight,
   LOAN: HandCoins,
+  OPENING_BALANCE: Flag,
 };
 
 export function RecentActivity({ recent }: { recent: Transaction[] }) {
   const { t, i18n } = useTranslation();
-  const titleLabels = {
-    transfer: t("add.types.transfer"),
-    uncategorized: t("web.dashboard.recent.fallbackDescription"),
-  };
+  const titleLabels = useTxnTitleLabels();
 
   return (
     <div className="flex h-full flex-col rounded-lg border border-line bg-surface">

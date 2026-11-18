@@ -81,6 +81,9 @@ enum TransactionType {
   INCOME
   TRANSFER
   LOAN
+  // System-only: posted when an account is created with a starting balance
+  // (and by the backfill migration). Never accepted from POST /transactions.
+  OPENING_BALANCE
 }
 
 // Loan lifecycle. ACTIVE while remaining_amount > 0; auto-flips to SETTLED
@@ -179,8 +182,9 @@ model Account {
   isDefault Boolean   @default(false) @map("is_default") // true = seeded at signup
   // System accounts are bookkeeping plumbing hidden from the user's account
   // list and pickers: the seeded General income / General expense pair, plus
-  // the lazily-created loan Receivables (ASSET) / Payables (LIABILITY).
-  // Looked up by (owner_id, is_system, type).
+  // the lazily-created loan Receivables (ASSET) / Payables (LIABILITY) and
+  // "Opening balances" (EQUITY, counter-leg of every opening entry).
+  // Looked up by (owner_id, is_system, type, currency_code).
   isSystem  Boolean   @default(false) @map("is_system")
   deletedAt DateTime? @map("deleted_at") // soft delete — never hard delete
 
@@ -434,7 +438,7 @@ model Transaction {
 
   // Report routing — server defaults this to true for TRANSFER and LOAN
   // (moving money around is neither income nor spending), false otherwise.
-  // User-editable per transaction.
+  // User-editable per transaction. Always true for OPENING_BALANCE.
   excludeFromReports Boolean @default(false) @map("exclude_from_reports")
 
   // Loan linkage — set on the loan's origin transaction AND every settlement
@@ -696,6 +700,16 @@ model CategorySnapshot {
 //   LOAN     → excluded from income/spending (exclude_from_reports=true);
 //              affects net worth via the system Receivables (ASSET) /
 //              Payables (LIABILITY) account balances
+//   OPENING_BALANCE → excluded from income/spending (exclude_from_reports=true)
+//              and from an account's monthly in/out. Posted automatically when
+//              an account is created with initial_balance X, dated at the
+//              account's created_at, against the hidden "Opening balances"
+//              EQUITY system account (one per user per currency):
+//                ASSET     X → DEBIT the account,      CREDIT Opening balances
+//                LIABILITY X → DEBIT Opening balances, CREDIT the account
+//              EQUITY is outside net worth, so net worth rises (asset) or
+//              falls (liability) by X in the month the account was created.
+//              Deleting it (soft delete) returns the account to 0.
 //   All in/out report aggregations filter exclude_from_reports = false.
 //   Account lists and pickers exclude is_system accounts.
 //

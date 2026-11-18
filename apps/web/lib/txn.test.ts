@@ -25,6 +25,8 @@ const generalExpense = accountRef("General expense", { type: "EXPENSE", isSystem
 const generalIncome = accountRef("General income", { type: "INCOME", isSystem: true });
 const receivables = accountRef("Receivables", { type: "ASSET", isSystem: true });
 const payables = accountRef("Payables", { type: "LIABILITY", isSystem: true });
+const openingBalances = accountRef("Opening balances", { type: "EQUITY", isSystem: true });
+const visa = accountRef("Visa", { type: "LIABILITY" });
 
 function txn(overrides: Partial<Transaction>): Transaction {
   return {
@@ -145,7 +147,11 @@ describe("txnAccountLabel", () => {
 });
 
 describe("txnTitle", () => {
-  const labels = { transfer: "Transfer", uncategorized: "Uncategorized" };
+  const labels = {
+    transfer: "Transfer",
+    uncategorized: "Uncategorized",
+    openingBalance: "Opening balance",
+  };
 
   it("prefers the description", () => {
     expect(txnTitle(txn({ description: "Blue Bottle" }), labels)).toBe("Blue Bottle");
@@ -177,5 +183,40 @@ describe("txnTitle", () => {
 
   it("everything else falls back to the uncategorized label", () => {
     expect(txnTitle(expense, labels)).toBe("Uncategorized");
+  });
+});
+
+describe("OPENING_BALANCE", () => {
+  const labels = {
+    transfer: "Transfer",
+    uncategorized: "Uncategorized",
+    openingBalance: "Opening balance",
+  };
+  // ASSET opening: debit the account, credit "Opening balances"
+  const assetOpening = txn({
+    transactionType: "OPENING_BALANCE",
+    debitAccount: cash,
+    creditAccount: openingBalances,
+  });
+  // LIABILITY opening (money owed): debit "Opening balances", credit the card
+  const cardOpening = txn({
+    transactionType: "OPENING_BALANCE",
+    debitAccount: openingBalances,
+    creditAccount: visa,
+  });
+
+  it("titles both as the opening balance", () => {
+    expect(txnTitle(assetOpening, labels)).toBe("Opening balance");
+    expect(txnTitle(cardOpening, labels)).toBe("Opening balance");
+  });
+
+  it("an asset opening is money in, a card opening is money owed", () => {
+    expect(txnSign(assetOpening)).toBe(1);
+    expect(txnSign(cardOpening)).toBe(-1);
+  });
+
+  it("labels the user's own account, never the equity account", () => {
+    expect(txnAccountLabel(assetOpening)).toBe("Cash wallet");
+    expect(txnAccountLabel(cardOpening)).toBe("Visa");
   });
 });

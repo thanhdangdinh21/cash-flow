@@ -20,6 +20,7 @@ import { TransactionsTable } from "@/components/transactions/transactions-table"
 import { useDeleteTransaction, useTransactions } from "@/hooks/use-transactions";
 import { monthEndDate, monthKeyOf } from "@/lib/format";
 import { txnAccountLabel, txnTitle } from "@/lib/txn";
+import { useTxnTitleLabels } from "@/lib/use-txn-labels";
 
 function TransactionsSkeleton() {
   return (
@@ -35,6 +36,7 @@ function TransactionsSkeleton() {
 
 export default function TransactionsPage() {
   const { t } = useTranslation();
+  const titleLabels = useTxnTitleLabels();
   const [monthKey, setMonthKey] = useState(() => monthKeyOf(new Date().toISOString()));
   const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("all");
   const [search, setSearch] = useState("");
@@ -51,10 +53,6 @@ export default function TransactionsPage() {
 
   const filtered = useMemo(() => {
     if (!query.data) return [];
-    const titleLabels = {
-      transfer: t("add.types.transfer"),
-      uncategorized: t("web.dashboard.recent.fallbackDescription"),
-    };
     let items = query.data.items;
     if (typeFilter !== "all") {
       items = items.filter((txn) => txn.transactionType === typeFilter);
@@ -75,7 +73,7 @@ export default function TransactionsPage() {
       });
     }
     return items;
-  }, [query.data, typeFilter, search, t]);
+  }, [query.data, typeFilter, search, titleLabels]);
 
   const focusedTransaction = filtered.find((txn) => txn.id === focusedId) ?? null;
 

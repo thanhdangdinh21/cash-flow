@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useMemo, type KeyboardEvent } from "react";
 import {
   ArrowLeftRight,
+  Flag,
   HandCoins,
   Receipt,
   TrendingUp,
@@ -22,6 +23,7 @@ import {
 import { isDialogOpen } from "@/lib/dom";
 import { dayLabel, money, toAmount } from "@/lib/format";
 import { txnAccountLabel, txnSign, txnTitle } from "@/lib/txn";
+import { useTxnCaption, useTxnTitleLabels } from "@/lib/use-txn-labels";
 import { cn } from "@/lib/utils";
 import type { Transaction, TransactionType } from "@/lib/api/types";
 
@@ -30,6 +32,7 @@ const TYPE_ICON: Record<TransactionType, LucideIcon> = {
   INCOME: TrendingUp,
   TRANSFER: ArrowLeftRight,
   LOAN: HandCoins,
+  OPENING_BALANCE: Flag,
 };
 
 interface DayGroup {
@@ -79,6 +82,8 @@ export function TransactionsTable({
   moreAvailable: boolean;
 }) {
   const { t, i18n } = useTranslation();
+  const titleLabels = useTxnTitleLabels();
+  const caption = useTxnCaption();
   const groups = useMemo(() => groupByDay(transactions, i18n.language), [transactions, i18n.language]);
   const flatIds = useMemo(() => groups.flatMap((g) => g.items.map((txn) => txn.id)), [groups]);
 
@@ -172,17 +177,7 @@ export function TransactionsTable({
                     const Icon = TYPE_ICON[txn.transactionType];
                     const sign = txnSign(txn);
                     const isFocused = focusedId === txn.id;
-                    const titleLabels = {
-                      transfer: t("add.types.transfer"),
-                      uncategorized: t("web.dashboard.recent.fallbackDescription"),
-                    };
-                    const captionLine =
-                      txn.transactionType === "TRANSFER"
-                        ? t("add.types.transfer")
-                        : txn.transactionType === "LOAN"
-                          ? t("add.types.loan")
-                          : (txn.subCategory?.category.name ??
-                            t("web.dashboard.recent.fallbackDescription"));
+                    const captionLine = caption(txn);
 
                     return (
                       <TableRow

@@ -37,7 +37,10 @@ export default function CreateAccountScreen() {
         name: name.trim(),
         type,
         currencyCode,
-        initialBalance: initialBalance ? parseFloat(initialBalance) : undefined,
+        initialBalance:
+          initialBalance && (type === 'ASSET' || type === 'LIABILITY')
+            ? parseFloat(initialBalance)
+            : undefined,
         holdings:
           commodity && type === 'ASSET'
             ? [{ name: name.trim(), unitName: unitName.trim() || 'unit' }]
@@ -103,16 +106,22 @@ export default function CreateAccountScreen() {
         </View>
       </View>
 
-      <View className="border-t border-line">
-        <InputField
-          label={t('accounts.form.initialBalance')}
-          value={initialBalance}
-          onChangeText={setInitialBalance}
-          placeholder="0.00"
-          keyboardType="decimal-pad"
-          trailing={<View />}
-        />
-      </View>
+      {/* Starting balance — money in an asset, amount owed on a liability.
+          Other types have none (the API rejects it). */}
+      {type === 'ASSET' || type === 'LIABILITY' ? (
+        <View className="border-t border-line">
+          <InputField
+            label={t(
+              type === 'LIABILITY' ? 'accounts.form.amountOwed' : 'accounts.form.initialBalance',
+            )}
+            value={initialBalance}
+            onChangeText={setInitialBalance}
+            placeholder="0.00"
+            keyboardType="decimal-pad"
+            trailing={<View />}
+          />
+        </View>
+      ) : null}
 
       {/* Commodity toggle — ASSET only (design: sunken panel) */}
       {type === 'ASSET' ? (

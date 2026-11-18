@@ -2,6 +2,7 @@
 
 import {
   ArrowLeftRight,
+  Flag,
   HandCoins,
   Receipt,
   Trash2,
@@ -13,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { money, shortDate, toAmount } from "@/lib/format";
 import { txnAccountLabel, txnSign, txnTitle } from "@/lib/txn";
+import { useTxnCaption, useTxnTitleLabels } from "@/lib/use-txn-labels";
 import { cn } from "@/lib/utils";
 import { isFullLoan, type Transaction, type TransactionType } from "@/lib/api/types";
 
@@ -21,6 +23,7 @@ const TYPE_ICON: Record<TransactionType, LucideIcon> = {
   INCOME: TrendingUp,
   TRANSFER: ArrowLeftRight,
   LOAN: HandCoins,
+  OPENING_BALANCE: Flag,
 };
 
 function Field({
@@ -54,18 +57,8 @@ export function TransactionInspector({
   const sign = txnSign(transaction);
   const loan = transaction.loan;
 
-  const titleLabels = {
-    transfer: t("add.types.transfer"),
-    uncategorized: t("web.dashboard.recent.fallbackDescription"),
-  };
-
-  const categoryLine =
-    transaction.transactionType === "TRANSFER"
-      ? t("add.types.transfer")
-      : transaction.transactionType === "LOAN"
-        ? t("add.types.loan")
-        : (transaction.subCategory?.category.name ??
-          t("web.dashboard.recent.fallbackDescription"));
+  const titleLabels = useTxnTitleLabels();
+  const categoryLine = useTxnCaption()(transaction);
 
   return (
     <aside className="flex w-[300px] shrink-0 flex-col overflow-y-auto rounded-lg border border-line bg-surface p-5">

@@ -79,7 +79,8 @@
       "remove": "Xóa",
       "saving": "Đang lưu…",
       "saveChanges": "Lưu thay đổi",
-      "createAccount": "Tạo tài khoản"
+      "createAccount": "Tạo tài khoản",
+      "amountOwed": "Số tiền đang nợ"
     },
     "commodity": "hàng hoá",
     "defaultAccount": "Tài khoản mặc định",
@@ -192,7 +193,9 @@
     "to": "Đến",
     "notes": "Ghi chú",
     "attachment": "Đính kèm",
-    "addAttachment": "Thêm"
+    "addAttachment": "Thêm",
+    "openingBalance": "Số dư ban đầu",
+    "openingBalanceHint": "Số dư khi thêm tài khoản"
   },
   "add": {
     "title": "Giao dịch mới",
