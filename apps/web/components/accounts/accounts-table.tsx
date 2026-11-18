@@ -47,8 +47,9 @@ export function AccountsTable({
     [accounts]
   );
 
-  // Net worth comes from the API so it matches every other screen: it includes
-  // money owed to/by contacts, which lives in hidden system accounts.
+  // Both figures come from the API so every screen agrees. "In your accounts"
+  // ignores loans; net worth adds what contacts owe you and subtracts what you
+  // owe them (hidden system accounts), which the owed line spells out.
   const summary = useNetWorthSummary().data;
   const owed = summary ? owedLine(summary, t) : null;
 
@@ -56,15 +57,15 @@ export function AccountsTable({
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-lg border border-line bg-surface">
       <div className="flex flex-wrap items-baseline gap-6 border-b border-line px-5 py-4">
         <div>
-          <span className="eyebrow">{t("web.accounts.netWorth")}</span>
+          <span className="eyebrow">{t("web.accounts.inYourAccounts")}</span>
           {summary ? (
             <div
               className={cn(
                 "amount mt-1 text-[26px] font-semibold",
-                summary.netWorth < 0 ? "text-negative" : "text-ink"
+                summary.inYourAccounts < 0 ? "text-negative" : "text-ink"
               )}
             >
-              {money(summary.netWorth, { sign: summary.netWorth < 0 })}
+              {money(summary.inYourAccounts, { sign: summary.inYourAccounts < 0 })}
             </div>
           ) : (
             <SkeletonBlock className="mt-1 h-[34px] w-40" />
@@ -72,6 +73,17 @@ export function AccountsTable({
           {owed && <div className="mt-1 text-xs text-ink-3">{owed}</div>}
         </div>
         <div className="ml-auto flex gap-6 text-right">
+          <div>
+            <span className="eyebrow">{t("web.accounts.netWorth")}</span>
+            <div
+              className={cn(
+                "amount mt-1 text-sm font-semibold",
+                summary && summary.netWorth < 0 ? "text-negative" : "text-ink"
+              )}
+            >
+              {summary ? money(summary.netWorth, { sign: summary.netWorth < 0 }) : "—"}
+            </div>
+          </div>
           <div>
             <span className="eyebrow">{t("accounts.group.ASSET")}</span>
             <div className="amount mt-1 text-sm font-semibold text-ink">

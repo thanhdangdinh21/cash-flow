@@ -266,11 +266,12 @@
   },
   "netWorth": {
     "owedToYou": "Owed to you {{amount}}",
-    "youOwe": "You owe {{amount}}"
+    "youOwe": "You owe {{amount}}",
+    "value": "Net worth {{amount}}"
   },
   "home": {
     "hello": "Hello, {{name}}",
-    "netWorth": "Net worth",
+    "inYourAccounts": "In your accounts",
     "net": "Net",
     "upThisMonth": "up this month",
     "downThisMonth": "down this month",
@@ -322,6 +323,7 @@
       "tagline": "Personal finance · light + dark · multi-currency"
     },
     "accounts": {
+      "inYourAccounts": "In your accounts",
       "netWorth": "Net worth",
       "balance": "Balance",
       "selectHint": "Select an account to see details."
@@ -342,8 +344,7 @@
     "dashboard": {
       "title": "Dashboard",
       "kpi": {
-        "netWorth": "Net worth",
-        "netWorthSub": "What you own minus what you owe",
+        "inYourAccounts": "In your accounts",
         "monthIncome": "Income · this month",
         "monthIncomeSub": "Money in",
         "monthSpent": "Spent · this month",

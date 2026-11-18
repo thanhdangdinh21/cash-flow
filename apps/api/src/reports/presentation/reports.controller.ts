@@ -44,12 +44,13 @@ export class ReportsController {
 
   @Get('net-worth-summary')
   @ApiOperation({
-    summary: 'Current net worth and its parts',
+    summary: 'In your accounts, net worth, and their parts',
     description:
-      'Net worth = all ASSET balances − all LIABILITY balances, including the hidden loan ' +
-      'Receivables (owedToYou) and Payables (youOwe) accounts. EQUITY, INCOME and EXPENSE ' +
-      'accounts are excluded. Every client screen that shows net worth uses this number; ' +
-      'GET /reports/net-worth returns the same value as `current`.',
+      'inYourAccounts = visible ASSET − visible LIABILITY balances (loans ignored: borrowing ' +
+      'raises it, lending lowers it). netWorth = all ASSET − all LIABILITY balances, including ' +
+      'the hidden loan Receivables (owedToYou) and Payables (youOwe) accounts, so lending or ' +
+      'borrowing leaves it unchanged. EQUITY, INCOME and EXPENSE accounts are excluded and loan ' +
+      'interest is not accrued. GET /reports/net-worth returns the same netWorth as `current`.',
   })
   @ApiOkResponse({ type: NetWorthSummaryDto })
   netWorthSummary(@Request() req: AuthRequest): Promise<NetWorthSummaryDto> {

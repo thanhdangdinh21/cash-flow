@@ -48,7 +48,7 @@ describe('reports exclude soft-deleted transactions', () => {
   });
 });
 
-describe('net worth includes loan receivables and payables', () => {
+describe('net-worth summary: in your accounts vs net worth', () => {
   let prisma: PrismaService;
   let create: CreateTransactionUseCase;
   let netWorth: NetWorthService;
@@ -84,11 +84,64 @@ describe('net worth includes loan receivables and payables', () => {
     return Number(loan.remainingAmount);
   }
 
+  it('borrowing $20 then lending $30 from $100: in your accounts 120 then 90, net worth stays 100', async () => {
+    const { userId, cashId } = await seedWithIncome(100);
+    await create.execute(userId, {
+      transactionType: 'LOAN',
+      accountId: cashId,
+      amount: 20,
+      date: today(),
+      loanDirection: 'BORROWED',
+      contactName: 'Bob',
+    } as any);
+    expect(await netWorth.summary(userId)).toMatchObject({
+      inYourAccounts: 120,
+      youOwe: 20,
+      netWorth: 100,
+    });
+
+    await create.execute(userId, {
+      transactionType: 'LOAN',
+      accountId: cashId,
+      amount: 30,
+      date: today(),
+      loanDirection: 'LENT',
+      contactName: 'Alice',
+    } as any);
+    expect(await netWorth.summary(userId)).toEqual({
+      assets: 90,
+      liabilities: 0,
+      inYourAccounts: 90,
+      owedToYou: 30,
+      youOwe: 20,
+      netWorth: 100,
+    });
+  });
+
+  it('a visible liability account lowers both figures', async () => {
+    const { userId } = await seedWithIncome(100);
+    await prisma.account.create({
+      data: {
+        ownerId: userId,
+        name: 'Card',
+        type: 'LIABILITY',
+        currencyCode: 'USD',
+        currentBalance: 40,
+      },
+    });
+    expect(await netWorth.summary(userId)).toMatchObject({
+      liabilities: 40,
+      inYourAccounts: 60,
+      netWorth: 60,
+    });
+  });
+
   it('lending and borrowing leave net worth unchanged and split out the loan balances', async () => {
     const { userId, cashId } = await seedWithIncome(1000);
     expect(await netWorth.summary(userId)).toEqual({
       assets: 1000,
       liabilities: 0,
+      inYourAccounts: 1000,
       owedToYou: 0,
       youOwe: 0,
       netWorth: 1000,
@@ -115,6 +168,7 @@ describe('net worth includes loan receivables and payables', () => {
     expect(summary).toEqual({
       assets: 875, // 1000 − 200 lent + 75 borrowed
       liabilities: 0,
+      inYourAccounts: 875,
       owedToYou: await remaining(lent!.loanId!),
       youOwe: await remaining(borrowed!.loanId!),
       netWorth: 1000,
@@ -169,6 +223,7 @@ describe('net worth includes loan receivables and payables', () => {
     expect(summary.owedToYou).toBe(await remaining(lent!.loanId!));
     expect(summary.youOwe).toBe(await remaining(borrowed!.loanId!));
     expect(summary.assets).toBe(900); // 875 + 50 − 25
+    expect(summary.inYourAccounts).toBe(900);
     expect(summary.netWorth).toBe(1000);
     expect((await report.execute(userId)).current).toBe(1000);
   });
@@ -196,6 +251,9 @@ describe('net worth includes loan receivables and payables', () => {
       },
     });
 
-    expect((await netWorth.summary(userId)).netWorth).toBe(1000);
+    expect(await netWorth.summary(userId)).toMatchObject({
+      inYourAccounts: 1000,
+      netWorth: 1000,
+    });
   });
 });

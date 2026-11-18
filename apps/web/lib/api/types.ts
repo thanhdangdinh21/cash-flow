@@ -379,14 +379,17 @@ export interface HomeReport {
 }
 
 /**
- * GET /reports/net-worth-summary — the single net-worth rule every screen shows.
- * netWorth = assets + owedToYou − liabilities − youOwe. All plain numbers.
+ * GET /reports/net-worth-summary — the headline figures every screen shows.
+ * inYourAccounts = assets − liabilities (loans ignored);
+ * netWorth = inYourAccounts + owedToYou − youOwe. All plain numbers.
  */
 export interface NetWorthSummary {
   /** Visible (non-system) ASSET account balances */
   assets: number;
   /** Visible (non-system) LIABILITY account balances */
   liabilities: number;
+  /** assets − liabilities: money in your own accounts, ignoring loans */
+  inYourAccounts: number;
   /** System Receivables balance: money contacts still owe you */
   owedToYou: number;
   /** System Payables balance: money you still owe contacts */

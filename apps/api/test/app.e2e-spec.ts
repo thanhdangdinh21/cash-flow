@@ -87,7 +87,14 @@ describe('App (e2e)', () => {
     ).toEqual({ schema: { $ref: '#/components/schemas/NetWorthSummaryDto' } });
     expect(
       Object.keys(doc.components.schemas.NetWorthSummaryDto.properties ?? {}),
-    ).toEqual(['assets', 'liabilities', 'owedToYou', 'youOwe', 'netWorth']);
+    ).toEqual([
+      'assets',
+      'liabilities',
+      'inYourAccounts',
+      'owedToYou',
+      'youOwe',
+      'netWorth',
+    ]);
   });
 
   it('GET /api/docs serves the Scalar viewer', async () => {

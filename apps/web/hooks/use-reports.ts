@@ -12,7 +12,7 @@ export function useHomeReport() {
   });
 }
 
-/** Current net worth incl. loan receivables/payables — use this wherever net worth is shown. */
+/** "In your accounts" + net worth (incl. loan receivables/payables) — use wherever either is shown. */
 export function useNetWorthSummary() {
   return useQuery({
     queryKey: keys.reports.netWorthSummary,

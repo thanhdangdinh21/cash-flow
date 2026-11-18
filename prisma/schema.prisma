@@ -684,7 +684,9 @@ model CategorySnapshot {
 //   loan accounts: Receivables (ASSET, "owed to you") and Payables
 //   (LIABILITY, "you owe"). Lending/borrowing therefore leaves net worth
 //   unchanged. EQUITY, INCOME and EXPENSE accounts are excluded.
-//   Implemented once in apps/api/src/reports/application/net-worth.service.ts.
+//   "In your accounts" (the other headline figure) is the same sum over
+//   is_system = false accounts only, so loans move it.
+//   Both are computed in apps/api/src/reports/application/net-worth.service.ts.
 //
 // TRANSACTION TYPE → REPORT ROUTING:
 //   EXPENSE  → spending reports (by category, trends); exclude_from_reports=false

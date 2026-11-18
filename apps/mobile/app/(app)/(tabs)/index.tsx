@@ -72,7 +72,7 @@ function HomeEmpty() {
     <>
       {/* Hero — zero, quietly */}
       <View className="mb-6">
-        <Eyebrow className="mb-3">{t('home.netWorth')}</Eyebrow>
+        <Eyebrow className="mb-3">{t('home.inYourAccounts')}</Eyebrow>
         <Text
           className="font-sans-semibold text-ink-3"
           style={{ fontSize: 52, letterSpacing: -1.8, lineHeight: 52, fontVariant: ['tabular-nums'] }}
@@ -122,7 +122,10 @@ function HomeBody({
 }) {
   const { t } = useTranslation();
   const monthName = MONTHS[new Date().getMonth()];
-  const value = netWorth?.netWorth ?? 0;
+  // Hero = money in your own accounts (loans ignored); net worth below adds
+  // what contacts owe you and subtracts what you owe them.
+  const value = netWorth?.inYourAccounts ?? 0;
+  const worth = netWorth?.netWorth ?? 0;
   // "Owed to you $X · You owe $Y", only the non-zero sides
   const owed = [
     netWorth?.owedToYou ? t('netWorth.owedToYou', { amount: money(netWorth.owedToYou) }) : null,
@@ -133,18 +136,19 @@ function HomeBody({
 
   return (
     <>
-      {/* Hero — net worth (same rule as Insights: includes money owed to/by contacts) */}
+      {/* Hero — in your accounts, with net worth (same as Insights) underneath */}
       <View className="mb-3.5">
-        <Eyebrow className="mb-3">{t('home.netWorth')}</Eyebrow>
+        <Eyebrow className="mb-3">{t('home.inYourAccounts')}</Eyebrow>
         <Text
           className={`font-sans-semibold ${value < 0 ? 'text-negative' : 'text-ink'}`}
           style={{ fontSize: 52, letterSpacing: -1.8, lineHeight: 52, fontVariant: ['tabular-nums'] }}
         >
           {money(value, { sign: value < 0 })}
         </Text>
-        {owed ? (
-          <Text className="font-sans text-[13px] text-ink-3 mt-2.5">{owed}</Text>
-        ) : null}
+        <Text className="font-sans text-[13px] text-ink-3 mt-2.5" style={{ fontVariant: ['tabular-nums'] }}>
+          {t('netWorth.value', { amount: money(worth, { sign: worth < 0 }) })}
+          {owed ? ` · ${owed}` : ''}
+        </Text>
         <View className="flex-row items-center gap-2.5 mt-4">
           <View
             className={`flex-row items-center gap-1.5 px-2.5 py-[5px] rounded-full ${

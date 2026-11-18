@@ -5,10 +5,12 @@ import type { NetWorthSummaryDto } from './dtos/net-worth-summary.dto';
 // Decimal(18,4) balances summed as JS floats: trim float noise at the column's scale.
 const round4 = (n: number) => Math.round(n * 10_000) / 10_000;
 
-// The one net-worth rule every screen uses: all ASSET balances − all
-// LIABILITY balances, including the system loan accounts (Receivables =
-// ASSET, Payables = LIABILITY). Lending from a wallet moves money to
-// "owed to you" and leaves net worth unchanged.
+// The one place the headline money figures are computed (see NetWorthSummaryDto):
+// - inYourAccounts: visible ASSET − visible LIABILITY balances; loans ignored,
+//   so borrowing $20 raises it and lending $30 lowers it.
+// - netWorth: all ASSET − all LIABILITY balances, including the system loan
+//   accounts (Receivables = ASSET, Payables = LIABILITY), so lending or
+//   borrowing leaves it unchanged.
 @Injectable()
 export class NetWorthService {
   constructor(private readonly prisma: PrismaService) {}
@@ -37,12 +39,14 @@ export class NetWorthService {
       else liabilities += v;
     }
 
+    const inYourAccounts = assets - liabilities;
     return {
       assets: round4(assets),
       liabilities: round4(liabilities),
+      inYourAccounts: round4(inYourAccounts),
       owedToYou: round4(owedToYou),
       youOwe: round4(youOwe),
-      netWorth: round4(assets + owedToYou - liabilities - youOwe),
+      netWorth: round4(inYourAccounts + owedToYou - youOwe),
     };
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { money } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -16,7 +17,7 @@ function KpiCard({
   label: string;
   /** Undefined while loading */
   value: number | undefined;
-  sub: string;
+  sub: ReactNode;
   tone?: "positive" | "negative";
 }) {
   return (
@@ -46,20 +47,34 @@ export function KpiCards({
   netWorth,
 }: {
   report: HomeReport;
-  /** From GET /reports/net-worth-summary; undefined while loading */
+  /** From GET /reports/net-worth-summary (in your accounts + net worth); undefined while loading */
   netWorth: NetWorthSummary | undefined;
 }) {
   const { t } = useTranslation();
   const { monthIncome, monthSpent, net } = report;
+  const owed = netWorth ? owedLine(netWorth, t) : null;
   const keptPct = monthIncome > 0 ? Math.round((net / monthIncome) * 100) : 0;
 
   return (
     <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
       <KpiCard
-        label={t("web.dashboard.kpi.netWorth")}
-        value={netWorth?.netWorth}
-        sub={(netWorth && owedLine(netWorth, t)) ?? t("web.dashboard.kpi.netWorthSub")}
-        tone={netWorth && netWorth.netWorth < 0 ? "negative" : undefined}
+        label={t("web.dashboard.kpi.inYourAccounts")}
+        value={netWorth?.inYourAccounts}
+        sub={
+          netWorth ? (
+            <>
+              <div>
+                {t("netWorth.value", {
+                  amount: money(netWorth.netWorth, { sign: netWorth.netWorth < 0 }),
+                })}
+              </div>
+              {owed && <div>{owed}</div>}
+            </>
+          ) : (
+            "\u00a0"
+          )
+        }
+        tone={netWorth && netWorth.inYourAccounts < 0 ? "negative" : undefined}
       />
       <KpiCard
         label={t("web.dashboard.kpi.monthIncome")}
