@@ -1,0 +1,27 @@
+# Shared setup for every CI job: Node (from .nvmrc), pnpm (from the root
+# `packageManager` field), the pnpm download cache, a clean install, and the
+# generated Prisma client so `@prisma/client` types exist before type checks.
+name: Setup workspace
+description: Install Node 24, pnpm and dependencies, then generate the Prisma client
+
+runs:
+  using: composite
+  steps:
+    # No `version:` here on purpose: the action reads `packageManager`
+    # (pnpm@9.0.0) from package.json, so there is one place to bump it.
+    - uses: pnpm/action-setup@v6
+
+    - uses: actions/setup-node@v7
+      with:
+        node-version-file: .nvmrc
+        cache: pnpm
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
+
+    # prisma.config.ts reads DATABASE_URL; generate never connects, so the
+    # job-level dummy value is enough.
+    - name: Generate Prisma client
+      shell: bash
+      run: pnpm exec prisma generate
