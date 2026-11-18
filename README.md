@@ -71,7 +71,7 @@ pnpm exec prisma migrate dev
 pnpm exec prisma db seed
 
 # 4. start each app in its own terminal:
-pnpm --filter api start:dev        # http://localhost:3001/api  (CORS allows :3000)
+pnpm --filter api start:dev        # http://localhost:3001/api  (CORS allows :3000 by default)
 pnpm --filter web dev              # http://localhost:3000
 cd apps/mobile && npx expo start --ios --localhost
 ```
@@ -86,6 +86,7 @@ Start the apps individually — root `pnpm dev` only covers `web` (the API uses 
 |----------------|---------|
 | `DATABASE_URL` | Postgres connection string (e.g. `postgresql://user:pass@localhost:5432/money_flow`) |
 | `JWT_SECRET`   | Signs/verifies auth tokens |
+| `CORS_ORIGINS` | Optional — comma-separated web origins allowed to call the API from a browser (default `http://localhost:3000`) |
 | `PORT`         | Optional — API port (default `3001`) |
 | `API_DOCS`     | Optional — `true` serves `/api/docs` even when `NODE_ENV=production` |
 
@@ -117,11 +118,19 @@ docker compose down -v           # stop AND wipe the database volume
 docker compose logs -f api       # follow the API logs
 ```
 
-What happens on `up`: Postgres starts → a one-off **`migrate`** service applies Prisma migrations (`prisma migrate deploy`) and exits → the **`api`** starts on `http://localhost:3001/api`. The database lives in a named volume (`pgdata`), so your data survives restarts.
+What happens on `up`: Postgres starts → a one-off **`migrate`** service applies Prisma migrations (`prisma migrate deploy`) and exits → the **`api`** starts on `http://localhost:3001/api` and reports healthy once `GET /api/health` returns 200. The database lives in a named volume (`pgdata`), so your data survives restarts.
 
 - **Config:** copy [`.env.example`](.env.example) to `.env` and set `JWT_SECRET`. Inside Compose the API reaches the DB at host `postgres` (the service name), not `localhost` — Compose sets that `DATABASE_URL` for you.
 - **Fast inner loop:** you can still run the API natively (`pnpm --filter api start:dev`) against the Compose Postgres — point your local `.env` `DATABASE_URL` at `localhost:5432`.
-- **Image layout:** a multi-stage build. The `api` runtime image is a lean **~545 MB** (production deps only, via `pnpm deploy`). The Prisma CLI and full toolchain live only in the `builder` stage, which the throwaway `migrate` service reuses — so they never bloat the deployable API image.
+- **Image layout:** a multi-stage build. The `api` runtime image holds the compiled API with production deps only (via `pnpm deploy`), plus a separate `/app/migrate` folder with just the Prisma CLI, schema and migrations (~220 MB of the ~815 MB). The `migrate` service and Render's pre-deploy step both run `prisma migrate deploy` from that folder in the same image, so local Docker mirrors staging. The full build toolchain stays in the `builder` stage.
+
+## Deployment
+
+Staging runs the API and Postgres on [Render](https://render.com) (Singapore, from [`render.yaml`](render.yaml)) and the web app on [Vercel](https://vercel.com). It costs about $14.50/month. Pushes to `main` deploy automatically once CI passes, and migrations run before each new API version goes live.
+
+- Why this setup: [`docs/adr/0001-hosting.md`](docs/adr/0001-hosting.md)
+- First-time setup, deploys, rollback, backups and restore: [`docs/deploy.md`](docs/deploy.md)
+- Health check: `GET /api/health` returns `200 {"status":"ok","database":"up"}`, or `503` when the database is unreachable.
 
 ## Domain Model
 
@@ -156,7 +165,7 @@ Reports are computed **live** today from journal entries (e.g. the net-worth cha
 
 All routes are prefixed `/api`; most need a `Bearer` JWT from `/api/auth`.
 
-`/api/auth` · `/api/users` · `/api/accounts` · `/api/categories` · `/api/contacts` · `/api/transactions` · `/api/reports`
+`/api/auth` · `/api/users` · `/api/accounts` · `/api/categories` · `/api/contacts` · `/api/transactions` · `/api/reports` · `/api/health` (public)
 
 Interactive docs are at [`localhost:3001/api/docs`](http://localhost:3001/api/docs) (OpenAPI spec at `/api/docs-json`). They're off in production unless `API_DOCS=true`. See [`apps/api/README.md`](apps/api/README.md).
 

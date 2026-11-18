@@ -1,0 +1,61 @@
+# Render Blueprint: the staging API + its Postgres database, both in Singapore.
+# Why Render, and what it costs: docs/adr/0001-hosting.md
+# How to deploy, roll back and restore: docs/deploy.md
+#
+# The web app is NOT here. It runs on Vercel (see docs/deploy.md).
+# No secrets in this file: values marked `sync: false` are typed into the
+# Render dashboard once, when the Blueprint is first created.
+
+services:
+  - type: web
+    name: money-flow-api
+    runtime: docker
+    region: singapore
+    plan: 0.5c-512mb # 0.5 CPU / 512 MB, $7/month
+    branch: main
+    # Deploy a push to main only after GitHub CI passes on it.
+    autoDeployTrigger: checksPass
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: . # repo root: the build needs the lockfile, prisma/ and packages/
+    # Runs in the freshly built image before it gets traffic. If it fails, the
+    # deploy stops and the previous version keeps serving. Never `migrate dev`.
+    preDeployCommand: /app/migrate/node_modules/.bin/prisma migrate deploy --config /app/migrate/prisma.config.ts
+    # Render only switches traffic to a new version once this returns 200
+    # (it pings the database too).
+    healthCheckPath: /api/health
+    # Skip rebuilding the API when only the web or mobile app changed.
+    buildFilter:
+      paths:
+        - apps/api/**
+        - packages/shared/**
+        - prisma/**
+        - prisma.config.ts
+        - package.json
+        - pnpm-lock.yaml
+        - pnpm-workspace.yaml
+        - render.yaml
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Keep the OpenAPI docs (/api/docs) off on staging. Set to "true" to show them.
+      - key: API_DOCS
+        value: "false"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: money-flow-db
+          property: connectionString # private, in-region connection
+      # Generate locally with:  openssl rand -base64 48
+      - key: JWT_SECRET
+        sync: false
+      # The Vercel web URL, e.g. https://money-flow-web.vercel.app (comma-separate several)
+      - key: CORS_ORIGINS
+        sync: false
+
+databases:
+  - name: money-flow-db
+    region: singapore
+    plan: 0.1c-256mb # 256 MB RAM, $6/month. Paid plans get point-in-time recovery.
+    diskSizeGB: 5 # $0.30/GB → $1.50/month. Can grow later, never shrink.
+    postgresMajorVersion: "16"
+    databaseName: money_flow
+    user: money_flow

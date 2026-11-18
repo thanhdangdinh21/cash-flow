@@ -3,8 +3,8 @@
 # ──────────────────────────────────────────────────────────────────────
 # Stage 1 — builder: install deps, generate Prisma client, compile,
 # and carve out a production-only bundle for the runtime.
-# (This stage also has the Prisma CLI, so the `migrate` compose service
-#  reuses it to run migrations.)
+# It also builds /migrate, a small Prisma-CLI bundle the runtime image
+# carries for `prisma migrate deploy`.
 # ──────────────────────────────────────────────────────────────────────
 FROM node:24-slim AS builder
 
@@ -32,6 +32,18 @@ COPY prisma ./prisma
 COPY prisma.config.ts ./
 RUN pnpm exec prisma generate
 
+# Migration bundle: just the Prisma CLI (same version as the lockfile) plus
+# the schema, migrations and config. The host's pre-deploy step runs
+# `prisma migrate deploy` from it inside the runtime image (Render can only
+# run commands in the final stage). It's a separate folder the app never loads.
+RUN PRISMA_VERSION=$(node -p "require('./node_modules/prisma/package.json').version") \
+    && DOTENV_VERSION=$(node -p "require('./node_modules/dotenv/package.json').version") \
+    && mkdir /migrate && cd /migrate \
+    && echo '{"name":"migrate","private":true}' > package.json \
+    && npm install --omit=dev --no-audit --no-fund \
+        "prisma@${PRISMA_VERSION}" "dotenv@${DOTENV_VERSION}" \
+    && cp -R /app/prisma /app/prisma.config.ts /migrate/
+
 # Compile the API (NestJS → apps/api/dist).
 COPY apps/api ./apps/api
 COPY packages/shared ./packages/shared
@@ -49,8 +61,9 @@ RUN cp -R /app/apps/api/dist /prod/dist \
 
 # ──────────────────────────────────────────────────────────────────────
 # Stage 2 — runtime: lean image, runs the compiled API only.
-# Migrations run separately (see the `migrate` service in docker-compose.yml),
-# so this image doesn't carry the Prisma CLI.
+# Migrations are a separate step, run BEFORE the new version starts:
+#   /app/migrate/node_modules/.bin/prisma migrate deploy --config /app/migrate/prisma.config.ts
+# (Render's preDeployCommand and the `migrate` service in docker-compose.yml).
 # ──────────────────────────────────────────────────────────────────────
 FROM node:24-slim AS runtime
 
@@ -61,6 +74,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY --from=builder /prod ./
+COPY --from=builder /migrate ./migrate
 
 USER node
 EXPOSE 3001
