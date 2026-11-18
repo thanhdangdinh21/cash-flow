@@ -25,6 +25,7 @@ import {
 import { useTransactions } from "@/hooks/use-transactions";
 import { dayLabel, money, toAmount } from "@/lib/format";
 import { txnAccountLabel, txnSign, txnTitle } from "@/lib/txn";
+import { useTxnTitleLabels } from "@/lib/use-txn-labels";
 import { cn } from "@/lib/utils";
 import type { AccountDetail } from "@/lib/api/types";
 
@@ -176,10 +177,7 @@ function HoldingsSection({ account }: { account: AccountDetail }) {
 function TransactionHistory({ accountId }: { accountId: string }) {
   const { t, i18n } = useTranslation();
   const query = useTransactions({ accountId, limit: 20 });
-  const titleLabels = {
-    transfer: t("add.types.transfer"),
-    uncategorized: t("web.dashboard.recent.fallbackDescription"),
-  };
+  const titleLabels = useTxnTitleLabels();
 
   return (
     <div className="flex flex-col gap-1">

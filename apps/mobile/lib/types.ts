@@ -2,7 +2,9 @@
 // run them through num() in lib/format.ts before doing math.
 
 export type AccountType = 'ASSET' | 'LIABILITY' | 'INCOME' | 'EXPENSE' | 'EQUITY';
-export type TransactionType = 'EXPENSE' | 'INCOME' | 'TRANSFER' | 'LOAN';
+// OPENING_BALANCE is server-generated: an account's starting balance, posted
+// against the hidden "Opening balances" equity account. Never created here.
+export type TransactionType = 'EXPENSE' | 'INCOME' | 'TRANSFER' | 'LOAN' | 'OPENING_BALANCE';
 export type LoanDirection = 'LENT' | 'BORROWED';
 export type LoanStatus = 'ACTIVE' | 'SETTLED';
 

@@ -28,7 +28,12 @@ export class GetAccountDetailUseCase {
       where: {
         accountId: id,
         deletedAt: null,
-        transaction: { date: { gte: monthStart } },
+        // The opening balance is where the account started, not money that
+        // flowed in or out this month
+        transaction: {
+          date: { gte: monthStart },
+          transactionType: { not: 'OPENING_BALANCE' },
+        },
       },
       select: { type: true, amount: true },
     });

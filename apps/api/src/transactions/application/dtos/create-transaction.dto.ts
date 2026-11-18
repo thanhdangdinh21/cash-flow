@@ -2,13 +2,25 @@ import {
   IsBoolean,
   IsDateString,
   IsEnum,
+  IsIn,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsPositive,
   IsString,
 } from 'class-validator';
-import { LoanDirection, TransactionType } from '@prisma/client';
+import { LoanDirection } from '@prisma/client';
+import type { TransactionType } from '@prisma/client';
+
+// Types a client may create. OPENING_BALANCE is posted only by the server
+// when an account is created with a starting balance.
+export const USER_TRANSACTION_TYPES = [
+  'EXPENSE',
+  'INCOME',
+  'TRANSFER',
+  'LOAN',
+] as const satisfies readonly TransactionType[];
+export type UserTransactionType = (typeof USER_TRANSACTION_TYPES)[number];
 
 // Plain-language transaction input — the use-case maps it to double entry.
 //   EXPENSE  → accountId = the asset/liability account money leaves
@@ -17,7 +29,7 @@ import { LoanDirection, TransactionType } from '@prisma/client';
 //   LOAN     → new loan: loanDirection + contactId|contactName (+ interest)
 //              settlement: loanId (direction derived from the loan)
 export class CreateTransactionDto {
-  @IsEnum(TransactionType) transactionType: TransactionType;
+  @IsIn(USER_TRANSACTION_TYPES) transactionType: UserTransactionType;
   @IsNumber() @IsPositive() amount: number;
   @IsDateString() date: string;
   @IsString() @IsNotEmpty() accountId: string;

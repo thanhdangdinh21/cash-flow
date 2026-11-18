@@ -6,6 +6,7 @@ import type {
   UpdateAccountData,
 } from '../domain/account.repository.interface';
 import type { AccountEntity } from '../domain/account.entity';
+import { postOpeningBalance, takesOpeningBalance } from './opening-balance';
 
 @Injectable()
 export class AccountRepository implements IAccountRepository {
@@ -42,6 +43,13 @@ export class AccountRepository implements IAccountRepository {
       await tx.accountUser.create({
         data: { accountId: account.id, userId: data.ownerId, role: 'OWNER' },
       });
+      // The starting balance is a real journal entry against the hidden
+      // "Opening balances" account, so current_balance always matches the
+      // journal (issue #7).
+      const opening = data.initialBalance ?? 0;
+      if (opening > 0 && takesOpeningBalance(account.type)) {
+        await postOpeningBalance(tx, account, opening);
+      }
       if (data.holdings?.length) {
         await tx.holding.createMany({
           data: data.holdings.map((h) => ({

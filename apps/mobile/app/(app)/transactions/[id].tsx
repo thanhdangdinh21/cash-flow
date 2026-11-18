@@ -54,6 +54,7 @@ export default function TransactionDetailScreen() {
     INCOME: 'add.types.income',
     TRANSFER: 'add.types.transfer',
     LOAN: 'add.types.loan',
+    OPENING_BALANCE: 'txn.openingBalanceHint',
   } as const;
   const eyebrow =
     categoryLabel ??
@@ -79,7 +80,7 @@ export default function TransactionDetailScreen() {
 
   return (
     <Page>
-      <Head eyebrow={eyebrow} title={txnTitle(txn)} />
+      <Head eyebrow={eyebrow} title={txnTitle(txn, { openingBalance: t('txn.openingBalance') })} />
 
       <Text
         className={`font-sans-semibold ${sign > 0 ? 'text-positive' : 'text-ink'}`}

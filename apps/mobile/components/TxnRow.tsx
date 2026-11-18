@@ -1,6 +1,7 @@
 import { Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { money, num } from '@/lib/format';
 import { txnAccountLabel, txnIcon, txnSign, txnTitle } from '@/lib/txn';
 import type { TransactionData } from '@/lib/types';
@@ -19,6 +20,7 @@ export function TxnRow({
   first?: boolean;
   sub?: string;
 }) {
+  const { t } = useTranslation();
   const sign = txnSign(txn);
   const amount = num(txn.amount);
 
@@ -32,7 +34,7 @@ export function TxnRow({
     <Row
       first={first}
       tile={<CategoryIcon icon={txnIcon(txn)} />}
-      title={txnTitle(txn)}
+      title={txnTitle(txn, { openingBalance: t('txn.openingBalance') })}
       sub={
         <View className="flex-row items-center gap-1 mt-px">
           {txn.transactionType === 'TRANSFER' ? (
@@ -40,6 +42,9 @@ export function TxnRow({
           ) : null}
           {txn.transactionType === 'LOAN' ? (
             <Ionicons name="people-outline" size={11} color="#8C897D" />
+          ) : null}
+          {txn.transactionType === 'OPENING_BALANCE' ? (
+            <Ionicons name="flag-outline" size={11} color="#8C897D" />
           ) : null}
           <Text numberOfLines={1} className="font-sans text-[12.5px] text-ink-3">
             {sub ?? subParts.join(' · ')}

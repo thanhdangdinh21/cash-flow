@@ -135,7 +135,9 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor={`${fieldId}-balance`}>{t("accounts.form.initialBalance")}</Label>
+          <Label htmlFor={`${fieldId}-balance`}>
+            {t(kind === "credit" ? "accounts.form.amountOwed" : "accounts.form.initialBalance")}
+          </Label>
           <Input
             id={`${fieldId}-balance`}
             value={initialBalance}

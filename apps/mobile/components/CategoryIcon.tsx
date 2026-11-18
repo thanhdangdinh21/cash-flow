@@ -18,6 +18,7 @@ const ICON_MAP: Record<string, { ion: keyof typeof Ionicons.glyphMap; tint: stri
   gift: { ion: 'gift-outline', tint: '#BE4A30' },
   heart: { ion: 'heart-outline', tint: '#BE4A30' },
   book: { ion: 'book-outline', tint: '#2C5E8A' },
+  flag: { ion: 'flag-outline', tint: '#1A7A50' }, // opening balance (not a category)
 };
 
 export function categoryMeta(icon?: string | null) {

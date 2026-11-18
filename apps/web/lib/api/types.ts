@@ -37,7 +37,10 @@ export type JournalEntryType = "DEBIT" | "CREDIT";
 
 export type SnapshotPeriod = "DAILY" | "WEEKLY" | "MONTHLY";
 
-export type TransactionType = "EXPENSE" | "INCOME" | "TRANSFER" | "LOAN";
+// OPENING_BALANCE is server-generated (an account's starting balance against
+// the hidden "Opening balances" equity account) — never created by clients
+// and kept out of the type filters.
+export type TransactionType = "EXPENSE" | "INCOME" | "TRANSFER" | "LOAN" | "OPENING_BALANCE";
 
 export type LoanStatus = "ACTIVE" | "SETTLED";
 
