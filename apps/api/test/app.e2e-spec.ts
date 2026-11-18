@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { setupApiDocs } from './../src/api-docs';
+import { configureApp } from './../src/app-setup';
 import { PrismaService } from './../src/prisma/prisma.service';
 
 interface OpenApiDocument {
@@ -30,9 +31,7 @@ describe('App (e2e)', () => {
       .compile();
 
     app = moduleFixture.createNestApplication();
-    // Mirrors main.ts
-    app.setGlobalPrefix('api');
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+    configureApp(app);
     setupApiDocs(app);
     await app.init();
   });

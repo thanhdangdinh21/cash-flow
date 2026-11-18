@@ -1,0 +1,56 @@
+# Render Blueprint: the production API (free plan, Singapore).
+# Why this setup, and its trade-offs: docs/adr/0001-hosting.md
+# Setup, deploys, rollback, backups: docs/deploy.md
+#
+# Not here: the database is Neon (free, Singapore) and the web app is Vercel.
+# No secrets in this file: values marked `sync: false` are typed into the
+# Render dashboard once, when the Blueprint is first created.
+
+services:
+  - type: web
+    name: money-flow-api
+    runtime: docker
+    region: singapore
+    # Free: sleeps after 15 idle minutes, ~30-60 s to wake, 750 instance-hours
+    # per month. For always-on, change to 0.5c-512mb ($7/month).
+    plan: free
+    branch: main
+    # Deploy a push to main only after GitHub CI passes on it.
+    autoDeployTrigger: checksPass
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: . # repo root: the build needs the lockfile, prisma/ and packages/
+    # The free plan has no preDeployCommand, so migrations run at start
+    # (Neon direct URL), then the server starts. Never `migrate dev`.
+    dockerCommand: /app/migrate-and-start.sh
+    # Database-free on purpose: Render checks every few seconds, and a DB
+    # query here would keep Neon from ever scaling to zero.
+    healthCheckPath: /api/health/live
+    # Skip rebuilding the API when only the web or mobile app changed.
+    buildFilter:
+      paths:
+        - apps/api/**
+        - packages/shared/**
+        - prisma/**
+        - prisma.config.ts
+        - package.json
+        - pnpm-lock.yaml
+        - pnpm-workspace.yaml
+        - render.yaml
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Keep the OpenAPI docs (/api/docs) off in production.
+      - key: API_DOCS
+        value: "false"
+      # Neon POOLED connection string (host contains `-pooler`), for the app.
+      - key: DATABASE_URL
+        sync: false
+      # Neon DIRECT connection string (no `-pooler`), used only for migrations.
+      - key: DATABASE_URL_UNPOOLED
+        sync: false
+      # Generate locally with:  openssl rand -base64 48
+      - key: JWT_SECRET
+        sync: false
+      # The Vercel web URL, e.g. https://money-flow-web.vercel.app (comma-separate several)
+      - key: CORS_ORIGINS
+        sync: false

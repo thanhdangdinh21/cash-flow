@@ -1,0 +1,35 @@
+name: Keep API awake (daytime)
+
+# Render's free plan puts the API to sleep after 15 idle minutes, and the next
+# request then waits ~30-60 s. This pings it every 10 minutes from 07:00 to
+# 23:00 Vietnam time so daytime use is fast; overnight it may sleep.
+#
+# - Hits /api/health/live, which never touches the database, so Neon can still
+#   scale to zero between real requests.
+# - ~16 h/day ≈ 500 of the 750 free instance-hours a month.
+# - GitHub runs scheduled jobs late at busy times (sometimes 10+ minutes), so
+#   the API can still occasionally fall asleep. That's harmless.
+# - Off until the repo variable KEEPALIVE_URL is set (e.g.
+#   https://money-flow-api.onrender.com/api/health/live). Delete the variable
+#   to pause it, or this file to remove it. Change the hours in `cron` (UTC).
+
+on:
+  schedule:
+    # Every 10 min, 00:00-15:59 UTC = 07:00-22:59 in Vietnam (UTC+7).
+    - cron: "*/10 0-15 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    name: Ping API liveness
+    if: vars.KEEPALIVE_URL != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Ping
+        env:
+          URL: ${{ vars.KEEPALIVE_URL }}
+        # Generous timeout: a sleeping instance takes up to a minute to wake.
+        run: curl --fail --silent --show-error --max-time 90 --retry 2 --retry-delay 10 "$URL"
