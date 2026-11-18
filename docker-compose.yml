@@ -20,8 +20,8 @@ services:
       timeout: 5s
       retries: 10
 
-  # One-off: applies Prisma migrations, then exits. Same image and command as
-  # Render's preDeployCommand (render.yaml), so local mirrors staging.
+  # One-off: applies Prisma migrations, then exits. Same image and Prisma
+  # bundle that production's start script (apps/api/docker/migrate-and-start.sh) uses.
   migrate:
     image: money-flow-api
     build:

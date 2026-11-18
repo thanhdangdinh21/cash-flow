@@ -33,9 +33,8 @@ COPY prisma.config.ts ./
 RUN pnpm exec prisma generate
 
 # Migration bundle: just the Prisma CLI (same version as the lockfile) plus
-# the schema, migrations and config. The host's pre-deploy step runs
-# `prisma migrate deploy` from it inside the runtime image (Render can only
-# run commands in the final stage). It's a separate folder the app never loads.
+# the schema, migrations and config, so `prisma migrate deploy` can run inside
+# the runtime image. It's a separate folder the app never loads.
 RUN PRISMA_VERSION=$(node -p "require('./node_modules/prisma/package.json').version") \
     && DOTENV_VERSION=$(node -p "require('./node_modules/dotenv/package.json').version") \
     && mkdir /migrate && cd /migrate \
@@ -61,9 +60,9 @@ RUN cp -R /app/apps/api/dist /prod/dist \
 
 # ──────────────────────────────────────────────────────────────────────
 # Stage 2 — runtime: lean image, runs the compiled API only.
-# Migrations are a separate step, run BEFORE the new version starts:
-#   /app/migrate/node_modules/.bin/prisma migrate deploy --config /app/migrate/prisma.config.ts
-# (Render's preDeployCommand and the `migrate` service in docker-compose.yml).
+# Migrations run BEFORE the server starts, from the /app/migrate bundle:
+# - production: /app/migrate-and-start.sh (render.yaml dockerCommand)
+# - local: the one-off `migrate` service in docker-compose.yml
 # ──────────────────────────────────────────────────────────────────────
 FROM node:24-slim AS runtime
 
@@ -75,6 +74,8 @@ ENV NODE_ENV=production
 
 COPY --from=builder /prod ./
 COPY --from=builder /migrate ./migrate
+# Migrate-then-start, used as the production start command (render.yaml).
+COPY --chmod=755 apps/api/docker/migrate-and-start.sh ./migrate-and-start.sh
 
 USER node
 EXPOSE 3001

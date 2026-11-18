@@ -12,8 +12,12 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 
 /**
- * Liveness + readiness probe for the hosting platform (Render's
- * healthCheckPath). Public on purpose: it reveals only up/down.
+ * Public on purpose: both routes reveal only up/down.
+ *
+ * - `GET /api/health/live`: the process is up. Never touches the database, so
+ *   Render's every-few-seconds health checks and the keep-alive ping don't keep
+ *   the free Neon database awake (it scales to zero after 5 idle minutes).
+ * - `GET /api/health`: also pings the database. For humans and deploy checks.
  */
 @ApiTags('health')
 @Controller('health')
@@ -21,6 +25,12 @@ export class HealthController {
   private readonly logger = new Logger(HealthController.name);
 
   constructor(private readonly prisma: PrismaService) {}
+
+  @Get('live')
+  @ApiOkResponse({ description: 'API process is up (database not checked)' })
+  live() {
+    return { status: 'ok' };
+  }
 
   @Get()
   @ApiOkResponse({ description: 'API and database are up' })

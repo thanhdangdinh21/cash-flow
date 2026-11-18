@@ -90,6 +90,15 @@ describe('CORS and health check (e2e)', () => {
       expect(JSON.stringify(res.body)).not.toContain('ECONNREFUSED');
     });
 
+    it('GET /api/health/live returns 200 without touching the database', async () => {
+      queryRaw.mockRejectedValue(new Error('database is asleep'));
+      const res = await request(app.getHttpServer())
+        .get('/api/health/live')
+        .expect(200);
+      expect(res.body).toEqual({ status: 'ok' });
+      expect(queryRaw).not.toHaveBeenCalled();
+    });
+
     it('needs no auth token', async () => {
       queryRaw.mockResolvedValue([{ '?column?': 1 }]);
       await request(app.getHttpServer()).get('/api/health').expect(200);

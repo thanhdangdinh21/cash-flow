@@ -1,27 +1,27 @@
-# Deploying Money Flow (staging)
+# Deploying Money Flow (production)
 
-Why this setup: [ADR 0001](adr/0001-hosting.md).
+There are two environments: **local** and **production**. Why this setup, and what it trades away for $0/month: [ADR 0001](adr/0001-hosting.md).
 
 ```
- Browser ──► Vercel (web, Next.js)          global CDN, free Hobby plan
+ Browser ──► Vercel: money-flow-web        Next.js, global CDN        Hobby, $0
     │
-    └──────► Render: money-flow-api          Singapore, Docker, $7/mo
-                  │  private network
+    └──────► Render: money-flow-api         Docker, Singapore          free, $0
+                  │  TLS over the internet
                   ▼
-             Render: money-flow-db           Singapore, Postgres 16, $6/mo + $1.50 storage
-```
+             Neon: money-flow               Postgres 16, Singapore     Free, $0
 
-The browser loads the web app from Vercel, then calls the API on Render directly. Only the API talks to the database.
+ GitHub Actions: nightly encrypted pg_dump (30 days) + daytime keep-alive ping
+```
 
 ---
 
 ## 1. First-time setup (you do these steps)
 
-Creating accounts, adding a card, accepting terms and typing secrets are all yours to do. The steps below are in order, and each takes a few minutes.
+Creating accounts, accepting terms and typing secrets are all yours to do. Do the steps in order; each takes a few minutes. Paste secrets only into the dashboards named here, never into chat, commits or issues.
 
 ### Step 0: merge the deployment PR
 
-`render.yaml` deploys the `main` branch, so it has to be on `main` before Render can read it.
+`render.yaml` and the scheduled workflows only run from `main`.
 
 ### Step 1: generate a JWT secret (on your Mac)
 
@@ -29,58 +29,107 @@ Creating accounts, adding a card, accepting terms and typing secrets are all you
 openssl rand -base64 48
 ```
 
-Copy the output somewhere safe for a minute, such as your password manager. It signs everyone's login tokens. **Never commit it or paste it into chat.**
+Save it in your password manager. It signs everyone's login tokens.
 
-### Step 2: Render (API + database)
+### Step 2: Neon (database)
 
-1. Go to <https://dashboard.render.com/register> and choose **Sign up with GitHub**. Accept the terms.
-2. When asked for a workspace plan, keep **Hobby** ($0 per month; you only pay for the services below).
-3. Add a card: avatar (top right) → **Billing** → **Add payment method**. Paid instances won't start without one.
-4. Top right **+ New** → **Blueprint**.
-5. Under **Connect a repository**, click **Configure GitHub** / **Connect GitHub**. Give Render access to **only** `thanhdangdinh21/cash-flow`, then pick it from the list.
-6. **Blueprint name:** `money-flow-staging`. **Branch:** `main`. Render reads `render.yaml` and lists:
-   - `money-flow-api` (web service, Singapore)
-   - `money-flow-db` (Postgres, Singapore)
-7. Render asks for the two values marked `sync: false`:
-   - `JWT_SECRET`: paste the value from Step 1.
-   - `CORS_ORIGINS`: type `http://localhost:3000` for now. You'll replace it with the Vercel URL in Step 4.
-8. Check the cost summary (about $14.50/month: $7 + $6 + $1.50 storage), then click **Deploy Blueprint** / **Apply**.
-9. Wait for the database to show **Available** and the API to show **Live**. The first Docker build takes about 5–10 minutes. The deploy log shows `All migrations have been successfully applied.` from the pre-deploy step.
-10. Open **money-flow-api**. Its URL is at the top, something like `https://money-flow-api.onrender.com` (Render may add a suffix if the name is taken). Check it:
+1. Go to <https://console.neon.tech/signup>, sign up (GitHub sign-in is fine) and accept the terms. The **Free** plan needs no card.
+2. **Create project**:
+   - **Project name:** `money-flow`
+   - **Postgres version:** **16**. It must match local, CI, and the backup job's `pg_dump 16`.
+   - **Cloud provider / Region:** **AWS · Asia Pacific (Singapore)** (`aws-ap-southeast-1`)
+   - Click **Create project**.
+3. On the project dashboard click **Connect**. You need **two** connection strings, so copy each one into your password manager:
+   - **Connection pooling ON** → the **pooled** string. Its host contains `-pooler`. This becomes `DATABASE_URL`.
+   - **Connection pooling OFF** → the **direct** string, with no `-pooler`. This becomes `DATABASE_URL_UNPOOLED` and `BACKUP_DATABASE_URL`.
 
-    ```bash
-    curl https://money-flow-api.onrender.com/api/health
-    # {"status":"ok","database":"up"}
-    ```
+   Both end in `?sslmode=require…`. Keep that part.
 
-### Step 3: Vercel (web app)
+### Step 3: Render (API)
 
-1. Go to <https://vercel.com/signup>, choose **Hobby** (personal, non-commercial), and **Continue with GitHub**. Accept the terms.
-2. **Add New…** → **Project** → under *Import Git Repository*, click **Adjust GitHub App Permissions** if needed. Give Vercel access to **only** `thanhdangdinh21/cash-flow`, then click **Import** next to it.
-3. On *Configure Project*:
-   - **Project Name:** `money-flow-web`. This becomes the URL `https://money-flow-web.vercel.app`, or a suffixed one if the name is taken.
-   - **Root Directory:** click **Edit** → choose `apps/web` → **Continue**.
+1. Go to <https://dashboard.render.com/register> → **Sign up with GitHub** → accept the terms. Keep the **Hobby** workspace. Free services need no card. Without one, Render pauses builds if the month's included build minutes run out.
+2. Top right **+ New** → **Blueprint**.
+3. **Connect GitHub**, giving access to **only** `thanhdangdinh21/cash-flow`, then pick it.
+4. **Blueprint name:** `money-flow`. **Branch:** `main`. Render reads `render.yaml` and shows one service: `money-flow-api` (free, Singapore).
+5. Fill in the four secret values:
+   - `DATABASE_URL`: Neon **pooled** string (Step 2.3)
+   - `DATABASE_URL_UNPOOLED`: Neon **direct** string (Step 2.3)
+   - `JWT_SECRET`: from Step 1
+   - `CORS_ORIGINS`: `http://localhost:3000` for now. You'll replace it in Step 5.
+6. **Deploy Blueprint**. The first Docker build takes about 5–10 minutes on the free CPU. The log shows `All migrations have been successfully applied.` and then `Nest application successfully started`.
+7. Copy the service URL from the top of the page, e.g. `https://money-flow-api.onrender.com`, then check it:
+
+   ```bash
+   curl https://money-flow-api.onrender.com/api/health
+   # {"status":"ok","database":"up"}
+   ```
+
+### Step 4: Vercel (web)
+
+1. Go to <https://vercel.com/signup> → **Hobby** → **Continue with GitHub** → accept the terms.
+2. **Add New…** → **Project** → give access to **only** `thanhdangdinh21/cash-flow` → **Import**.
+3. *Configure Project*:
+   - **Project Name:** `money-flow-web`
+   - **Root Directory:** **Edit** → `apps/web` → **Continue**
    - **Framework Preset:** Next.js (detected automatically). Leave the build and install commands on their defaults.
-   - **Environment Variables:** add
-     `NEXT_PUBLIC_API_URL` = `https://money-flow-api.onrender.com/api` (your Render URL from Step 2.10, **plus `/api`**).
-4. Click **Deploy**. When it finishes, copy the **production domain** shown on the project page.
-5. Go to **Settings** → **Build and Deployment** → **Node.js Version** and pick **24.x**, then save.
+   - **Environment Variables:** `NEXT_PUBLIC_API_URL` = your Render URL **plus `/api`**, e.g. `https://money-flow-api.onrender.com/api`
+4. **Deploy**, then copy the **production domain**, e.g. `https://money-flow-web.vercel.app`.
+5. Go to **Settings → Build and Deployment → Node.js Version** → **24.x** → **Save**.
 
-> `NEXT_PUBLIC_API_URL` is built into the web app's JavaScript at build time. If you change it later, redeploy: **Deployments** → latest → **⋯** → **Redeploy**.
+> `NEXT_PUBLIC_API_URL` is built into the web app at build time. If you change it, redeploy: **Deployments** → latest → **⋯** → **Redeploy**.
 
-### Step 4: let the web app call the API (CORS)
+### Step 5: let the web app call the API (CORS)
 
-1. Render → **money-flow-api** → **Environment**.
-2. Edit `CORS_ORIGINS` to your Vercel production URL, with **no trailing slash**, e.g. `https://money-flow-web.vercel.app`. To allow several, separate them with commas.
-3. **Save, rebuild, and deploy** (or **Save and deploy**). The API restarts with the new setting.
+Render → **money-flow-api** → **Environment** → set `CORS_ORIGINS` to the Vercel production domain, with **no trailing slash** (comma-separate several) → **Save and deploy**.
 
-### Step 5: check it end to end
+### Step 6: nightly encrypted backups
 
-1. Open the Vercel URL → **Register** a new account.
-2. Create a transaction, e.g. an expense from the default cash account.
-3. Open **Reports**: the transaction shows up.
+The repo is public, so backups are encrypted with [age](https://age-encryption.org) before they're uploaded. GitHub only ever sees the **public** key. The **private** key stays with you, and without it nobody (you included) can read the backups.
 
-If the browser console says *blocked by CORS policy*, `CORS_ORIGINS` doesn't exactly match the URL in the address bar. Check `https`, the exact subdomain and the trailing slash.
+1. Install age and make a key pair on your Mac:
+
+   ```bash
+   brew install age
+   ```
+
+   ```bash
+   age-keygen -o ~/money-flow-backup.key
+   ```
+
+   It prints `Public key: age1…`. That's the public half.
+2. Store the **private key** safely: put the whole contents of `~/money-flow-backup.key` in your password manager, plus a second place you control (e.g. an encrypted USB drive). **Lose it and every backup is unreadable.** Never commit it or upload it to GitHub.
+3. Add the public key as a repository **variable**. Paste the `age1…` value into the command:
+
+   ```bash
+   gh variable set BACKUP_AGE_RECIPIENT --repo thanhdangdinh21/cash-flow --body 'age1...'
+   ```
+
+   (Or in the browser: repo → **Settings → Secrets and variables → Actions → Variables → New repository variable**.)
+4. Add the Neon **direct** string as a repository **secret**. The command prompts for it without echoing:
+
+   ```bash
+   gh secret set BACKUP_DATABASE_URL --repo thanhdangdinh21/cash-flow
+   ```
+
+5. Run it once now: repo → **Actions → Nightly database backup → Run workflow**. A green run ends with an artifact named `money_flow-<date>.dump.age`.
+6. Rehearse a restore once (section 4) so you know it works before you need it.
+
+From then on it runs every night at about **02:00 Vietnam time** and keeps each backup **30 days**.
+
+### Step 7 (optional): keep the API awake during the day
+
+```bash
+gh variable set KEEPALIVE_URL --repo thanhdangdinh21/cash-flow --body 'https://money-flow-api.onrender.com/api/health/live'
+```
+
+This pings the API every 10 minutes from 07:00 to 23:00 Vietnam time, so daytime visits don't wait 30–60 s for it to wake. To pause it, delete the variable. To remove it entirely, delete `.github/workflows/keep-alive.yml`. To change the hours, edit its `cron` line (times are UTC, so Vietnam = UTC+7). GitHub runs scheduled jobs late when it's busy, so the API can still nap now and then.
+
+### Step 8: check it end to end
+
+1. Open the Vercel URL. If the API was asleep, the first load may take up to a minute.
+2. **Register** → create a transaction → open **Reports**: the transaction shows up.
+
+> **Scheduled workflows in public repos stop after 60 days without any commits.** GitHub emails you first. Re-enable them under **Actions**, or push any commit.
 
 ---
 
@@ -88,16 +137,15 @@ If the browser console says *blocked by CORS policy*, `CORS_ORIGINS` doesn't exa
 
 | You do | What happens |
 |---|---|
-| Open a PR | GitHub CI runs. Vercel builds a **preview** of the web app. The preview's random URL isn't in `CORS_ORIGINS`, so it can't log in to the staging API. That's expected. |
-| Merge to `main` | **Vercel** deploys the web app to production. **Render** waits for every GitHub check on that commit to pass, then builds the API image, runs `prisma migrate deploy` (pre-deploy), starts the new version, waits for `GET /api/health` to return 200, and only then switches traffic. |
-| A migration fails | The deploy stops. The old version keeps serving, and nothing is half-switched. Fix the migration in a new PR. |
-| The new version fails its health check | Render keeps the old version live and marks the deploy failed. |
+| Open a PR | CI runs. Vercel builds a **preview**. Its random URL isn't in `CORS_ORIGINS`, so it can't log in to the production API. That's expected. |
+| Merge to `main` | **Vercel** deploys the web app. **Render** waits for every GitHub check to pass, builds the API image, and starts it with [`migrate-and-start.sh`](../apps/api/docker/migrate-and-start.sh): `prisma migrate deploy` over Neon's direct URL, then the server. Once `/api/health/live` answers, traffic switches to the new version. |
+| A migration fails | The new container exits and never becomes healthy. Render keeps the previous version serving and marks the deploy failed. |
 
-Only API-related changes (`apps/api`, `packages/shared`, `prisma`, lockfile, `render.yaml`) rebuild the API. Web-only or mobile-only changes skip it (`buildFilter` in `render.yaml`).
+API-only paths trigger API builds (`buildFilter` in `render.yaml`); web or mobile-only changes don't rebuild it.
 
-**Deploy by hand:** Render → **money-flow-api** → **Manual Deploy** → **Deploy latest commit**. On Vercel: **Deployments** → **⋯** → **Redeploy**.
+**Deploy by hand:** Render → **money-flow-api** → **Manual Deploy → Deploy latest commit**. On Vercel: **Deployments** → **⋯** → **Redeploy**.
 
-**Never** run `prisma migrate dev` or `prisma migrate reset` against staging. They can drop data. Only `migrate deploy` runs there, automatically.
+**Never** point local tools at production. Don't put Neon URLs in your local `.env`, and never run `prisma migrate dev`, `migrate reset` or `db push` against Neon. Production only ever gets `migrate deploy`, from the start script.
 
 ---
 
@@ -105,88 +153,129 @@ Only API-related changes (`apps/api`, `packages/shared`, `prisma`, lockfile, `re
 
 ### API (Render)
 
-1. Render → **money-flow-api** → **Deploys**.
-2. Find the last good deploy → **Rollback** → **Rollback to this deploy**. This reuses the old image, so it takes about a minute.
-3. A rollback from the dashboard **turns auto-deploy off**, so a new push can't bring the bug straight back. After the fix is merged, go to **Settings** → **Auto-Deploy** → **After CI Checks Pass** to turn it back on.
+1. Render → **money-flow-api** → **Deploys** → pick the last good deploy → **Rollback** → **Rollback to this deploy**.
+2. A dashboard rollback **turns auto-deploy off**, so a push can't bring the bug back. After the fix is merged, go to **Settings → Auto-Deploy → After CI Checks Pass** to turn it back on.
 
-⚠️ **A rollback doesn't undo database migrations.** The old code runs against the newer schema. Keep migrations backward-compatible (add columns or tables first, remove them in a later release) so that's always safe. If a migration damaged data, restore the database (section 4).
+⚠️ **A rollback doesn't undo migrations.** The old code runs against the newer schema. Keep migrations backward-compatible (add first, remove in a later release). If a migration damaged data, restore the database (section 4).
 
 ### Web (Vercel)
 
-1. Vercel → **money-flow-web** → **Deployments**.
-2. Find the last good production deployment → **⋯** → **Instant Rollback** (or **Promote to Production**).
+**Deployments** → last good production deployment → **⋯** → **Instant Rollback**.
 
 ---
 
-## 4. Backups and restore (Postgres)
+## 4. Backups and restore
 
-### Automatic: point-in-time recovery (PITR)
+You have two safety nets:
 
-The paid Render database is backed up continuously. On the Hobby workspace you can restore it to **any moment in the last 3 days** (7 days on the Pro workspace).
+| | How far back | Where |
+|---|---|---|
+| Neon built-in restore | **Last 6 hours** (Free plan) | Neon console |
+| Nightly encrypted dump | **Last 30 nights** | GitHub Actions artifacts |
 
-To restore after bad data or a bad migration:
+### Mistake in the last 6 hours: Neon's restore
 
-1. Render → **money-flow-db** → **Recovery** → **Restore Database**.
-2. Pick a time just before the problem (at least 10 minutes ago), name the new database e.g. `money-flow-db-restored`, and keep *copy settings*.
-3. When it's **Available**, connect and check it: **Connect** → copy the PSQL command, then look at a few rows.
-4. Point the API at it: **money-flow-api** → **Environment** → set `DATABASE_URL` to the restored database's **Internal Database URL** → **Save and deploy**.
-5. Once you're happy, suspend or delete the old database. Note that `render.yaml` still names `money-flow-db`. For a permanent switch, rename the database in `render.yaml` to match, or keep the manual env var.
+Neon console → **money-flow** → select the `main` (production) branch → **Postgres database → Backup & Restore → Restore from history** → pick a time just before the mistake → follow the prompts. It overwrites the whole branch. Neon automatically keeps a backup branch of the state it replaced, in case you pick the wrong time.
 
-### On demand: a logical export
+### Anything older: restore a nightly dump
 
-**money-flow-db** → **Recovery** → **Create export**, then download the `.dir.tar.gz` file. Render keeps it for 7 days.
+1. **Download** the backup: repo → **Actions → Nightly database backup** → the run from the night you want → **Artifacts** → download. It arrives as a `.zip` holding `money_flow-<date>.dump.age`. Or from the terminal:
 
-### Your own copy: `pg_dump` (any time, kept as long as you like)
+   ```bash
+   gh run list --repo thanhdangdinh21/cash-flow --workflow db-backup.yml --limit 10
+   ```
 
-Get the **External Database URL** from **money-flow-db** → **Connect** → **External**. Treat it like a password. Docker supplies the matching Postgres 16 tools:
+   ```bash
+   gh run download <run-id> --repo thanhdangdinh21/cash-flow
+   ```
 
-```bash
-# Backup → money_flow-YYYY-MM-DD.dump in the current folder
-read -rs DB_URL   # paste the External Database URL, press Enter (not echoed or saved in history)
-docker run --rm -e DB_URL -v "$PWD":/backup postgres:16 \
-  sh -c 'pg_dump --format=custom --no-owner --no-acl "$DB_URL" > /backup/money_flow-$(date +%F).dump'
-```
+2. **Decrypt** it with your private key:
 
-```bash
-# Restore INTO AN EMPTY database only (e.g. a fresh Render database or a local one)
-read -rs DB_URL
-docker run --rm -e DB_URL -v "$PWD":/backup postgres:16 \
-  pg_restore --no-owner --no-acl --dbname "$DB_URL" /backup/money_flow-2026-11-18.dump
-```
+   ```bash
+   age --decrypt --identity ~/money-flow-backup.key money_flow-<date>.dump.age > money_flow.dump
+   ```
 
-Rehearse the restore once against a local database (`docker compose up -d postgres`, then use `postgresql://postgres:postgres@host.docker.internal:5432/postgres` as `DB_URL`), so you know it works before you need it.
+3. **Make an empty target database.** Restore into a *new* database, never over the live one: Neon console → **money-flow** → **Databases** → **New database** → name it `money_flow_restore`. Then **Connect** → pick that database → copy its **direct** string.
+4. **Restore** into it. Docker supplies the matching Postgres 16 tools:
+
+   ```bash
+   read -rs DB_URL   # paste the money_flow_restore direct string, press Enter (not echoed)
+   ```
+
+   ```bash
+   docker run --rm -e DB_URL -v "$PWD":/backup postgres:16 \
+     pg_restore --no-owner --no-acl --dbname "$DB_URL" /backup/money_flow.dump
+   ```
+
+5. **Check** it: Neon console → **SQL Editor** → database `money_flow_restore` → e.g. `select count(*) from transactions;`
+6. **Switch the API over:** Render → **money-flow-api** → **Environment** → replace the database name at the end of both `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct) with `money_flow_restore` → **Save and deploy**.
+7. Afterwards, delete `money_flow.dump` from your Mac. It's your data in plain text.
+
+**Practice run:** the same steps work against your local Docker Postgres. Run `docker compose up -d postgres`, create a database, and use `postgresql://postgres:postgres@host.docker.internal:5432/<db>` as `DB_URL`.
 
 ---
 
 ## 5. Settings reference
 
-**Render: money-flow-api**
+**Render → money-flow-api → Environment**
 
-| Variable | Value on staging | Where it comes from |
+| Variable | Value | Set by |
 |---|---|---|
 | `NODE_ENV` | `production` | `render.yaml` |
-| `API_DOCS` | `false` (set `true` to serve `/api/docs`) | `render.yaml` |
-| `DATABASE_URL` | the database's internal URL | filled in by Render from `money-flow-db` |
-| `JWT_SECRET` | output of `openssl rand -base64 48` | **you**, in the dashboard (secret) |
-| `CORS_ORIGINS` | the Vercel production URL, no trailing slash | **you**, in the dashboard |
+| `API_DOCS` | `false` (`true` serves `/api/docs`) | `render.yaml` |
+| `DATABASE_URL` | Neon **pooled** string (`-pooler` in host) | **you** (secret) |
+| `DATABASE_URL_UNPOOLED` | Neon **direct** string, used by migrations only | **you** (secret) |
+| `JWT_SECRET` | `openssl rand -base64 48` | **you** (secret) |
+| `CORS_ORIGINS` | Vercel production domain, no trailing slash | **you** |
 | `PORT` | set by Render | automatic, so don't set it |
 
-**Vercel: money-flow-web**
+**Vercel → money-flow-web → Settings → Environment Variables**
 
 | Variable | Value |
 |---|---|
 | `NEXT_PUBLIC_API_URL` | `https://<your-render-api>.onrender.com/api` |
 
-**Rotating `JWT_SECRET`:** generate a new value, set it in Render → **Environment** → **Save and deploy**. Everyone is logged out, since old tokens stop verifying, and simply logs in again.
+**GitHub → repo → Settings → Secrets and variables → Actions**
+
+| Name | Kind | Value |
+|---|---|---|
+| `BACKUP_DATABASE_URL` | secret | Neon **direct** string |
+| `BACKUP_AGE_RECIPIENT` | variable | age **public** key (`age1…`) |
+| `KEEPALIVE_URL` | variable (optional) | `https://<your-render-api>.onrender.com/api/health/live` |
+
+**Health endpoints**
+
+- `GET /api/health/live`: `200 {"status":"ok"}`. Never touches the DB. Render's health check and the keep-alive use it, so Neon can scale to zero.
+- `GET /api/health`: `200 {"status":"ok","database":"up"}` or `503`. Pings the DB. Use it for manual checks.
+
+**Rotating secrets**
+
+- `JWT_SECRET`: set a new value on Render → **Save and deploy**. Everyone is logged out and logs in again.
+- Neon password: Neon → **Roles** → reset the password, then update `DATABASE_URL`, `DATABASE_URL_UNPOOLED` (Render) and `BACKUP_DATABASE_URL` (GitHub).
+- Backup key: make a new pair, update `BACKUP_AGE_RECIPIENT`, and **keep the old private key** until its backups expire (30 days).
 
 ---
 
-## 6. Troubleshooting
+## 6. Moving to paid later
+
+No code changes needed (details and prices in the [ADR](adr/0001-hosting.md#moving-to-paid-later)):
+
+- **No more cold starts:** Render → service **Settings → Instance Type → Starter `0.5c-512mb`** ($7/month), and set `plan: 0.5c-512mb` in `render.yaml`. Then delete `keep-alive.yml`. You can also move migrations to a `preDeployCommand` then.
+- **Longer database restores:** Neon → **Billing → Launch** (pay as you go, no minimum; up to 7-day restore window).
+- Keep the nightly encrypted backup either way.
+
+---
+
+## 7. Troubleshooting
 
 | Symptom | Likely cause → fix |
 |---|---|
+| First page load takes ~1 minute | The API was asleep (free plan) → normal. Set up Step 7, or upgrade. |
 | Browser: *blocked by CORS policy* | `CORS_ORIGINS` ≠ the exact origin in the address bar → fix it in Render and redeploy |
-| Web calls `localhost:3001` | `NEXT_PUBLIC_API_URL` missing on Vercel, or set after the build → add it, then **Redeploy** |
-| `/api/health` returns 503 | API is up but can't reach Postgres → check **money-flow-db** status and `DATABASE_URL` |
-| Deploy failed at *pre-deploy* | A migration failed → read the deploy log. The old version is still serving. |
-| Render never deploys after a merge | A GitHub check on that commit failed, or no checks ran (`checksPass` waits for green) → fix CI, or use **Manual Deploy** |
+| Web calls `localhost:3001` | `NEXT_PUBLIC_API_URL` missing on Vercel, or set after the build → add it and **Redeploy** |
+| `/api/health` returns 503 | The API can't reach Neon → check the Neon project is active and the `DATABASE_URL` value |
+| Deploy failed, log shows a Prisma error before "Nest application" | A migration failed → the old version is still serving. Fix the migration in a new PR. |
+| Render never deploys after a merge | A GitHub check on that commit failed (`checksPass`) → fix CI, or **Manual Deploy** |
+| Backup run fails at "Check configuration" | `BACKUP_DATABASE_URL` or `BACKUP_AGE_RECIPIENT` missing or wrong (Step 6) |
+| Backup fails with `server version mismatch` | The Neon project isn't Postgres 16 → change `postgres:16` in `db-backup.yml` to match |
+| Neon says compute hours are nearly used up | Something keeps the DB awake → make sure nothing polls `/api/health` (only `/api/health/live`) |

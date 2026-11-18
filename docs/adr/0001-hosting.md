@@ -1,101 +1,102 @@
-# ADR 0001: Hosting for staging (API, Postgres, web)
+# ADR 0001: Hosting for production (API, Postgres, web)
 
-- **Status:** Proposed. Waiting on the owner's go-ahead before any account is created.
-- **Date:** 2026-11-18
+- **Status:** Accepted, 2026-11-18. The owner chose the free setup.
 - **Issues:** #13 (deployment), #12 (CORS from env)
 
 ## Context
 
-Money Flow has three parts to put online:
+There are two environments: **local** (docker-compose or native) and **production**. There is no staging; for a personal project, a separate environment would double the setup and cost without adding much.
+
+Three parts go online:
 
 | Part | What it is | What it needs from a host |
 |---|---|---|
-| API | NestJS 12 on Node 24, already packaged by [`apps/api/Dockerfile`](../../apps/api/Dockerfile) | Runs one Docker container, has a health check, runs `prisma migrate deploy` before each release |
-| Database | Postgres 16 via Prisma 7 | Managed (no server to patch), automatic backups |
+| API | NestJS 12 on Node 24, packaged by [`apps/api/Dockerfile`](../../apps/api/Dockerfile) | Runs one Docker container, has a health check, runs `prisma migrate deploy` before the server starts |
+| Database | Postgres 16 via Prisma 7 (`@prisma/adapter-pg`) | Managed, with backups, because it holds **real personal financial data** |
 | Web | Next.js 16 in `apps/web` | Builds from the monorepo; the browser calls the API directly at `NEXT_PUBLIC_API_URL` |
 
-What matters for this project:
+What we weighed: monthly cost, simplicity for someone new to DevOps, a region near Vietnam (Singapore), Postgres backups, and deploys from GitHub `main` after CI passes.
 
-1. **Cheap.** It's a personal project. Single-digit or low-teens USD per month is fine; $50 is not.
-2. **Simple for someone new to DevOps.** Click-through setup plus a config file in the repo. No servers, no Kubernetes, no CLI-only workflows.
-3. **Close to Vietnam.** Singapore is the nearest region most hosts offer, about 30–50 ms from Hanoi and Ho Chi Minh City.
-4. **Automatic Postgres backups**, with a restore you can do from a dashboard.
-5. **Deploys from GitHub `main`**, ideally only after CI passes.
-
-Prices below were checked on 2026-11-18 from each provider's own pricing pages and docs, in USD before tax.
+Prices were checked on 2026-11-18 from each provider's own pricing pages and docs, in USD before tax.
 
 ## Options
 
-### A. Render (API + Postgres) + Vercel Hobby (web) ⭐ recommended
+### A. Render paid (API + Postgres) + Vercel Hobby: ≈ $14.50/month
 
-| Piece | Plan | Price/month |
+- API `0.5c-512mb` $7 + Render Postgres `0.1c-256mb` $6 + 5 GB storage $1.50. Both in Singapore.
+- Always on, so no cold starts. Continuous backups with **3-day point-in-time restore** from the dashboard. Migrations run as a pre-deploy step.
+- This was the original recommendation.
+
+### B. Railway: ≈ $10–20/month, usage-based
+
+- One dashboard for everything, Singapore available. But the bill varies month to month, and Postgres is a container on a volume with self-managed backups.
+
+### C. Render free (API) + Neon free (Postgres) + Vercel Hobby: **$0/month** ⭐ chosen
+
+| Piece | Plan | Price |
 |---|---|---|
-| Render workspace | Hobby | $0 |
-| API | Web service `0.5c-512mb` (0.5 CPU, 512 MB), Singapore | $7 |
-| Postgres 16 | `0.1c-256mb` (256 MB RAM), Singapore | $6 |
-| Postgres storage | 5 GB at $0.30/GB | $1.50 |
+| API | Render **free** web service, Singapore | $0 |
+| Postgres 16 | Neon **Free**, AWS Singapore (`aws-ap-southeast-1`) | $0 |
 | Web | Vercel Hobby (personal, non-commercial) | $0 |
-| **Total** | | **≈ $14.50** |
+| Backups | Nightly encrypted `pg_dump` via GitHub Actions (public repo, so minutes are free) | $0 |
+| **Total** | | **$0** |
 
-- **Simplicity:** Render reads a [`render.yaml`](../../render.yaml) "Blueprint" from the repo and creates the API and the database together in one click. It builds the existing Dockerfile as-is. Vercel detects Next.js in a monorepo automatically.
-- **Region:** Both Render services run in `singapore`. Vercel serves the web app from its global CDN, and the browser calls the API in Singapore directly.
-- **Backups:** Paid Render Postgres has continuous backups with **point-in-time recovery (PITR)**. On the Hobby workspace you can restore to any moment in the **last 3 days**, from the dashboard. You can also create a logical export (kept 7 days) or run `pg_dump` yourself.
-- **Migrations:** Render's `preDeployCommand` runs `prisma migrate deploy` in the new image before traffic switches over. If a migration fails, the new version never goes live and the old one keeps serving.
-- **Deploys:** `autoDeployTrigger: checksPass` deploys each push to `main` only after GitHub CI is green. Vercel deploys `main` to production and builds a preview for every PR.
-- **Catches:**
-  - The free Render tiers don't fit this project. A free web service sleeps after 15 minutes idle and takes about a minute to wake up, and it can't run a pre-deploy command. A free database is **deleted after 30 days** and has no backups. So the paid tiers are the real minimum.
-  - Vercel Hobby is for personal, non-commercial use only. If Money Flow ever charges money or shows ads, move the web app to Vercel Pro ($20/month) or to a Render web service ($7/month).
-  - Hobby includes 5 GB/month of outbound bandwidth on Render, plenty for a JSON API with a handful of users.
+### D. Fly.io + Neon + Vercel: ≈ $3/month
 
-### B. Railway (everything in one project)
+- Cheap, but driven by a command-line tool, with no free allowance for new orgs and only 256 MB of RAM. It costs more effort than C and gives nothing C doesn't.
 
-- **Price:** The Hobby plan is $5/month, which includes $5 of usage, then you pay per second of CPU/RAM and per GB of storage. Realistically, an always-on API + Postgres + Next.js server lands around **$10–20/month**, and the bill changes month to month.
-- **Simplicity:** Very easy. One dashboard holds all three services and deploys from GitHub. Singapore is available (`asia-southeast1`).
-- **Backups:** Railway's Postgres is a container on a volume rather than a fully managed database service. Volume backups exist, but you schedule and restore them yourself, and backup storage is billed on top. Coverage is weaker than Render's built-in PITR.
-- **Why not:** Usage-based billing is harder to predict, and the database is less managed.
+### E. Self-hosting on the owner's Mac
 
-### C. Fly.io (API) + Neon (Postgres) + Vercel (web)
-
-- **Price:** A Fly `shared-cpu-1x` 256 MB machine in `sin` is about **$2–3/month**. Neon Free costs $0 (1 GB storage, 100 compute-hours/month). Vercel Hobby costs $0. **Total ≈ $3/month**, the cheapest of the three.
-- **Simplicity:** The hardest of the three. Fly is driven by the `flyctl` CLI and `fly.toml`, the cheapest machine has only 256 MB of RAM (tight for NestJS), and new organisations no longer get a free allowance. That means three vendors and three dashboards.
-- **Backups:** Neon Free only lets you restore to a point in the **last 6 hours**. Its database also suspends after 5 minutes idle, so the first request afterwards is slower.
-- **Why not:** Saving about $11/month isn't worth the extra moving parts and the much weaker backups for a first deployment.
-
-### Summary
-
-| | A. Render + Vercel | B. Railway | C. Fly + Neon + Vercel |
-|---|---|---|---|
-| Monthly cost | **≈ $14.50, fixed** | ≈ $10–20, varies | ≈ $3 |
-| Ease for a DevOps beginner | High | Highest | Low |
-| Singapore | ✅ API + DB | ✅ | ✅ API (+ DB on Neon AWS Singapore) |
-| Postgres backups | ✅ PITR, 3 days, dashboard restore | ⚠️ volume backups, self-managed | ⚠️ 6-hour restore window |
-| Migrations before release | ✅ `preDeployCommand` | ✅ pre-deploy command | ✅ `release_command` |
-| Config in repo | `render.yaml` | `railway.json` | `fly.toml` |
-| Deploy only when CI is green | ✅ `checksPass` | ✅ "wait for CI" | Needs a GitHub Actions deploy job |
+- Free, but the API is down whenever the Mac sleeps or travels, you need a tunnel to reach it from outside, and home-network security becomes your job. Rejected.
 
 ## Decision
 
-**Option A: Render for the API and Postgres in Singapore, Vercel Hobby for the web app, ≈ $14.50/month.**
+**Option C: Render free + Neon free + Vercel Hobby, $0/month.** The owner made this choice knowingly, over option A (paid, ≈ $14.50/month), which was recommended because the database holds real financial data.
 
-It has the best balance of cost, simplicity and safety for a first deployment. The infrastructure is described in `render.yaml` in the repo. The database is fully managed with dashboard restores. Migrations run before each release and block a bad deploy. Nothing deploys until CI passes. The price is fixed and known in advance.
+## Trade-offs we're accepting, and how each is softened
+
+| Trade-off | What it means day to day | Mitigation in this repo |
+|---|---|---|
+| **The API sleeps** after 15 idle minutes (Render free) | The first request after a quiet spell waits **~30–60 s** while the API wakes. Migrations on start add a few seconds. | [`keep-alive.yml`](../../.github/workflows/keep-alive.yml) pings `/api/health/live` every 10 min, **07:00–23:00 Vietnam time**. That's ≈ 500 of the 750 free instance-hours a month. GitHub's cron is approximate, so it can still nap occasionally. |
+| **Short built-in restore window**: Neon Free restores only **6 hours** back | A mistake noticed the next morning can't be undone from Neon alone. | [`db-backup.yml`](../../.github/workflows/db-backup.yml): a nightly `pg_dump`, **encrypted with `age`** before upload (the repo is public), kept **30 days** as a workflow artifact. The owner holds the only private key. Restore steps are in [`deploy.md`](../deploy.md). Worst case, you lose up to a day of entries. |
+| **The database scales to zero** after 5 idle minutes (Neon Free) | The first query after idling adds ~0.5–1 s. | The 100 CU-hours/month only last if the database can actually sleep, so: Render's health check uses the **DB-free** `/api/health/live`, the keep-alive hits that same route, and the `pg` pool closes idle connections after 10 s (`idleTimeoutMillis` in [`prisma.service.ts`](../../apps/api/src/prisma/prisma.service.ts)). |
+| **No pre-deploy step** on Render free | Migrations can't run in a separate step before the new version takes traffic. | [`migrate-and-start.sh`](../../apps/api/docker/migrate-and-start.sh) runs `prisma migrate deploy` over Neon's **direct** connection, then starts the server. If a migration fails, the container exits, the deploy never turns healthy, and Render keeps the previous version serving. |
+| **Limits**: Neon 1 GB storage and 100 CU-hours; Render 750 hours, 512 MB RAM, 0.1 CPU; Vercel Hobby non-commercial only | Fine for one person's finances. Builds and cold starts are slower on 0.1 CPU. | If any limit starts to pinch, see "Moving to paid later". |
+| **Three vendors** (Render, Neon, Vercel) | Three accounts and dashboards. | Every setting is listed in [`deploy.md`](../deploy.md). The API config lives in [`render.yaml`](../../render.yaml). |
 
 ## Consequences
 
-- New files: [`render.yaml`](../../render.yaml) (API + database), plus [`docs/deploy.md`](../deploy.md) with deploy, rollback and backup/restore steps.
-- The API image now includes the Prisma CLI in a separate `/app/migrate` folder, so Render's pre-deploy step can run `prisma migrate deploy`. The running app doesn't load it.
-- The API reads allowed browser origins from `CORS_ORIGINS` (#12), which on staging is the Vercel production URL.
-- `GET /api/health` returns 200 only when the database answers. Render uses it to decide whether a new version is healthy before switching traffic.
-- Secrets live only in the Render and Vercel dashboards, never in the repo: `JWT_SECRET` (generated by you with `openssl rand -base64 48`), plus `DATABASE_URL` (Render fills it in automatically from the database).
-- Vercel preview deployments (one per PR) get random URLs that aren't in `CORS_ORIGINS`, so they can load the site but can't call the staging API. That's intentional for now.
-- Later: if this goes commercial, move the web app off Vercel Hobby. If Hobby's 3-day restore window is too short, the Render Pro workspace ($25/month) extends it to 7 days.
+- [`render.yaml`](../../render.yaml) defines only the API (free plan, Singapore, `autoDeployTrigger: checksPass`, `dockerCommand: /app/migrate-and-start.sh`, `healthCheckPath: /api/health/live`).
+- Two Neon connection strings, both secrets on Render:
+  - `DATABASE_URL`, the **pooled** string (host contains `-pooler`), for the app.
+  - `DATABASE_URL_UNPOOLED`, the **direct** string, for migrations only.
+
+  The start script passes it to `prisma migrate deploy` alone. `prisma.config.ts` keeps reading only `DATABASE_URL`, so a local tool or test run can never pick up a production direct URL.
+- `GET /api/health` (pings the DB) stays available for humans and manual checks. `GET /api/health/live` doesn't touch the DB.
+- The API reads allowed browser origins from `CORS_ORIGINS` (#12); in production that's the Vercel URL.
+- Secrets live only in the Render, Vercel and GitHub settings, never in the repo.
+
+## Moving to paid later
+
+Each piece upgrades independently, with no code changes:
+
+| Pain | Upgrade | Cost |
+|---|---|---|
+| Cold starts | Render → service **Settings → Instance Type** → `0.5c-512mb` (Starter), and change `plan:` in `render.yaml` to match. Always on. Then delete `keep-alive.yml`. | $7/month |
+| Want longer restores than 6 h, or more storage/compute | Neon → **Billing → Upgrade to Launch**: up to **7-day** restore window, scale-to-zero becomes optional. Pay as you go, no minimum: $0.106/CU-hour, $0.35/GB-month storage, $0.20/GB-month restore history. A small personal DB lands around a few dollars a month. | ~$1–5/month |
+| Going commercial | Vercel Pro, or move the web app to a $7 Render web service | $20 or $7/month |
+
+Keep the nightly encrypted backup even after upgrading: it's the only copy that lives outside the database provider.
 
 ## Sources (checked 2026-11-18)
 
 - Render pricing: <https://render.com/pricing>
 - Render free-tier limits: <https://render.com/docs/free>
-- Render Postgres backups and PITR: <https://render.com/docs/postgresql-backups>
-- Render Blueprint spec: <https://render.com/docs/blueprint-spec>
+- Render Blueprint spec (pre-deploy is paid-only): <https://render.com/docs/blueprint-spec>
+- Render health checks: <https://render.com/docs/health-checks>
+- Neon plans and pricing: <https://neon.com/docs/introduction/plans>, <https://neon.com/pricing>
+- Neon regions: <https://neon.com/docs/introduction/regions>
+- Neon + Prisma (pooled vs direct): <https://neon.com/docs/guides/prisma>
 - Railway regions: <https://docs.railway.com/reference/deployment-regions>
 - Fly.io pricing: <https://fly.io/docs/about/pricing/>
-- Neon plans: <https://neon.com/docs/introduction/plans>
 - Vercel Hobby plan: <https://vercel.com/docs/plans/hobby>
