@@ -1,5 +1,7 @@
 # Money Flow
 
+[![CI](https://github.com/thanhdangdinh21/cash-flow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/thanhdangdinh21/cash-flow/actions/workflows/ci.yml)
+
 A full-stack personal finance app built on **double-entry accounting** — accounts, transactions, loans, commodity holdings, and net worth, shared across a backend, web client, and mobile client.
 
 It's a **pnpm + Turborepo monorepo**: three apps (API, web, mobile) over a set of internal packages.
@@ -162,6 +164,15 @@ Run from the repo root (`pnpm --filter <app>` to scope):
 | `pnpm build` / `pnpm lint` / `pnpm check-types` | `turbo run` across packages |
 | `pnpm format` | Prettier on `**/*.{ts,tsx,md}` |
 | `pnpm --filter api test` | API Jest suite |
+
+### CI
+
+Every pull request and every push to `main` runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml) on Node 24 with two parallel jobs:
+
+- **Checks**: `turbo run check-types lint test` (api, web, `packages/ui`, `packages/i18n`), the web i18n parity check, `next build`, and a mobile `tsc --noEmit`.
+- **API e2e + integration tests**: starts a throwaway `postgres:16`, then runs `pnpm --filter api test:e2e` and `test:int` against `money_flow_test`.
+
+To reproduce locally: `pnpm exec prisma generate`, then the same commands. The integration suite needs `docker compose up -d postgres` and `TEST_DATABASE_URL` (in `.env.test` or your shell).
 
 ## Onboarding Gotchas
 
