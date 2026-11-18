@@ -11,7 +11,7 @@ It's a **pnpm + Turborepo monorepo**: three apps (API, web, mobile) over a set o
 | Layer    | Technology |
 |----------|------------|
 | Monorepo | [pnpm workspaces](https://pnpm.io/workspaces) + [Turborepo](https://turborepo.dev) |
-| API      | [NestJS 11](https://nestjs.com), JWT auth (`passport-jwt` + `bcrypt`) |
+| API      | [NestJS 12](https://nestjs.com), JWT auth (`passport-jwt` + `bcrypt`) |
 | Database | PostgreSQL via [Prisma 7](https://www.prisma.io) (`@prisma/adapter-pg` driver adapter) |
 | Web      | [Next.js 16](https://nextjs.org) (App Router, React 19), Tailwind v4, Radix UI |
 | Mobile   | [Expo 54](https://expo.dev) / React Native 0.81, `expo-router`, NativeWind (Tailwind v3) |
