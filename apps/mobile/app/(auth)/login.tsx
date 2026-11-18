@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Link, useRouter } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api, TOKEN } from '@/lib/api';
@@ -19,6 +19,8 @@ interface LoginResponse {
 export default function LoginScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { expired } = useLocalSearchParams<{ expired?: string }>();
+  const [showExpired, setShowExpired] = useState(expired === '1');
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -43,6 +45,12 @@ export default function LoginScreen() {
     >
       <Page bottom={36}>
         <Head back={false} eyebrow={t('auth.login.subtitle')} title={t('auth.login.title')} />
+
+        {showExpired ? (
+          <View className="bg-info-soft rounded-md px-4 py-2.5 mb-4">
+            <Text className="font-sans text-sm text-info">{t('auth.login.sessionExpired')}</Text>
+          </View>
+        ) : null}
 
         <View className="border-t border-line-2">
           <InputField
@@ -84,6 +92,7 @@ export default function LoginScreen() {
           <BlockBtn
             onPress={() => {
               setError('');
+              setShowExpired(false);
               mutation.mutate(form);
             }}
             loading={mutation.isPending}

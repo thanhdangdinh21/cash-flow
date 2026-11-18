@@ -19,7 +19,8 @@
       "submit": "Sign in",
       "submitting": "Signing in…",
       "noAccount": "Don't have an account?",
-      "register": "Create one"
+      "register": "Create one",
+      "sessionExpired": "Your session expired, please sign in again."
     },
     "register": {
       "title": "Create account",

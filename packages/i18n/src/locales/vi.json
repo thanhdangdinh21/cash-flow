@@ -19,7 +19,8 @@
       "submit": "Đăng nhập",
       "submitting": "Đang đăng nhập…",
       "noAccount": "Chưa có tài khoản?",
-      "register": "Tạo tài khoản"
+      "register": "Tạo tài khoản",
+      "sessionExpired": "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại."
     },
     "register": {
       "title": "Tạo tài khoản",
