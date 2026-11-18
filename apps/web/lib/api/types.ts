@@ -378,6 +378,22 @@ export interface HomeReport {
   recent: Transaction[];
 }
 
+/**
+ * GET /reports/net-worth-summary — the single net-worth rule every screen shows.
+ * netWorth = assets + owedToYou − liabilities − youOwe. All plain numbers.
+ */
+export interface NetWorthSummary {
+  /** Visible (non-system) ASSET account balances */
+  assets: number;
+  /** Visible (non-system) LIABILITY account balances */
+  liabilities: number;
+  /** System Receivables balance: money contacts still owe you */
+  owedToYou: number;
+  /** System Payables balance: money you still owe contacts */
+  youOwe: number;
+  netWorth: number;
+}
+
 export type NetWorthPeriod = "month" | "year";
 
 export interface NetWorthSeriesPoint {

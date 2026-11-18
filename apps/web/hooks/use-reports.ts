@@ -12,6 +12,14 @@ export function useHomeReport() {
   });
 }
 
+/** Current net worth incl. loan receivables/payables — use this wherever net worth is shown. */
+export function useNetWorthSummary() {
+  return useQuery({
+    queryKey: keys.reports.netWorthSummary,
+    queryFn: reportsApi.netWorthSummary,
+  });
+}
+
 export function useNetWorthReport(period: NetWorthPeriod = "month") {
   return useQuery({
     queryKey: keys.reports.netWorth(period),

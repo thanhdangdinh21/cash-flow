@@ -6,9 +6,17 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/infrastructure/guards/jwt-auth.guard';
 import type { AuthRequest } from '../../auth/auth-request';
+import { NetWorthSummaryDto } from '../application/dtos/net-worth-summary.dto';
+import { NetWorthService } from '../application/net-worth.service';
 import { HomeReportUseCase } from '../application/use-cases/home-report.use-case';
 import { NetWorthReportUseCase } from '../application/use-cases/net-worth-report.use-case';
 import {
@@ -26,6 +34,7 @@ export class ReportsController {
     private readonly netWorthReport: NetWorthReportUseCase,
     private readonly spendingByCategory: SpendingByCategoryUseCase,
     private readonly categoryTrend: CategoryTrendUseCase,
+    private readonly netWorthService: NetWorthService,
   ) {}
 
   @Get('home')
@@ -33,7 +42,27 @@ export class ReportsController {
     return this.homeReport.execute(req.user.userId);
   }
 
+  @Get('net-worth-summary')
+  @ApiOperation({
+    summary: 'Current net worth and its parts',
+    description:
+      'Net worth = all ASSET balances − all LIABILITY balances, including the hidden loan ' +
+      'Receivables (owedToYou) and Payables (youOwe) accounts. EQUITY, INCOME and EXPENSE ' +
+      'accounts are excluded. Every client screen that shows net worth uses this number; ' +
+      'GET /reports/net-worth returns the same value as `current`.',
+  })
+  @ApiOkResponse({ type: NetWorthSummaryDto })
+  netWorthSummary(@Request() req: AuthRequest): Promise<NetWorthSummaryDto> {
+    return this.netWorthService.summary(req.user.userId);
+  }
+
   @Get('net-worth')
+  @ApiOperation({
+    summary: 'Net worth over time',
+    description:
+      '`current` uses the same rule as GET /reports/net-worth-summary; `series` holds ' +
+      'end-of-period values, oldest first.',
+  })
   @ApiQuery({
     name: 'period',
     required: false,

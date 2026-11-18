@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { useHomeReport } from "@/hooks/use-reports";
+import { useHomeReport, useNetWorthSummary } from "@/hooks/use-reports";
 import { QueryState, SkeletonBlock } from "@/components/ui/query-state";
 import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { CashflowChart } from "@/components/dashboard/cashflow-chart";
@@ -29,6 +29,7 @@ function DashboardSkeleton() {
 export default function DashboardPage() {
   const { t } = useTranslation();
   const query = useHomeReport();
+  const netWorth = useNetWorthSummary();
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -36,7 +37,7 @@ export default function DashboardPage() {
       <QueryState query={query} skeleton={<DashboardSkeleton />}>
         {(report) => (
           <>
-            <KpiCards report={report} />
+            <KpiCards report={report} netWorth={netWorth.data} />
 
             <div className="h-[258px] flex-none">
               <CashflowChart weeks={report.weeks} />

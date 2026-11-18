@@ -265,7 +265,8 @@ model AccountSnapshot {
 // NET WORTH SNAPSHOTS
 // =============================================================================
 // Pre-computed net worth per user per period for the net worth over time chart.
-// Net worth = SUM(all ASSET account balances) - SUM(all LIABILITY balances).
+// Net worth = SUM(all ASSET account balances) - SUM(all LIABILITY balances),
+// system loan Receivables/Payables included (see NET WORTH CALCULATION below).
 //
 // Without this table, the net worth chart would need to aggregate ALL account
 // snapshots for ALL of a user's accounts on every page load — the most
@@ -676,9 +677,14 @@ model CategorySnapshot {
 // current_balance is updated inside prisma.$transaction() alongside journal
 // entry creation — atomically, so they can never get out of sync.
 //
-// NET WORTH CALCULATION (for NetWorthSnapshot):
+// NET WORTH CALCULATION (for NetWorthSnapshot and every net-worth screen):
 //   net_worth = SUM(current_balance WHERE type IN [ASSET])
 //             - SUM(current_balance WHERE type IN [LIABILITY])
+//   over the owner's active, non-deleted accounts, INCLUDING the is_system
+//   loan accounts: Receivables (ASSET, "owed to you") and Payables
+//   (LIABILITY, "you owe"). Lending/borrowing therefore leaves net worth
+//   unchanged. EQUITY, INCOME and EXPENSE accounts are excluded.
+//   Implemented once in apps/api/src/reports/application/net-worth.service.ts.
 //
 // TRANSACTION TYPE → REPORT ROUTING:
 //   EXPENSE  → spending reports (by category, trends); exclude_from_reports=false

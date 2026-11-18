@@ -35,6 +35,7 @@ export const keys = {
   reports: {
     all: ["reports"] as const,
     home: ["reports", "home"] as const,
+    netWorthSummary: ["reports", "net-worth-summary"] as const,
     netWorth: (period: NetWorthPeriod = "month") =>
       ["reports", "net-worth", period] as const,
     spending: (params: SpendingByCategoryParams = {}) =>

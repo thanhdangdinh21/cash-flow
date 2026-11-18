@@ -107,6 +107,16 @@ export interface HomeReportData {
   recent: TransactionData[];
 }
 
+// GET /reports/net-worth-summary — the one net-worth rule every screen shows:
+// netWorth = assets + owedToYou − liabilities − youOwe (loan system accounts included)
+export interface NetWorthSummaryData {
+  assets: number;
+  liabilities: number;
+  owedToYou: number;
+  youOwe: number;
+  netWorth: number;
+}
+
 export interface NetWorthReportData {
   current: number;
   series: { label: string; value: number }[];
