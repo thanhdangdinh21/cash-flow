@@ -11,7 +11,7 @@ It's a **pnpm + Turborepo monorepo**: three apps (API, web, mobile) over a set o
 | Layer    | Technology |
 |----------|------------|
 | Monorepo | [pnpm workspaces](https://pnpm.io/workspaces) + [Turborepo](https://turborepo.dev) |
-| API      | [NestJS 11](https://nestjs.com), JWT auth (`passport-jwt` + `bcrypt`) |
+| API      | [NestJS 12](https://nestjs.com), JWT auth (`passport-jwt` + `bcrypt`) |
 | Database | PostgreSQL via [Prisma 7](https://www.prisma.io) (`@prisma/adapter-pg` driver adapter) |
 | Web      | [Next.js 16](https://nextjs.org) (App Router, React 19), Tailwind v4, Radix UI |
 | Mobile   | [Expo 54](https://expo.dev) / React Native 0.81, `expo-router`, NativeWind (Tailwind v3) |
@@ -174,6 +174,22 @@ Every pull request and every push to `main` runs [`.github/workflows/ci.yml`](.g
 
 To reproduce locally: `pnpm exec prisma generate`, then the same commands. The integration suite needs `docker compose up -d postgres` and `TEST_DATABASE_URL` (in `.env.test` or your shell).
 
+## TypeScript Versions
+
+The repo runs two TypeScript versions on purpose. Each workspace pins its own `typescript`, so check with `pnpm --filter <ws> exec tsc -v`.
+
+| Workspace | TypeScript | Why |
+|-----------|------------|-----|
+| root, `apps/api` | `6.0.3` | Root and API must match, or `@prisma/client`'s TS peer splits into two copies and the API's copy never gets generated. |
+| `apps/mobile` | `~5.9.2` | Expo SDK 54 ships and expects `~5.9.2` (`npx expo install --check` agrees). TS 6 support comes with a later Expo SDK, so move mobile when Expo is upgraded. |
+| `apps/web`, `packages/*` | `5.9.2` | Web and packages already typecheck cleanly under TS 6. The blocker is lint: `@repo/eslint-config` uses `typescript-eslint` 8.50, which supports TS `<6.0.0`. Both clients also compile the shared packages' source, so one compiler version for web, mobile and packages keeps them consistent. |
+
+None of the tsconfigs use options TS 6 deprecates (`baseUrl`, `moduleResolution: "node"`/`"node10"`, `target: "es5"`, `outFile`). Web, mobile and packages already use `bundler`/`NodeNext` resolution and plain `paths`. Keep it that way, and don't silence warnings with `ignoreDeprecations`.
+
+When moving the clients to TS 6:
+- Bump `typescript-eslint` in `@repo/eslint-config` to ≥ 8.72 (supports `<6.1.0`).
+- Mobile: TS 6 turns on `noUncheckedSideEffectImports` by default, and NativeWind's types don't declare `*.css`. `import '../global.css'` in `app/_layout.tsx` then fails with TS2882. Add `declare module '*.css';` to `nativewind-env.d.ts`.
+
 ## Onboarding Gotchas
 
 Already worked out and baked into the repo — **don't "fix" them back**:
@@ -184,3 +200,4 @@ Already worked out and baked into the repo — **don't "fix" them back**:
 4. **Don't strip `apps/mobile/metro.config.js`** — its `watchFolders` + `resolver.nodeModulesPaths` let Metro resolve pnpm's virtual store (`node_modules/.pnpm/`).
 5. **Harmless:** `i18next::pluralResolver … not Intl API compatible` shows on the simulator only.
 6. **Shared packages are live source** — editing `packages/shared` or `packages/i18n` affects both clients.
+7. **Mobile stays on TypeScript 5.9 while on Expo 54.** Don't bump it to match the root's TS 6; see [TypeScript Versions](#typescript-versions).
