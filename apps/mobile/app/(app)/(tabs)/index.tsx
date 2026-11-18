@@ -2,8 +2,8 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { useHomeReport, useMe } from '@/lib/hooks';
-import type { HomeReportData } from '@/lib/types';
+import { useHomeReport, useMe, useNetWorthSummary } from '@/lib/hooks';
+import type { HomeReportData, NetWorthSummaryData } from '@/lib/types';
 import { eyebrowDate, money, num } from '@/lib/format';
 import { Page } from '@/components/ui/Page';
 import { Eyebrow } from '@/components/ui/Eyebrow';
@@ -21,10 +21,11 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const { data: me } = useMe();
   const { data: report, isLoading } = useHomeReport();
+  const { data: netWorth, isLoading: netWorthLoading } = useNetWorthSummary();
 
   const firstName = me?.name?.split(' ')[0] ?? '';
 
-  if (isLoading || !report) {
+  if (isLoading || netWorthLoading || !report) {
     return (
       <Page>
         <View className="flex-1 items-center justify-center">
@@ -57,7 +58,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {isFirstRun ? <HomeEmpty /> : <HomeBody report={report} hasFlow={hasFlow} />}
+      {isFirstRun ? <HomeEmpty /> : <HomeBody report={report} netWorth={netWorth} hasFlow={hasFlow} />}
     </Page>
   );
 }
@@ -71,7 +72,7 @@ function HomeEmpty() {
     <>
       {/* Hero — zero, quietly */}
       <View className="mb-6">
-        <Eyebrow className="mb-3">{t('home.totalAssets')}</Eyebrow>
+        <Eyebrow className="mb-3">{t('home.inYourAccounts')}</Eyebrow>
         <Text
           className="font-sans-semibold text-ink-3"
           style={{ fontSize: 52, letterSpacing: -1.8, lineHeight: 52, fontVariant: ['tabular-nums'] }}
@@ -110,20 +111,43 @@ function HomeEmpty() {
   );
 }
 
-function HomeBody({ report, hasFlow }: { report: HomeReportData; hasFlow: boolean }) {
+function HomeBody({
+  report,
+  netWorth,
+  hasFlow,
+}: {
+  report: HomeReportData;
+  netWorth: NetWorthSummaryData | undefined;
+  hasFlow: boolean;
+}) {
   const { t } = useTranslation();
   const monthName = MONTHS[new Date().getMonth()];
+  // Hero = money in your own accounts (loans ignored); net worth below adds
+  // what contacts owe you and subtracts what you owe them.
+  const value = netWorth?.inYourAccounts ?? 0;
+  const worth = netWorth?.netWorth ?? 0;
+  // "Owed to you $X · You owe $Y", only the non-zero sides
+  const owed = [
+    netWorth?.owedToYou ? t('netWorth.owedToYou', { amount: money(netWorth.owedToYou) }) : null,
+    netWorth?.youOwe ? t('netWorth.youOwe', { amount: money(netWorth.youOwe) }) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <>
-      {/* Hero — total assets */}
+      {/* Hero — in your accounts, with net worth (same as Insights) underneath */}
       <View className="mb-3.5">
-        <Eyebrow className="mb-3">{t('home.totalAssets')}</Eyebrow>
+        <Eyebrow className="mb-3">{t('home.inYourAccounts')}</Eyebrow>
         <Text
-          className="font-sans-semibold text-ink"
+          className={`font-sans-semibold ${value < 0 ? 'text-negative' : 'text-ink'}`}
           style={{ fontSize: 52, letterSpacing: -1.8, lineHeight: 52, fontVariant: ['tabular-nums'] }}
         >
-          {money(report.totalAssets)}
+          {money(value, { sign: value < 0 })}
+        </Text>
+        <Text className="font-sans text-[13px] text-ink-3 mt-2.5" style={{ fontVariant: ['tabular-nums'] }}>
+          {t('netWorth.value', { amount: money(worth, { sign: worth < 0 }) })}
+          {owed ? ` · ${owed}` : ''}
         </Text>
         <View className="flex-row items-center gap-2.5 mt-4">
           <View

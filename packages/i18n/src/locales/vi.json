@@ -264,9 +264,14 @@
       "overRemaining": "Nhiều hơn số còn lại của khoản vay."
     }
   },
+  "netWorth": {
+    "owedToYou": "Người khác nợ bạn {{amount}}",
+    "youOwe": "Bạn nợ {{amount}}",
+    "value": "Tài sản ròng {{amount}}"
+  },
   "home": {
     "hello": "Chào, {{name}}",
-    "totalAssets": "Tổng tài sản",
+    "inYourAccounts": "Trong tài khoản",
     "net": "Ròng",
     "upThisMonth": "tăng trong tháng",
     "downThisMonth": "giảm trong tháng",
@@ -318,6 +323,7 @@
       "tagline": "Tài chính cá nhân · sáng + tối · đa tiền tệ"
     },
     "accounts": {
+      "inYourAccounts": "Trong tài khoản",
       "netWorth": "Tài sản ròng",
       "balance": "Số dư",
       "selectHint": "Chọn một tài khoản để xem chi tiết."
@@ -338,9 +344,7 @@
     "dashboard": {
       "title": "Tổng quan",
       "kpi": {
-        "totalAssets": "Tổng tài sản",
-        "totalAssetsSub": "{{count}} tài khoản",
-        "totalAssetsSub_other": "{{count}} tài khoản",
+        "inYourAccounts": "Trong tài khoản",
         "monthIncome": "Thu nhập · tháng này",
         "monthIncomeSub": "Tiền vào",
         "monthSpent": "Chi tiêu · tháng này",

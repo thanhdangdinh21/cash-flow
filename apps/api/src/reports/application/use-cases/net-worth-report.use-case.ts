@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { balanceDelta } from '../../../transactions/application/balance.helpers';
+import { NetWorthService } from '../net-worth.service';
 
 const MONTH_LABELS = [
   'Jan',
@@ -21,7 +22,10 @@ const MONTH_LABELS = [
 // the live balances — cheap at v1 scale; NetWorthSnapshot is the escape hatch.
 @Injectable()
 export class NetWorthReportUseCase {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly netWorth: NetWorthService,
+  ) {}
 
   async execute(userId: string, period: 'month' | 'year' = 'month') {
     const points = period === 'month' ? 6 : 12;
@@ -34,15 +38,8 @@ export class NetWorthReportUseCase {
       );
     }
 
-    const [accounts, entries] = await Promise.all([
-      this.prisma.account.findMany({
-        where: {
-          ownerId: userId,
-          deletedAt: null,
-          type: { in: ['ASSET', 'LIABILITY'] },
-        },
-        select: { id: true, type: true, currentBalance: true },
-      }),
+    const [summary, entries] = await Promise.all([
+      this.netWorth.summary(userId),
       this.prisma.journalEntry.findMany({
         where: {
           account: { ownerId: userId, type: { in: ['ASSET', 'LIABILITY'] } },
@@ -58,10 +55,8 @@ export class NetWorthReportUseCase {
       }),
     ]);
 
-    const current = accounts.reduce((s, a) => {
-      const v = Number(a.currentBalance);
-      return s + (a.type === 'ASSET' ? v : -v);
-    }, 0);
+    // Same rule as every other screen (see NetWorthService)
+    const current = summary.netWorth;
 
     // Net-worth delta per month bucket (asset deltas add, liability subtract)
     const monthDelta = new Map<number, number>();

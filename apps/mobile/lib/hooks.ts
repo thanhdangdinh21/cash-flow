@@ -9,6 +9,7 @@ import type {
   HomeReportData,
   LoanData,
   NetWorthReportData,
+  NetWorthSummaryData,
   SpendingReportData,
   TransactionData,
   TransactionListData,
@@ -96,6 +97,13 @@ export function useHomeReport() {
   return useQuery<HomeReportData>({
     queryKey: ['reports', 'home'],
     queryFn: () => api.get('/reports/home').then((r) => r.data),
+  });
+}
+
+export function useNetWorthSummary() {
+  return useQuery<NetWorthSummaryData>({
+    queryKey: ['reports', 'net-worth-summary'],
+    queryFn: () => api.get('/reports/net-worth-summary').then((r) => r.data),
   });
 }
 

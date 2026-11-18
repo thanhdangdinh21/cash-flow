@@ -67,6 +67,36 @@ describe('App (e2e)', () => {
     );
   });
 
+  it('documents the net-worth summary response', async () => {
+    const res = await request(app.getHttpServer()).get('/api/docs-json');
+    const doc = res.body as OpenApiDocument & {
+      paths: Record<
+        string,
+        Record<
+          string,
+          { responses: Record<string, { content: Record<string, unknown> }> }
+        >
+      >;
+      components: { schemas: Record<string, { properties?: object }> };
+    };
+
+    expect(
+      doc.paths['/api/reports/net-worth-summary'].get.responses['200'].content[
+        'application/json'
+      ],
+    ).toEqual({ schema: { $ref: '#/components/schemas/NetWorthSummaryDto' } });
+    expect(
+      Object.keys(doc.components.schemas.NetWorthSummaryDto.properties ?? {}),
+    ).toEqual([
+      'assets',
+      'liabilities',
+      'inYourAccounts',
+      'owedToYou',
+      'youOwe',
+      'netWorth',
+    ]);
+  });
+
   it('GET /api/docs serves the Scalar viewer', async () => {
     const res = await request(app.getHttpServer())
       .get('/api/docs')

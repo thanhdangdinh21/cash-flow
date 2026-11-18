@@ -4,12 +4,15 @@ import type {
   HomeReport,
   NetWorthPeriod,
   NetWorthReport,
+  NetWorthSummary,
   SpendingByCategoryParams,
   SpendingByCategoryReport,
 } from "./types";
 
 export const reportsApi = {
   home: () => api.get<HomeReport>("/reports/home").then((r) => r.data),
+  netWorthSummary: () =>
+    api.get<NetWorthSummary>("/reports/net-worth-summary").then((r) => r.data),
   netWorth: (period: NetWorthPeriod = "month") =>
     api
       .get<NetWorthReport>("/reports/net-worth", { params: { period } })
